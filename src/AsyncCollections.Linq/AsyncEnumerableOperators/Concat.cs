@@ -126,9 +126,7 @@ public static partial class AsyncEnumerableExtensions {
             this.parent = parent;
             this.other = other;
         }
-
-        public int Count => (this.parent.Count < 0 || this.other.Count < 0) ? -1 : this.parent.Count + this.other.Count;
-
+        
         public AsyncExecutionMode ExecutionMode => (AsyncExecutionMode)Math.Max((int)this.parent.ExecutionMode, (int)this.other.ExecutionMode);
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

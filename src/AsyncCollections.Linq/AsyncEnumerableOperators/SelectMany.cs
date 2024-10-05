@@ -47,9 +47,7 @@ public static partial class AsyncEnumerableExtensions {
     private class SelectManyAsyncOperator<T, E> : IAsyncEnumerableOperator<E> {
         private readonly IAsyncEnumerableOperator<T> parent;
         private readonly Func<T, IAsyncEnumerable<E>> selector;
-
-        public int Count => this.parent.Count;
-
+        
         public AsyncExecutionMode ExecutionMode { get; }
 
         public SelectManyAsyncOperator(IAsyncEnumerableOperator<T> sequence, Func<T, IAsyncEnumerable<E>> selector) {

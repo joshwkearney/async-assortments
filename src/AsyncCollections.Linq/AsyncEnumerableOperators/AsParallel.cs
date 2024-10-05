@@ -35,17 +35,6 @@ public static partial class AsyncEnumerableExtensions {
     private class AsParallelOperator<T> : IAsyncEnumerableOperator<T> {
         private readonly IAsyncEnumerable<T> parent;
 
-        public int Count {
-            get {
-                if (this.parent is IAsyncEnumerableOperator<T> op) {
-                    return op.Count;
-                }
-                else {
-                    return -1;
-                }
-            }
-        }
-
         public AsyncExecutionMode ExecutionMode { get; }
 
         public AsParallelOperator(IAsyncEnumerable<T> parent, AsyncExecutionMode mode) {

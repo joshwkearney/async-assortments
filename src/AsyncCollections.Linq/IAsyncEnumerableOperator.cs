@@ -2,9 +2,7 @@ using System.Collections.Generic;
 
 namespace CollectionTesting;
 
-internal interface IAsyncEnumerableOperator<T> : IAsyncEnumerable<T> {
-    public int Count { get; }
-
+internal interface IAsyncEnumerableOperator<out T> : IAsyncEnumerable<T> {
     public AsyncExecutionMode ExecutionMode { get; }
 }
 

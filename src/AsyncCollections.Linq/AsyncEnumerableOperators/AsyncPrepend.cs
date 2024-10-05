@@ -31,9 +31,7 @@ public static partial class AsyncEnumerableExtensions {
             this.parent = parent;
             this.newItem = item;
         }
-
-        public int Count => this.parent.Count < 0 ? -1 : this.parent.Count + 1;
-
+        
         public AsyncExecutionMode ExecutionMode => this.parent.ExecutionMode;
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

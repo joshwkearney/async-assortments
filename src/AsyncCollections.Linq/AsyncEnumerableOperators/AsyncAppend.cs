@@ -52,9 +52,7 @@ public static partial class AsyncEnumerableExtensions {
             this.toAppend = item;
             this.ExecutionMode = this.parent.ExecutionMode;
         }
-
-        public int Count => this.parent.Count < 0 ? -1 : this.parent.Count + 1;
-
+        
         public AsyncExecutionMode ExecutionMode { get; }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

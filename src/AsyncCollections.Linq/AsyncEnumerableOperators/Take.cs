@@ -35,9 +35,7 @@ public static partial class AsyncEnumerableExtensions {
     private class TakeOperator<T> : IAsyncEnumerableOperator<T> {
         private readonly IAsyncEnumerableOperator<T> parent;
         private readonly int numToTake;
-
-        public int Count => this.parent.Count < 0 ? -1 : Math.Min(this.parent.Count, this.numToTake);
-
+        
         public AsyncExecutionMode ExecutionMode => this.parent.ExecutionMode;
 
         public TakeOperator(IAsyncEnumerableOperator<T> parent, int numToTake) {

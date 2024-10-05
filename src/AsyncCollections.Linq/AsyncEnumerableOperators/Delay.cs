@@ -39,9 +39,7 @@ public static partial class AsyncEnumerableExtensions {
     private class DelayOperator<T> : IAsyncEnumerableOperator<T> {
         private readonly IAsyncEnumerableOperator<T> parent;
         private readonly TimeSpan delay;
-
-        public int Count => this.parent.Count;
-
+        
         public AsyncExecutionMode ExecutionMode { get; }
 
         public DelayOperator(IAsyncEnumerableOperator<T> collection, TimeSpan delay) {

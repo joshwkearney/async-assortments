@@ -35,9 +35,7 @@ public static partial class AsyncEnumerableExtensions {
     private class SkipOperator<T> : IAsyncEnumerableOperator<T> {
         private readonly IAsyncEnumerableOperator<T> parent;
         private readonly int numToSkip;
-
-        public int Count => this.parent.Count < 0 ? -1 : Math.Max(0, this.parent.Count - this.numToSkip);
-
+        
         public AsyncExecutionMode ExecutionMode => this.parent.ExecutionMode;
 
         public SkipOperator(IAsyncEnumerableOperator<T> parent, int numToSkip) {
