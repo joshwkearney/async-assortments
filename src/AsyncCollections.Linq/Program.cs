@@ -1,7 +1,5 @@
-﻿using CollectionTesting;
-using System.Collections.Concurrent;
+﻿using AsyncCollections.Linq;
 using System.Diagnostics;
-using System.Threading.Channels;
 
 await Test();
 await Test();
@@ -10,9 +8,6 @@ await Test();
 await Test();
 
 async ValueTask Test() {
-    var channel = Channel.CreateUnbounded<int>();
-    var items = channel.Reader.AsAsyncEnumerable();
-
     var watch = new Stopwatch();
     watch.Restart();
 

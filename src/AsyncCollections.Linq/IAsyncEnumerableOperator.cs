@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-
-namespace CollectionTesting;
+namespace AsyncCollections;
 
 internal interface IAsyncEnumerableOperator<out T> : IAsyncEnumerable<T> {
     public AsyncExecutionMode ExecutionMode { get; }
