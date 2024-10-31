@@ -25,7 +25,7 @@ public static partial class AsyncEnumerable {
         return sequence.DoParallel<T, E>(async (item, channel) => {
             var selected = await selector(item);
 
-            channel.Writer.TryWrite(selected);
+            await channel.Writer.WriteAsync(selected);
         });
     }
 
@@ -33,7 +33,7 @@ public static partial class AsyncEnumerable {
         return sequence.DoConcurrent<T, E>(async (item, channel) => {
             var selected = await selector(item);
 
-            channel.Writer.TryWrite(selected);
+            await channel.Writer.WriteAsync(selected);
         });
     }
 

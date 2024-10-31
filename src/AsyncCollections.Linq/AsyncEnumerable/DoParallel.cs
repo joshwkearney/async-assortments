@@ -117,13 +117,11 @@ public static partial class AsyncEnumerable {
         if (exceptions == null) {
             result.Writer.Complete();
         }
-        else { 
-            if (exceptions.Count == 1) {
-                result.Writer.Complete(exceptions[0]);
-            }
-            else {
-                result.Writer.Complete(new AggregateException(exceptions));
-            }
+        else if (exceptions.Count == 1) {
+            result.Writer.Complete(exceptions[0]);
+        }
+        else {
+            result.Writer.Complete(new AggregateException(exceptions));
         }
     }
 }

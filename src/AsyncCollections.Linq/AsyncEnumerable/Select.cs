@@ -22,10 +22,8 @@ public static partial class AsyncEnumerable {
     }
 
     private static IAsyncEnumerable<E> ParallelSelectHelper<T, E>(this IAsyncEnumerable<T> sequence, Func<T, E> selector) {
-        return sequence.DoParallel<T, E>((item, channel) => {
-            channel.Writer.TryWrite(selector(item));
-
-            return ValueTask.CompletedTask;
+        return sequence.DoParallel<T, E>(async (item, channel) => {
+            await channel.Writer.WriteAsync(selector(item));
         });
     }
 

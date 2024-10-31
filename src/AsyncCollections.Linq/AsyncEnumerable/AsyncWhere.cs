@@ -26,7 +26,7 @@ public static partial class AsyncEnumerable {
     private static IAsyncEnumerable<T> ConcurrentAsyncWhereHelper<T>(this IAsyncEnumerable<T> sequence, Func<T, ValueTask<bool>> selector) {
         return sequence.DoConcurrent<T, T>(async (item, channel) => {
             if (await selector(item)) {
-                channel.Writer.TryWrite(item);
+                await channel.Writer.WriteAsync(item);
             }
         });
     }
@@ -34,7 +34,7 @@ public static partial class AsyncEnumerable {
     private static IAsyncEnumerable<T> ParallelAsyncWhereHelper<T>(this IAsyncEnumerable<T> sequence, Func<T, ValueTask<bool>> selector) {
         return sequence.DoParallel<T, T>(async (item, channel) => {
             if (await selector(item)) {
-                channel.Writer.TryWrite(item);
+                await channel.Writer.WriteAsync(item);
             }
         });
     }

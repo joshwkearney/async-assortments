@@ -1,16 +1,19 @@
 ﻿namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static async ValueTask<T> LastAsync<T>(this IAsyncEnumerable<T> sequence) {
-        var empty = true;
+    public static async ValueTask<T> LastAsync<T>(
+        this IAsyncEnumerable<T> sequence,
+        CancellationToken cancellationToken = default) {
+
+        var isEmpty = true;
         var last = default(T);
 
-        await foreach (var item in sequence) {
+        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
             last = item;
-            empty = false;
+            isEmpty = false;
         }
 
-        if (empty) {
+        if (isEmpty) {
             throw new InvalidOperationException("Sequence contains no elements");
         }
 

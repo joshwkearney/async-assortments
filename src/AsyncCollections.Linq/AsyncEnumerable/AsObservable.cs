@@ -6,7 +6,6 @@ public static partial class AsyncEnumerable {
     }
 
     private sealed class AsyncSubject<T> : IObservable<T> {
-        private readonly List<IObserver<T>> subscribers = [];
         private readonly IAsyncEnumerable<T> sequence;
 
         public AsyncSubject(IAsyncEnumerable<T> sequence) {
@@ -14,25 +13,18 @@ public static partial class AsyncEnumerable {
         }
 
         public IDisposable Subscribe(IObserver<T> observer) {
-            this.subscribers.Add(observer);
-
             return new Subscription<T>(this.sequence, observer);
         }
     }
 
-    private class Subscription<T> : IDisposable {
-        private readonly IAsyncEnumerable<T> sequence;
-        private readonly IObserver<T> target;
+    private sealed class Subscription<T> : IDisposable {
         private readonly CancellationTokenSource cancellation = new();
         private bool isDisposed = false;
 
         public Subscription(IAsyncEnumerable<T> sequence, IObserver<T> target) {
-            this.target = target;
-            this.sequence = sequence;
-
             // Start the iteration on this thread so we create the iterator and attempt
             // a move next, which will add a subscriber if the sequence is a subject
-            this.IterateSequence();
+            this.IterateSequence(sequence, target);
         }
 
         public void Dispose() {
@@ -48,16 +40,16 @@ public static partial class AsyncEnumerable {
             }
         }
 
-        private async void IterateSequence() {
+        private async void IterateSequence(IAsyncEnumerable<T> sequence, IObserver<T> target) {
             try {
                 await foreach (var item in sequence.WithCancellation(this.cancellation.Token)) {
-                    this.target.OnNext(item);
+                    target.OnNext(item);
                 }
 
-                this.target.OnCompleted();
+                target.OnCompleted();
             }
             catch (Exception ex) {
-                this.target.OnError(ex);
+                target.OnError(ex);
             }                
         }
     }

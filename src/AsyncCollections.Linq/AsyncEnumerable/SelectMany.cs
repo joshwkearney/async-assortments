@@ -12,7 +12,7 @@ public static partial class AsyncEnumerable {
     }
 
     public static IAsyncEnumerable<E> SelectMany<T, E>(this IAsyncEnumerable<T> sequence, Func<T, IEnumerable<E>> selector) {
-        return sequence.Select(x => selector(x).AsAsyncEnumerable()).SelectMany(x => x);
+        return sequence.SelectMany(x => selector(x).AsAsyncEnumerable());
     }
 
     private static async IAsyncEnumerable<E> SelectManyHelper<T, E>(
@@ -30,7 +30,7 @@ public static partial class AsyncEnumerable {
     private static IAsyncEnumerable<E> ParallelSelectManyHelper<T, E>(this IAsyncEnumerable<T> sequence, Func<T, IAsyncEnumerable<E>> selector) {
         return sequence.DoParallel<T, E>(async (item, channel) => {
             await foreach (var sub in selector(item)) {
-                channel.Writer.TryWrite(sub);
+                await channel.Writer.WriteAsync(sub);
             }
         });
     }
@@ -38,7 +38,7 @@ public static partial class AsyncEnumerable {
     private static IAsyncEnumerable<E> ConcurrentSelectManyHelper<T, E>(this IAsyncEnumerable<T> sequence, Func<T, IAsyncEnumerable<E>> selector) {
         return sequence.DoConcurrent<T, E>(async (item, channel) => {
             await foreach (var sub in selector(item)) {
-                channel.Writer.TryWrite(sub);
+                await channel.Writer.WriteAsync(sub);
             }
         });
     }

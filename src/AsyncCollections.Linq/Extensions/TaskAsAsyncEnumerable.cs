@@ -9,8 +9,6 @@ public static partial class AsyncCollectionsExtensions {
     private class TaskToAsyncEnumerable<T> : IAsyncEnumerableOperator<T> {
         private readonly Task<T> item;
 
-        public int Count => 1;
-
         public AsyncExecutionMode ExecutionMode => AsyncExecutionMode.Sequential;
 
         public TaskToAsyncEnumerable(Task<T> item) {
