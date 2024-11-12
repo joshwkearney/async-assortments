@@ -8,7 +8,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncEnumerableOperator<TSource> op) {
+        if (source is IAsyncLinqOperator<TSource> op) {
             return new DistinctUntilChangedOperator<TSource>(op);
         }
 
@@ -41,14 +41,14 @@ public static partial class AsyncEnumerable {
         }
     }
 
-    private class DistinctUntilChangedOperator<T> : IAsyncEnumerableOperator<T> {
-        private readonly IAsyncEnumerableOperator<T> parent;
+    private class DistinctUntilChangedOperator<T> : IAsyncLinqOperator<T> {
+        private readonly IAsyncLinqOperator<T> parent;
 
         public int Count => -1;
 
-        public AsyncExecutionMode ExecutionMode { get; }
+        public AsyncLinqExecutionMode ExecutionMode { get; }
 
-        public DistinctUntilChangedOperator(IAsyncEnumerableOperator<T> parent) {
+        public DistinctUntilChangedOperator(IAsyncLinqOperator<T> parent) {
             this.parent = parent;
             this.ExecutionMode = parent.ExecutionMode;
         }

@@ -6,11 +6,11 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncEnumerableOperator<TSource> op && op.ExecutionMode == AsyncExecutionMode.Parallel) {
+        if (source is IAsyncLinqOperator<TSource> op && op.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
             return source;
         }
 
-        return new AsParallelOperator<TSource>(source, AsyncExecutionMode.Parallel);
+        return new AsParallelOperator<TSource>(source, AsyncLinqExecutionMode.Parallel);
     }
 
     public static IAsyncEnumerable<TSource> AsConcurrent<TSource>(this IAsyncEnumerable<TSource> source) {
@@ -18,11 +18,11 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncEnumerableOperator<TSource> op && op.ExecutionMode == AsyncExecutionMode.Concurrent) {
+        if (source is IAsyncLinqOperator<TSource> op && op.ExecutionMode == AsyncLinqExecutionMode.Concurrent) {
             return source;
         }
 
-        return new AsParallelOperator<TSource>(source, AsyncExecutionMode.Concurrent);
+        return new AsParallelOperator<TSource>(source, AsyncLinqExecutionMode.Concurrent);
     }
 
     public static IAsyncEnumerable<TSource> AsSequential<TSource>(this IAsyncEnumerable<TSource> source) {
@@ -30,19 +30,19 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncEnumerableOperator<TSource> op && op.ExecutionMode == AsyncExecutionMode.Sequential) {
+        if (source is IAsyncLinqOperator<TSource> op && op.ExecutionMode == AsyncLinqExecutionMode.Sequential) {
             return source;
         }
 
-        return new AsParallelOperator<TSource>(source, AsyncExecutionMode.Sequential);
+        return new AsParallelOperator<TSource>(source, AsyncLinqExecutionMode.Sequential);
     }
 
-    private class AsParallelOperator<T> : IAsyncEnumerableOperator<T> {
+    private class AsParallelOperator<T> : IAsyncLinqOperator<T> {
         private readonly IAsyncEnumerable<T> parent;
 
-        public AsyncExecutionMode ExecutionMode { get; }
+        public AsyncLinqExecutionMode ExecutionMode { get; }
 
-        public AsParallelOperator(IAsyncEnumerable<T> parent, AsyncExecutionMode mode) {
+        public AsParallelOperator(IAsyncEnumerable<T> parent, AsyncLinqExecutionMode mode) {
             this.parent = parent;
             this.ExecutionMode = mode;
         }

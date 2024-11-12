@@ -22,7 +22,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(second));
         }
 
-        if (source is IAsyncEnumerableOperator<TSource> col1) {
+        if (source is IAsyncLinqOperator<TSource> col1) {
             return new ConcatOperator<TSource>(col1, second);
         }
 
@@ -133,19 +133,19 @@ public static partial class AsyncEnumerable {
         }
     }
 
-    private class ConcatOperator<T> : IAsyncEnumerableOperator<T> {
-        private readonly IAsyncEnumerableOperator<T> parent;
+    private class ConcatOperator<T> : IAsyncLinqOperator<T> {
+        private readonly IAsyncLinqOperator<T> parent;
         private readonly IAsyncEnumerable<T> other;
 
-        public ConcatOperator(IAsyncEnumerableOperator<T> parent, IAsyncEnumerable<T> other) {
+        public ConcatOperator(IAsyncLinqOperator<T> parent, IAsyncEnumerable<T> other) {
             this.parent = parent;
             this.other = other;
         }
 
-        public AsyncExecutionMode ExecutionMode => this.parent.ExecutionMode;
+        public AsyncLinqExecutionMode ExecutionMode => this.parent.ExecutionMode;
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.ExecutionMode == AsyncExecutionMode.Sequential) {
+            if (this.ExecutionMode == AsyncLinqExecutionMode.Sequential) {
                 return ConcatHelper(this.parent, this.other).GetAsyncEnumerator(cancellationToken);
             }
             else {

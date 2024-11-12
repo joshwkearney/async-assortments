@@ -11,8 +11,8 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncEnumerableOperator<TSource> op) {
-            if (op.ExecutionMode == AsyncExecutionMode.Sequential) {
+        if (source is IAsyncLinqOperator<TSource> op) {
+            if (op.ExecutionMode == AsyncLinqExecutionMode.Sequential) {
                 return new PrependOperator<TSource>(op, element);
             }
             else {
@@ -43,16 +43,16 @@ public static partial class AsyncEnumerable {
         }
     }
 
-    private class PrependOperator<T> : IAsyncEnumerableOperator<T> {
-        private readonly IAsyncEnumerableOperator<T> parent;
+    private class PrependOperator<T> : IAsyncLinqOperator<T> {
+        private readonly IAsyncLinqOperator<T> parent;
         private readonly T newItem;
 
-        public PrependOperator(IAsyncEnumerableOperator<T> parent, T item) {
+        public PrependOperator(IAsyncLinqOperator<T> parent, T item) {
             this.parent = parent;
             this.newItem = item;
         }
         
-        public AsyncExecutionMode ExecutionMode => this.parent.ExecutionMode;
+        public AsyncLinqExecutionMode ExecutionMode => this.parent.ExecutionMode;
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
             return PrependHelper(this.parent, newItem).GetAsyncEnumerator(cancellationToken);

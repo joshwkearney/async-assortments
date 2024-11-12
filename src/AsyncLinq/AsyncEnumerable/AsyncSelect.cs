@@ -15,7 +15,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(selector));
         }
 
-        if (source is IAsyncEnumerableOperator<TSource> op) {
+        if (source is IAsyncLinqOperator<TSource> op) {
             return new AsyncSelectingOperator<TSource, TResult>(op, selector);
         }
 
@@ -48,23 +48,23 @@ public static partial class AsyncEnumerable {
         });
     }
 
-    private class AsyncSelectingOperator<T, E> : IAsyncEnumerableOperator<E> {
-        private readonly IAsyncEnumerableOperator<T> parent;
+    private class AsyncSelectingOperator<T, E> : IAsyncLinqOperator<E> {
+        private readonly IAsyncLinqOperator<T> parent;
         private readonly Func<T, ValueTask<E>> selector;
         
-        public AsyncExecutionMode ExecutionMode { get; }
+        public AsyncLinqExecutionMode ExecutionMode { get; }
 
-        public AsyncSelectingOperator(IAsyncEnumerableOperator<T> collection, Func<T, ValueTask<E>> selector) {
+        public AsyncSelectingOperator(IAsyncLinqOperator<T> collection, Func<T, ValueTask<E>> selector) {
             this.parent = collection;
             this.selector = selector;
             this.ExecutionMode = this.parent.ExecutionMode;
         }
 
         public IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.ExecutionMode == AsyncExecutionMode.Parallel) {
+            if (this.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
                 return ParallelAsyncSelectHelper(this.parent, this.selector).GetAsyncEnumerator(cancellationToken);
             }
-            else if (this.ExecutionMode == AsyncExecutionMode.Concurrent) {
+            else if (this.ExecutionMode == AsyncLinqExecutionMode.Concurrent) {
                 return ConcurrentAsyncSelectHelper(this.parent, this.selector).GetAsyncEnumerator(cancellationToken);
             }
             else {

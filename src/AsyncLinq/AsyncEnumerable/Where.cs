@@ -15,7 +15,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(predicate));
         }
 
-        if (source is IAsyncEnumerableOperator<TSource> collection) {
+        if (source is IAsyncLinqOperator<TSource> collection) {
             return new WhereOperator<TSource>(collection, predicate);
         }
 
@@ -34,15 +34,15 @@ public static partial class AsyncEnumerable {
         }
     }
 
-    private class WhereOperator<T> : IAsyncEnumerableOperator<T> {
-        private readonly IAsyncEnumerableOperator<T> parent;
+    private class WhereOperator<T> : IAsyncLinqOperator<T> {
+        private readonly IAsyncLinqOperator<T> parent;
         private readonly Func<T, bool> selector;
 
         public int Count => -1;
 
-        public AsyncExecutionMode ExecutionMode { get; }
+        public AsyncLinqExecutionMode ExecutionMode { get; }
 
-        public WhereOperator(IAsyncEnumerableOperator<T> collection, Func<T, bool> selector) {
+        public WhereOperator(IAsyncLinqOperator<T> collection, Func<T, bool> selector) {
             this.parent = collection;
             this.selector = selector;
             this.ExecutionMode = this.parent.ExecutionMode;

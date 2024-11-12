@@ -31,7 +31,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(resultSelector));
         }
 
-        if (outer is IAsyncEnumerableOperator<TOuter> op) {
+        if (outer is IAsyncLinqOperator<TOuter> op) {
             return new JoinOperator<TOuter, TInner, TKey, TResult>(op, inner, outerKeySelector, innerKeySelector, resultSelector);
         }
 
@@ -178,17 +178,17 @@ public static partial class AsyncEnumerable {
         }
     }
 
-    private class JoinOperator<T, E, TKey, TResult> : IAsyncEnumerableOperator<TResult> where TKey: notnull {
-        private readonly IAsyncEnumerableOperator<T> parent;
+    private class JoinOperator<T, E, TKey, TResult> : IAsyncLinqOperator<TResult> where TKey: notnull {
+        private readonly IAsyncLinqOperator<T> parent;
         private readonly IAsyncEnumerable<E> other;
         private readonly Func<T, TKey> parentKeySelector;
         private readonly Func<E, TKey> otherKeySelector;
         private readonly Func<T, E, TResult> resultSelector;
 
-        public AsyncExecutionMode ExecutionMode { get; }
+        public AsyncLinqExecutionMode ExecutionMode { get; }
 
         public JoinOperator(
-            IAsyncEnumerableOperator<T> parent, 
+            IAsyncLinqOperator<T> parent, 
             IAsyncEnumerable<E> other, 
             Func<T, TKey> parentKeySelector, 
             Func<E, TKey> otherKeySelector,
@@ -203,7 +203,7 @@ public static partial class AsyncEnumerable {
         }
 
         public IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.ExecutionMode == AsyncExecutionMode.Parallel || this.ExecutionMode == AsyncExecutionMode.Concurrent) {
+            if (this.ExecutionMode == AsyncLinqExecutionMode.Parallel || this.ExecutionMode == AsyncLinqExecutionMode.Concurrent) {
                 return ConcurrentJoinHelper(this.parent, this.other, this.parentKeySelector, this.otherKeySelector, this.resultSelector).GetAsyncEnumerator(cancellationToken);
             }
             else {

@@ -15,7 +15,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentOutOfRangeException(nameof(numToTake), "Cannot take less than zero elements");
         }
 
-        if (source is IAsyncEnumerableOperator<TSource> collection) {
+        if (source is IAsyncLinqOperator<TSource> collection) {
             return new TakeOperator<TSource>(collection, numToTake);
         }
 
@@ -39,13 +39,13 @@ public static partial class AsyncEnumerable {
         }
     }
 
-    private class TakeOperator<T> : IAsyncEnumerableOperator<T> {
-        private readonly IAsyncEnumerableOperator<T> parent;
+    private class TakeOperator<T> : IAsyncLinqOperator<T> {
+        private readonly IAsyncLinqOperator<T> parent;
         private readonly int numToTake;
         
-        public AsyncExecutionMode ExecutionMode => this.parent.ExecutionMode;
+        public AsyncLinqExecutionMode ExecutionMode => this.parent.ExecutionMode;
 
-        public TakeOperator(IAsyncEnumerableOperator<T> parent, int numToTake) {
+        public TakeOperator(IAsyncLinqOperator<T> parent, int numToTake) {
             this.parent = parent;
             this.numToTake = numToTake;
         }

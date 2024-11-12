@@ -11,8 +11,8 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncEnumerableOperator<TSource> op) {
-            if (op.ExecutionMode == AsyncExecutionMode.Sequential) {
+        if (source is IAsyncLinqOperator<TSource> op) {
+            if (op.ExecutionMode == AsyncLinqExecutionMode.Sequential) {
                 return new AppendOperator<TSource>(op, newItem);
             }
             else {
@@ -36,16 +36,16 @@ public static partial class AsyncEnumerable {
         yield return newItem;
     }
 
-    private class AppendOperator<T> : IAsyncEnumerableOperator<T> {
-        private readonly IAsyncEnumerableOperator<T> parent;
+    private class AppendOperator<T> : IAsyncLinqOperator<T> {
+        private readonly IAsyncLinqOperator<T> parent;
         private readonly T toAppend;
 
-        public AppendOperator(IAsyncEnumerableOperator<T> parent, T item) {
+        public AppendOperator(IAsyncLinqOperator<T> parent, T item) {
             this.parent = parent;
             this.toAppend = item;
         }
         
-        public AsyncExecutionMode ExecutionMode => this.parent.ExecutionMode;
+        public AsyncLinqExecutionMode ExecutionMode => this.parent.ExecutionMode;
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
             return AppendHelper(this.parent, this.toAppend).GetAsyncEnumerator(cancellationToken);

@@ -15,11 +15,11 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(elementProducer));
         }
 
-        if (source is IAsyncEnumerableOperator<TSource> op) {
-            if (op.ExecutionMode == AsyncExecutionMode.Sequential) {
+        if (source is IAsyncLinqOperator<TSource> op) {
+            if (op.ExecutionMode == AsyncLinqExecutionMode.Sequential) {
                 return new AsyncPrependOperator<TSource>(op, elementProducer);
             }
-            else if (op.ExecutionMode == AsyncExecutionMode.Parallel) {
+            else if (op.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
                 var task = Task.Run(() => elementProducer().AsTask());
 
                 return task.AsAsyncEnumerable().Concat(source);
@@ -51,16 +51,16 @@ public static partial class AsyncEnumerable {
         }
     }
 
-    private class AsyncPrependOperator<T> : IAsyncEnumerableOperator<T> {
-        private readonly IAsyncEnumerableOperator<T> parent;
+    private class AsyncPrependOperator<T> : IAsyncLinqOperator<T> {
+        private readonly IAsyncLinqOperator<T> parent;
         private readonly Func<ValueTask<T>> newItem;
 
-        public AsyncPrependOperator(IAsyncEnumerableOperator<T> parent, Func<ValueTask<T>> item) {
+        public AsyncPrependOperator(IAsyncLinqOperator<T> parent, Func<ValueTask<T>> item) {
             this.parent = parent;
             this.newItem = item;
         }
         
-        public AsyncExecutionMode ExecutionMode => this.parent.ExecutionMode;
+        public AsyncLinqExecutionMode ExecutionMode => this.parent.ExecutionMode;
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
             return AsyncPrependHelper(this.parent, this.newItem).GetAsyncEnumerator(cancellationToken);
