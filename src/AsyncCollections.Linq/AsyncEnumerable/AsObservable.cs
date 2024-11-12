@@ -1,12 +1,12 @@
 ﻿namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IObservable<T> AsObservable<T>(this IAsyncEnumerable<T> sequence) {
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+    public static IObservable<TSource> AsObservable<TSource>(this IAsyncEnumerable<TSource> source) {
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        return new AsyncSubject<T>(sequence);
+        return new AsyncSubject<TSource>(source);
     }
 
     private sealed class AsyncSubject<T> : IObservable<T> {

@@ -3,20 +3,23 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<T> Take<T>(this IAsyncEnumerable<T> sequence, int numToTake) {
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+    public static IAsyncEnumerable<TSource> Take<TSource>(
+        this IAsyncEnumerable<TSource> source, 
+        int numToTake) {
+
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
         if (numToTake < 0) {
             throw new ArgumentOutOfRangeException(nameof(numToTake), "Cannot take less than zero elements");
         }
 
-        if (sequence is IAsyncEnumerableOperator<T> collection) {
-            return new TakeOperator<T>(collection, numToTake);
+        if (source is IAsyncEnumerableOperator<TSource> collection) {
+            return new TakeOperator<TSource>(collection, numToTake);
         }
 
-        return TakeHelper(sequence, numToTake);
+        return TakeHelper(source, numToTake);
     }
 
     private static async IAsyncEnumerable<T> TakeHelper<T>(

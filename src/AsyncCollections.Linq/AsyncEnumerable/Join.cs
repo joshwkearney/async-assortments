@@ -4,38 +4,38 @@ using System.Threading.Channels;
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<TResult> Join<T, E, TKey, TResult>(
-        this IAsyncEnumerable<T> sequence,
-        IAsyncEnumerable<E> other,
-        Func<T, TKey> keySelector1,
-        Func<E, TKey> keySelector2,
-        Func<T, E, TResult> resultSelector) where TKey : notnull {
+    public static IAsyncEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>(
+        this IAsyncEnumerable<TOuter> outer,
+        IAsyncEnumerable<TInner> inner,
+        Func<TOuter, TKey> outerKeySelector,
+        Func<TInner, TKey> innerKeySelector,
+        Func<TOuter, TInner, TResult> resultSelector) where TKey : notnull {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (outer == null) {
+            throw new ArgumentNullException(nameof(outer));
         }
 
-        if (other == null) {
-            throw new ArgumentNullException(nameof(other));
+        if (inner == null) {
+            throw new ArgumentNullException(nameof(inner));
         }
 
-        if (keySelector1 == null) {
-            throw new ArgumentNullException(nameof(keySelector1));
+        if (outerKeySelector == null) {
+            throw new ArgumentNullException(nameof(outerKeySelector));
         }
 
-        if (keySelector2 == null) {
-            throw new ArgumentNullException(nameof(keySelector2));
+        if (innerKeySelector == null) {
+            throw new ArgumentNullException(nameof(innerKeySelector));
         }
 
         if (resultSelector == null) {
             throw new ArgumentNullException(nameof(resultSelector));
         }
 
-        if (sequence is IAsyncEnumerableOperator<T> op) {
-            return new JoinOperator<T, E, TKey, TResult>(op, other, keySelector1, keySelector2, resultSelector);
+        if (outer is IAsyncEnumerableOperator<TOuter> op) {
+            return new JoinOperator<TOuter, TInner, TKey, TResult>(op, inner, outerKeySelector, innerKeySelector, resultSelector);
         }
 
-        return JoinHelper(sequence, other, keySelector1, keySelector2, resultSelector);
+        return JoinHelper(outer, inner, outerKeySelector, innerKeySelector, resultSelector);
     }
 
     private static async IAsyncEnumerable<TResult> JoinHelper<T, E, TKey, TResult>(

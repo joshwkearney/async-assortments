@@ -2,11 +2,11 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerableExtensions {
-    public static async IAsyncEnumerable<T> AsAsyncEnumerable<T>(this Task<T> task) {
-        if (task == null) {
-            throw new ArgumentNullException(nameof(task));
+    public static async IAsyncEnumerable<TSource> AsAsyncEnumerable<TSource>(this Task<TSource> source) {
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        yield return await task;
+        yield return await source;
     }
 }

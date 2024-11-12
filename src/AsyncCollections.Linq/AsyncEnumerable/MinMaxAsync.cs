@@ -3,25 +3,25 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static ValueTask<T> MinAsync<T>(
-        this IAsyncEnumerable<T> sequence,
-        CancellationToken cancellationToken = default) where T : INumber<T> {
+    public static ValueTask<TSource> MinAsync<TSource>(
+        this IAsyncEnumerable<TSource> source,
+        CancellationToken cancellationToken = default) where TSource : INumber<TSource> {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        return sequence.AggregateAsync(T.Min, cancellationToken);
+        return source.AggregateAsync(TSource.Min, cancellationToken);
     }
 
-    public static ValueTask<T> MaxAsync<T>(
-        this IAsyncEnumerable<T> sequence,
-        CancellationToken cancellationToken = default) where T : INumber<T> {
+    public static ValueTask<TSource> MaxAsync<TSource>(
+        this IAsyncEnumerable<TSource> source,
+        CancellationToken cancellationToken = default) where TSource : INumber<TSource> {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        return sequence.AggregateAsync(T.Max, cancellationToken);
+        return source.AggregateAsync(TSource.Max, cancellationToken);
     }
 }

@@ -3,30 +3,33 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<T> AsyncPrepend<T>(this IAsyncEnumerable<T> sequence, Func<ValueTask<T>> newItemTask) {
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+    public static IAsyncEnumerable<TSource> AsyncPrepend<TSource>(
+        this IAsyncEnumerable<TSource> source, 
+        Func<ValueTask<TSource>> elementProducer) {
+
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        if (newItemTask == null) {
-            throw new ArgumentNullException(nameof(newItemTask));
+        if (elementProducer == null) {
+            throw new ArgumentNullException(nameof(elementProducer));
         }
 
-        if (sequence is IAsyncEnumerableOperator<T> op) {
+        if (source is IAsyncEnumerableOperator<TSource> op) {
             if (op.ExecutionMode == AsyncExecutionMode.Sequential) {
-                return new AsyncPrependOperator<T>(op, newItemTask);
+                return new AsyncPrependOperator<TSource>(op, elementProducer);
             }
             else if (op.ExecutionMode == AsyncExecutionMode.Parallel) {
-                var task = Task.Run(() => newItemTask().AsTask());
+                var task = Task.Run(() => elementProducer().AsTask());
 
-                return task.AsAsyncEnumerable().Concat(sequence);
+                return task.AsAsyncEnumerable().Concat(source);
             }
             else {
-                return newItemTask().AsAsyncEnumerable().Concat(sequence);
+                return elementProducer().AsAsyncEnumerable().Concat(source);
             }
         }
 
-        return AsyncPrependHelper(sequence, newItemTask);
+        return AsyncPrependHelper(source, elementProducer);
     }
 
     private static async IAsyncEnumerable<T> AsyncPrependHelper<T>(

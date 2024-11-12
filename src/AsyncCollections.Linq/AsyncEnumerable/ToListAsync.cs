@@ -3,17 +3,17 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static async ValueTask<List<T>> ToListAsync<T>(
-        this IAsyncEnumerable<T> sequence, 
+    public static async ValueTask<List<TSource>> ToListAsync<TSource>(
+        this IAsyncEnumerable<TSource> source, 
         CancellationToken cancellationToken = default) {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        var list = new List<T>();
+        var list = new List<TSource>();
 
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
+        await foreach (var item in source.WithCancellation(cancellationToken)) {
             list.Add(item);
         }
 

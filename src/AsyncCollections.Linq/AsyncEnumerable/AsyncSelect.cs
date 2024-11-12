@@ -3,20 +3,23 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<E> AsyncSelect<T, E>(this IAsyncEnumerable<T> sequence, Func<T, ValueTask<E>> selector) {
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+    public static IAsyncEnumerable<TResult> AsyncSelect<TSource, TResult>(
+        this IAsyncEnumerable<TSource> source, 
+        Func<TSource, ValueTask<TResult>> selector) {
+
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
         if (selector == null) {
             throw new ArgumentNullException(nameof(selector));
         }
 
-        if (sequence is IAsyncEnumerableOperator<T> op) {
-            return new AsyncSelectingOperator<T, E>(op, selector);
+        if (source is IAsyncEnumerableOperator<TSource> op) {
+            return new AsyncSelectingOperator<TSource, TResult>(op, selector);
         }
 
-        return AsyncSelectHelper(sequence, selector);
+        return AsyncSelectHelper(source, selector);
     }
 
     private static async IAsyncEnumerable<E> AsyncSelectHelper<T, E>(

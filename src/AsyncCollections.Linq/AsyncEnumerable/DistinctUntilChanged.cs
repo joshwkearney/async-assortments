@@ -3,16 +3,16 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<T> DistinctUntilChanged<T>(this IAsyncEnumerable<T> sequence) {
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+    public static IAsyncEnumerable<TSource> DistinctUntilChanged<TSource>(this IAsyncEnumerable<TSource> source) {
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        if (sequence is IAsyncEnumerableOperator<T> op) {
-            return new DistinctUntilChangedOperator<T>(op);
+        if (source is IAsyncEnumerableOperator<TSource> op) {
+            return new DistinctUntilChangedOperator<TSource>(op);
         }
 
-        return DistinctUntilChangedHelper(sequence);
+        return DistinctUntilChangedHelper(source);
     }
 
     private static async IAsyncEnumerable<T> DistinctUntilChangedHelper<T>(

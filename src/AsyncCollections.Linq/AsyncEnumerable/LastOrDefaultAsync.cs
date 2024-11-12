@@ -1,17 +1,17 @@
 ﻿namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static async ValueTask<T?> LastOrDefaultAsync<T>(
-        this IAsyncEnumerable<T> sequence,
+    public static async ValueTask<TSource?> LastOrDefaultAsync<TSource>(
+        this IAsyncEnumerable<TSource> source,
         CancellationToken cancellationToken = default) {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        var last = default(T);
+        var last = default(TSource);
 
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
+        await foreach (var item in source.WithCancellation(cancellationToken)) {
             last = item;
         }
 

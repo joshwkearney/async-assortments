@@ -3,25 +3,25 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {  
-    public static ValueTask<T> SumAsync<T>(
-        this IAsyncEnumerable<T> sequence,
-        CancellationToken cancellationToken = default) where T : INumber<T> {
+    public static ValueTask<TSource> SumAsync<TSource>(
+        this IAsyncEnumerable<TSource> source,
+        CancellationToken cancellationToken = default) where TSource : INumber<TSource> {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        return sequence.AggregateAsync(T.AdditiveIdentity, (x, y) => x + y, cancellationToken);
+        return source.AggregateAsync(TSource.AdditiveIdentity, (x, y) => x + y, cancellationToken);
     }
 
     public static async ValueTask<float> SumAsync(
-        this IAsyncEnumerable<float> sequence,
+        this IAsyncEnumerable<float> source,
         CancellationToken cancellationToken = default) {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        return (float)(await sequence.AggregateAsync(0d, (x, y) => x + y, cancellationToken));
+        return (float)(await source.AggregateAsync(0d, (x, y) => x + y, cancellationToken));
     }
 }

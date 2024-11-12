@@ -3,18 +3,18 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<E> AsyncSelectMany<T, E>(
-        this IAsyncEnumerable<T> sequence, 
-        Func<T, ValueTask<IAsyncEnumerable<E>>> selector) {
+    public static IAsyncEnumerable<TResult> AsyncSelectMany<Source, TResult>(
+        this IAsyncEnumerable<Source> source, 
+        Func<Source, ValueTask<IAsyncEnumerable<TResult>>> selector) {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
         if (selector == null) {
             throw new ArgumentNullException(nameof(selector));
         }
 
-        return sequence.AsyncSelect(selector).SelectMany(x => x);
+        return source.AsyncSelect(selector).SelectMany(x => x);
     }
 }

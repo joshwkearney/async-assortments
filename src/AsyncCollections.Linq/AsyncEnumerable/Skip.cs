@@ -3,20 +3,23 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<T> Skip<T>(this IAsyncEnumerable<T> sequence, int numToSkip) {
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+    public static IAsyncEnumerable<TSource> Skip<TSource>(
+        this IAsyncEnumerable<TSource> source, 
+        int numToSkip) {
+
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
         if (numToSkip < 0) {
             throw new ArgumentOutOfRangeException(nameof(numToSkip), "Cannot skip less than zero elements");
         }
 
-        if (sequence is IAsyncEnumerableOperator<T> collection) {
-            return new SkipOperator<T>(collection, numToSkip);
+        if (source is IAsyncEnumerableOperator<TSource> collection) {
+            return new SkipOperator<TSource>(collection, numToSkip);
         }
 
-        return SkipHelper(sequence, numToSkip);
+        return SkipHelper(source, numToSkip);
     }
 
     private static async IAsyncEnumerable<T> SkipHelper<T>(

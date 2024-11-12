@@ -3,16 +3,16 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<T> Distinct<T>(this IAsyncEnumerable<T> sequence) {
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+    public static IAsyncEnumerable<TResult> Distinct<TResult>(this IAsyncEnumerable<TResult> source) {
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        if (sequence is IAsyncEnumerableOperator<T> op) {
-            return new DistinctOperator<T>(op);
+        if (source is IAsyncEnumerableOperator<TResult> op) {
+            return new DistinctOperator<TResult>(op);
         }
 
-        return DistinctHelper(sequence);
+        return DistinctHelper(source);
     }
 
     private static async IAsyncEnumerable<T> DistinctHelper<T>(

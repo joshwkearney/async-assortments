@@ -4,22 +4,22 @@ namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     public static IAsyncEnumerable<TResult> SelectMany<TSource, TResult>(
-        this IAsyncEnumerable<TSource> sequence, 
+        this IAsyncEnumerable<TSource> source, 
         Func<TSource, IAsyncEnumerable<TResult>> selector) {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
         if (selector == null) {
             throw new ArgumentNullException(nameof(selector));
         }
 
-        if (sequence is IAsyncEnumerableOperator<TSource> op) {
+        if (source is IAsyncEnumerableOperator<TSource> op) {
             return new SelectManyAsyncOperator<TSource, TResult>(op, selector);
         }
 
-        return SelectManyHelper(sequence, selector);
+        return SelectManyHelper(source, selector);
     }
 
     public static IAsyncEnumerable<TResult> SelectMany<TSource, TResult>(

@@ -1,15 +1,15 @@
 ﻿namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static async ValueTask<T> FirstAsync<T>(
-        this IAsyncEnumerable<T> sequence,
+    public static async ValueTask<TSource> FirstAsync<TSource>(
+        this IAsyncEnumerable<TSource> source,
         CancellationToken cancellationToken = default) {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        await using var enumerator = sequence.GetAsyncEnumerator(cancellationToken);
+        await using var enumerator = source.GetAsyncEnumerator(cancellationToken);
         var worked = await enumerator.MoveNextAsync();
 
         if (!worked) {

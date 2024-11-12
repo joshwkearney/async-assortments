@@ -1,12 +1,12 @@
 ﻿namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerableExtensions {
-    public static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IEnumerable<T> sequence) {
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+    public static IAsyncEnumerable<TSource> AsAsyncEnumerable<TSource>(this IEnumerable<TSource> source) {
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        return new ReadOnlyAsyncCollection<T>(sequence);
+        return new ReadOnlyAsyncCollection<TSource>(source);
     }
 
     private class ReadOnlyAsyncCollection<T> : IAsyncEnumerableOperator<T> {

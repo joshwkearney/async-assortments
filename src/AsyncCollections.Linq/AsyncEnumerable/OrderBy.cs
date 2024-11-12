@@ -3,62 +3,62 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static async IAsyncEnumerable<T> Order<T>(
-        this IAsyncEnumerable<T> sequence, 
+    public static async IAsyncEnumerable<TSource> Order<TSource>(
+        this IAsyncEnumerable<TSource> source, 
         [EnumeratorCancellation] CancellationToken cancellationToken = default) {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        var list = await sequence.ToListAsync(cancellationToken);
+        var list = await source.ToListAsync(cancellationToken);
 
         foreach (var item in list.Order()) {
             yield return item;
         }
     }
 
-    public static async IAsyncEnumerable<T> OrderBy<T, E>(
-        this IAsyncEnumerable<T> sequence,
-        Func<T, E> keySelector,
+    public static async IAsyncEnumerable<TSource> OrderBy<TSource, TKey>(
+        this IAsyncEnumerable<TSource> source,
+        Func<TSource, TKey> keySelector,
         [EnumeratorCancellation] CancellationToken cancellationToken = default) {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        var list = await sequence.ToListAsync(cancellationToken);
+        var list = await source.ToListAsync(cancellationToken);
 
         foreach (var item in list.OrderBy(keySelector)) {
             yield return item;
         }
     }
 
-    public static async IAsyncEnumerable<T> OrderDescending<T>(
-        this IAsyncEnumerable<T> sequence,
+    public static async IAsyncEnumerable<TSource> OrderDescending<TSource>(
+        this IAsyncEnumerable<TSource> source,
         [EnumeratorCancellation] CancellationToken cancellationToken = default) {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        var list = await sequence.ToListAsync(cancellationToken);
+        var list = await source.ToListAsync(cancellationToken);
 
         foreach (var item in list.OrderDescending()) {
             yield return item;
         }
     }
 
-    public static async IAsyncEnumerable<T> OrderByDescending<T, E>(
-        this IAsyncEnumerable<T> sequence,
-        Func<T, E> keySelector,
+    public static async IAsyncEnumerable<TResult> OrderByDescending<TResult, TKey>(
+        this IAsyncEnumerable<TResult> source,
+        Func<TResult, TKey> keySelector,
         [EnumeratorCancellation] CancellationToken cancellationToken = default) {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        var list = await sequence.ToListAsync(cancellationToken);
+        var list = await source.ToListAsync(cancellationToken);
 
         foreach (var item in list.OrderByDescending(keySelector)) {
             yield return item;

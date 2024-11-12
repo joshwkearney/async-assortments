@@ -4,22 +4,22 @@ using System.Threading.Channels;
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerableExtensions {
-    public static async IAsyncEnumerable<T> AsAsyncEnumerable<T>(
-        this ChannelReader<T> channel, 
+    public static async IAsyncEnumerable<TSource> AsAsyncEnumerable<TSource>(
+        this ChannelReader<TSource> source, 
         [EnumeratorCancellation] CancellationToken cancellationToken = default) {
 
-        if (channel == null) {
-            throw new ArgumentNullException(nameof(channel));
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
         while (true) {
-            var canRead = await channel.WaitToReadAsync(cancellationToken);
+            var canRead = await source.WaitToReadAsync(cancellationToken);
 
             if (!canRead) {
                 yield break;
             }
 
-            if (!channel.TryRead(out var item)) {
+            if (!source.TryRead(out var item)) {
                 yield break;
             }
 

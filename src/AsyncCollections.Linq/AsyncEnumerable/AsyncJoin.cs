@@ -4,35 +4,35 @@ using System.Threading.Channels;
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<TResult> AsyncJoin<T, E, TKey, TResult>(
-        this IAsyncEnumerable<T> sequence,
-        IAsyncEnumerable<E> other,
-        Func<T, TKey> keySelector1,
-        Func<E, TKey> keySelector2,
-        Func<T, E, ValueTask<TResult>> resultSelector) where TKey : notnull {
+    public static IAsyncEnumerable<TResult> AsyncJoin<TOuter, TInner, TKey, TResult>(
+        this IAsyncEnumerable<TOuter> outer,
+        IAsyncEnumerable<TInner> inner,
+        Func<TOuter, TKey> outerKeySelector,
+        Func<TInner, TKey> innerKeySelector,
+        Func<TOuter, TInner, ValueTask<TResult>> resultSelector) where TKey : notnull {
 
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+        if (outer == null) {
+            throw new ArgumentNullException(nameof(outer));
         }
 
-        if (other == null) {
-            throw new ArgumentNullException(nameof(other));
+        if (inner == null) {
+            throw new ArgumentNullException(nameof(inner));
         }
 
-        if (keySelector1 == null) {
-            throw new ArgumentNullException(nameof(keySelector1));
+        if (outerKeySelector == null) {
+            throw new ArgumentNullException(nameof(outerKeySelector));
         }
 
-        if (keySelector2 == null) {
-            throw new ArgumentNullException(nameof(keySelector2));
+        if (innerKeySelector == null) {
+            throw new ArgumentNullException(nameof(innerKeySelector));
         }
 
         if (resultSelector == null) {
             throw new ArgumentNullException(nameof(resultSelector));
         }
 
-        return sequence
-            .Join(other, keySelector1, keySelector2, resultSelector)
+        return outer
+            .Join(inner, outerKeySelector, innerKeySelector, resultSelector)
             .AsyncSelect(x => x);
     }
 }

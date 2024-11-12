@@ -10,32 +10,38 @@ public static partial class AsyncEnumerable {
         SingleWriter = false
     };
 
-    public static IAsyncEnumerable<T> Concat<T>(this IAsyncEnumerable<T> sequence, IAsyncEnumerable<T> second) {
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+    public static IAsyncEnumerable<TSource> Concat<TSource>(
+        this IAsyncEnumerable<TSource> source, 
+        IAsyncEnumerable<TSource> second) {
+
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
         if (second == null) {
             throw new ArgumentNullException(nameof(second));
         }
 
-        if (sequence is IAsyncEnumerableOperator<T> col1) {
-            return new ConcatOperator<T>(col1, second);
+        if (source is IAsyncEnumerableOperator<TSource> col1) {
+            return new ConcatOperator<TSource>(col1, second);
         }
 
-        return ConcatHelper(sequence, second);
+        return ConcatHelper(source, second);
     }
 
-    public static IAsyncEnumerable<T> Concat<T>(this IAsyncEnumerable<T> sequence, IEnumerable<T> second) {
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+    public static IAsyncEnumerable<TSource> Concat<TSource>(
+        this IAsyncEnumerable<TSource> source, 
+        IEnumerable<TSource> second) {
+
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
         if (second == null) {
             throw new ArgumentNullException(nameof(second));
         }
 
-        return sequence.Concat(second.AsAsyncEnumerable());
+        return source.Concat(second.AsAsyncEnumerable());
     }
 
     private static async IAsyncEnumerable<T> ConcatHelper<T>(

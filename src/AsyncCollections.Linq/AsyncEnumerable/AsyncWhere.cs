@@ -3,20 +3,23 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<T> AsyncWhere<T>(this IAsyncEnumerable<T> sequence, Func<T, ValueTask<bool>> selector) {
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+    public static IAsyncEnumerable<TSource> AsyncWhere<TSource>(
+        this IAsyncEnumerable<TSource> source,
+        Func<TSource, ValueTask<bool>> predicate) {
+
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        if (selector == null) {
-            throw new ArgumentNullException(nameof(selector));
+        if (predicate == null) {
+            throw new ArgumentNullException(nameof(predicate));
         }
 
-        if (sequence is IAsyncEnumerableOperator<T> collection) {
-            return new AsyncWhereOperator<T>(collection, selector);
+        if (source is IAsyncEnumerableOperator<TSource> collection) {
+            return new AsyncWhereOperator<TSource>(collection, predicate);
         }
 
-        return AsyncWhereHelper(sequence, selector);
+        return AsyncWhereHelper(source, predicate);
     }
 
     private static async IAsyncEnumerable<T> AsyncWhereHelper<T>(

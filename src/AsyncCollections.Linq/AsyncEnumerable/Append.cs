@@ -3,21 +3,24 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<T> Append<T>(this IAsyncEnumerable<T> sequence, T newItem) {
-        if (sequence == null) {
-            throw new ArgumentNullException(nameof(sequence));
+    public static IAsyncEnumerable<TSource> Append<TSource>(
+        this IAsyncEnumerable<TSource> source, 
+        TSource newItem) {
+
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        if (sequence is IAsyncEnumerableOperator<T> op) {
+        if (source is IAsyncEnumerableOperator<TSource> op) {
             if (op.ExecutionMode == AsyncExecutionMode.Sequential) {
-                return new AppendOperator<T>(op, newItem);
+                return new AppendOperator<TSource>(op, newItem);
             }
             else {
-                return sequence.Concat(new[] { newItem }.AsAsyncEnumerable());
+                return source.Concat(new[] { newItem }.AsAsyncEnumerable());
             }
         }
 
-        return AppendHelper(sequence, newItem);
+        return AppendHelper(source, newItem);
     }
 
     private static async IAsyncEnumerable<T> AppendHelper<T>(
