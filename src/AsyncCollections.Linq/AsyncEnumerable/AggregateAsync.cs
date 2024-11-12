@@ -9,6 +9,14 @@ public static partial class AsyncEnumerable {
         Func<E, T, E> reducer,
         CancellationToken cancellationToken = default) {
 
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
+        if (reducer == null) {
+            throw new ArgumentNullException(nameof(reducer));
+        }
+
         await foreach (var item in sequence.WithCancellation(cancellationToken)) {
             seed = reducer(seed, item);
         }
@@ -20,6 +28,14 @@ public static partial class AsyncEnumerable {
         this IAsyncEnumerable<T> sequence,
         Func<T, T, T> reducer,
         CancellationToken cancellationToken = default) {
+
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
+        if (reducer == null) {
+            throw new ArgumentNullException(nameof(reducer));
+        }
 
         await using var iterator = sequence.GetAsyncEnumerator(cancellationToken);
 
@@ -35,33 +51,5 @@ public static partial class AsyncEnumerable {
         }
 
         return first;
-    }
-
-    public static async ValueTask<float> SumAsync(
-        this IAsyncEnumerable<float> sequence,
-        CancellationToken cancellationToken = default) {
-
-        return (float)(await sequence.AggregateAsync(0d, (x, y) => x + y, cancellationToken));
-    }
-
-    public static ValueTask<T> MaxAsync<T>(
-        this IAsyncEnumerable<T> sequence,
-        CancellationToken cancellationToken = default) where T : INumber<T> {
-
-        return sequence.AggregateAsync(T.Max, cancellationToken);
-    }
-
-    public static ValueTask<T> MinAsync<T>(
-        this IAsyncEnumerable<T> sequence,
-        CancellationToken cancellationToken = default) where T : INumber<T> {
-
-        return sequence.AggregateAsync(T.Min, cancellationToken);
-    }
-
-    public static ValueTask<T> SumAsync<T>(
-    this IAsyncEnumerable<T> sequence,
-    CancellationToken cancellationToken = default) where T : INumber<T> {
-
-        return sequence.AggregateAsync(T.AdditiveIdentity, (x, y) => x + y, cancellationToken);
     }
 }

@@ -4,6 +4,10 @@ namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     public static IAsyncEnumerable<T> Take<T>(this IAsyncEnumerable<T> sequence, int numToTake) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
         if (numToTake < 0) {
             throw new ArgumentOutOfRangeException(nameof(numToTake), "Cannot take less than zero elements");
         }

@@ -4,6 +4,14 @@ namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     public static IAsyncEnumerable<T> AsyncPrepend<T>(this IAsyncEnumerable<T> sequence, Func<ValueTask<T>> newItemTask) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
+        if (newItemTask == null) {
+            throw new ArgumentNullException(nameof(newItemTask));
+        }
+
         if (sequence is IAsyncEnumerableOperator<T> op) {
             if (op.ExecutionMode == AsyncExecutionMode.Sequential) {
                 return new AsyncPrependOperator<T>(op, newItemTask);

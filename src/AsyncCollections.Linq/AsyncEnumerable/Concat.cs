@@ -10,16 +10,32 @@ public static partial class AsyncEnumerable {
         SingleWriter = false
     };
 
-    public static IAsyncEnumerable<T> Concat<T>(this IAsyncEnumerable<T> sequence, IAsyncEnumerable<T> other) {
-        if (sequence is IAsyncEnumerableOperator<T> col1) {
-            return new ConcatOperator<T>(col1, other);
+    public static IAsyncEnumerable<T> Concat<T>(this IAsyncEnumerable<T> sequence, IAsyncEnumerable<T> second) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
         }
 
-        return ConcatHelper(sequence, other);
+        if (second == null) {
+            throw new ArgumentNullException(nameof(second));
+        }
+
+        if (sequence is IAsyncEnumerableOperator<T> col1) {
+            return new ConcatOperator<T>(col1, second);
+        }
+
+        return ConcatHelper(sequence, second);
     }
 
-    public static IAsyncEnumerable<T> Concat<T>(this IAsyncEnumerable<T> sequence, IEnumerable<T> other) {
-        return sequence.Concat(other.AsAsyncEnumerable());
+    public static IAsyncEnumerable<T> Concat<T>(this IAsyncEnumerable<T> sequence, IEnumerable<T> second) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
+        if (second == null) {
+            throw new ArgumentNullException(nameof(second));
+        }
+
+        return sequence.Concat(second.AsAsyncEnumerable());
     }
 
     private static async IAsyncEnumerable<T> ConcatHelper<T>(
@@ -28,10 +44,10 @@ public static partial class AsyncEnumerable {
         [EnumeratorCancellation] CancellationToken cancellationToken = default) {
 
         // Get the enumerators first so subscribe works correctly
-        var iterator1 = sequence.WithCancellation(cancellationToken).GetAsyncEnumerator();
+        var iterator1 = sequence.GetAsyncEnumerator(cancellationToken);
         var moveTask1 = iterator1.MoveNextAsync();
 
-        var iterator2 = other.WithCancellation(cancellationToken).GetAsyncEnumerator();
+        var iterator2 = other.GetAsyncEnumerator(cancellationToken);
         var moveTask2 = iterator2.MoveNextAsync();
 
         while (await moveTask1) {

@@ -11,6 +11,26 @@ public static partial class AsyncEnumerable {
         Func<E, TKey> keySelector2,
         Func<T, E, TResult> resultSelector) where TKey : notnull {
 
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
+        if (other == null) {
+            throw new ArgumentNullException(nameof(other));
+        }
+
+        if (keySelector1 == null) {
+            throw new ArgumentNullException(nameof(keySelector1));
+        }
+
+        if (keySelector2 == null) {
+            throw new ArgumentNullException(nameof(keySelector2));
+        }
+
+        if (resultSelector == null) {
+            throw new ArgumentNullException(nameof(resultSelector));
+        }
+
         if (sequence is IAsyncEnumerableOperator<T> op) {
             return new JoinOperator<T, E, TKey, TResult>(op, other, keySelector1, keySelector2, resultSelector);
         }

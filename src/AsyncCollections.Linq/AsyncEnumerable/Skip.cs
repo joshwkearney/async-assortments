@@ -4,6 +4,10 @@ namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     public static IAsyncEnumerable<T> Skip<T>(this IAsyncEnumerable<T> sequence, int numToSkip) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
         if (numToSkip < 0) {
             throw new ArgumentOutOfRangeException(nameof(numToSkip), "Cannot skip less than zero elements");
         }

@@ -4,6 +4,10 @@ namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     public static IAsyncEnumerable<T> DistinctUntilChanged<T>(this IAsyncEnumerable<T> sequence) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
         if (sequence is IAsyncEnumerableOperator<T> op) {
             return new DistinctUntilChangedOperator<T>(op);
         }

@@ -2,6 +2,10 @@
 
 public static partial class AsyncEnumerable {
     public static IObservable<T> AsObservable<T>(this IAsyncEnumerable<T> sequence) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
         return new AsyncSubject<T>(sequence);
     }
 

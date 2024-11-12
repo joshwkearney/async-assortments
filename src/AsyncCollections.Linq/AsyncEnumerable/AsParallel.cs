@@ -1,13 +1,11 @@
 ﻿namespace AsyncCollections.Linq;
 
-public readonly record struct AsyncEnumerableConcurrencyOptions {
-    public readonly int MaxConcurrency { get; init; } = -1;
-
-    public AsyncEnumerableConcurrencyOptions() { }
-}
-
 public static partial class AsyncEnumerable {
     public static IAsyncEnumerable<T> AsParallel<T>(this IAsyncEnumerable<T> sequence) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
         if (sequence is IAsyncEnumerableOperator<T> op && op.ExecutionMode == AsyncExecutionMode.Parallel) {
             return sequence;
         }
@@ -15,15 +13,11 @@ public static partial class AsyncEnumerable {
         return new AsParallelOperator<T>(sequence, AsyncExecutionMode.Parallel);
     }
 
-    public static IAsyncEnumerable<T> AsConcurrent<T>(this IAsyncEnumerable<T> sequence, AsyncEnumerableConcurrencyOptions options = default) {
-        if (sequence is IAsyncEnumerableOperator<T> op && op.ExecutionMode == AsyncExecutionMode.Concurrent) {
-            return sequence;
+    public static IAsyncEnumerable<T> AsSequential<T>(this IAsyncEnumerable<T> sequence) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
         }
 
-        return new AsParallelOperator<T>(sequence, AsyncExecutionMode.Concurrent);
-    }
-
-    public static IAsyncEnumerable<T> AsSequential<T>(this IAsyncEnumerable<T> sequence) {
         if (sequence is IAsyncEnumerableOperator<T> op && op.ExecutionMode == AsyncExecutionMode.Sequential) {
             return sequence;
         }

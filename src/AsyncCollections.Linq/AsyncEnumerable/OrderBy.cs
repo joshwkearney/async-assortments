@@ -7,6 +7,10 @@ public static partial class AsyncEnumerable {
         this IAsyncEnumerable<T> sequence, 
         [EnumeratorCancellation] CancellationToken cancellationToken = default) {
 
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
         var list = await sequence.ToListAsync(cancellationToken);
 
         foreach (var item in list.Order()) {
@@ -19,6 +23,10 @@ public static partial class AsyncEnumerable {
         Func<T, E> keySelector,
         [EnumeratorCancellation] CancellationToken cancellationToken = default) {
 
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
         var list = await sequence.ToListAsync(cancellationToken);
 
         foreach (var item in list.OrderBy(keySelector)) {
@@ -29,6 +37,10 @@ public static partial class AsyncEnumerable {
     public static async IAsyncEnumerable<T> OrderDescending<T>(
         this IAsyncEnumerable<T> sequence,
         [EnumeratorCancellation] CancellationToken cancellationToken = default) {
+
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
 
         var list = await sequence.ToListAsync(cancellationToken);
 
@@ -41,6 +53,10 @@ public static partial class AsyncEnumerable {
         this IAsyncEnumerable<T> sequence,
         Func<T, E> keySelector,
         [EnumeratorCancellation] CancellationToken cancellationToken = default) {
+
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
 
         var list = await sequence.ToListAsync(cancellationToken);
 

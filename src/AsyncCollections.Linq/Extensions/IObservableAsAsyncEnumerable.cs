@@ -2,8 +2,12 @@
 
 namespace AsyncCollections.Linq;
 
-public static partial class AsyncCollectionsExtensions {
+public static partial class AsyncEnumerableExtensions {
     public static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IObservable<T> sequence, int maxBuffer = -1) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
         return new ObservableWrapper<T>(sequence, maxBuffer);
     }
 

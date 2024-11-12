@@ -4,6 +4,14 @@ namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     public static IAsyncEnumerable<E> Select<T, E>(this IAsyncEnumerable<T> sequence, Func<T, E> selector) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
+        if (selector == null) {
+            throw new ArgumentNullException(nameof(selector));
+        }
+
         if (sequence is IAsyncEnumerableOperator<T> collection) {
             return new SelectOperator<T, E>(collection, selector);
         }

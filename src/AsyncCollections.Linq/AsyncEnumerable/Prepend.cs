@@ -4,6 +4,10 @@ namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     public static IAsyncEnumerable<T> Prepend<T>(this IAsyncEnumerable<T> sequence, T newItem) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
         if (sequence is IAsyncEnumerableOperator<T> op) {
             if (op.ExecutionMode == AsyncExecutionMode.Sequential) {
                 return new PrependOperator<T>(op, newItem);

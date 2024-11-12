@@ -1,7 +1,11 @@
 ﻿namespace AsyncCollections.Linq;
 
-public static partial class AsyncCollectionsExtensions {
+public static partial class AsyncEnumerableExtensions {
     public static IAsyncEnumerable<T> AsAsyncEnumerable<T>(this IEnumerable<T> sequence) {
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
         return new ReadOnlyAsyncCollection<T>(sequence);
     }
 

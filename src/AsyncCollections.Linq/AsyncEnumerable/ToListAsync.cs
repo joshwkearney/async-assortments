@@ -7,6 +7,10 @@ public static partial class AsyncEnumerable {
         this IAsyncEnumerable<T> sequence, 
         CancellationToken cancellationToken = default) {
 
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
         var list = new List<T>();
 
         await foreach (var item in sequence.WithCancellation(cancellationToken)) {

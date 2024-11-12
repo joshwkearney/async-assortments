@@ -3,17 +3,47 @@
 namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<E> SelectMany<T, E>(this IAsyncEnumerable<T> sequence, Func<T, IAsyncEnumerable<E>> selector) {
-        if (sequence is IAsyncEnumerableOperator<T> op) {
-            return new SelectManyAsyncOperator<T, E>(op, selector);
+    public static IAsyncEnumerable<TResult> SelectMany<TSource, TResult>(
+        this IAsyncEnumerable<TSource> sequence, 
+        Func<TSource, IAsyncEnumerable<TResult>> selector) {
+
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
+        if (selector == null) {
+            throw new ArgumentNullException(nameof(selector));
+        }
+
+        if (sequence is IAsyncEnumerableOperator<TSource> op) {
+            return new SelectManyAsyncOperator<TSource, TResult>(op, selector);
         }
 
         return SelectManyHelper(sequence, selector);
     }
 
-    public static IAsyncEnumerable<E> SelectMany<T, E>(this IAsyncEnumerable<T> sequence, Func<T, IEnumerable<E>> selector) {
+    public static IAsyncEnumerable<TResult> SelectMany<TSource, TResult>(
+        this IAsyncEnumerable<TSource> sequence, 
+        Func<TSource, IEnumerable<TResult>> selector) {
+
+        if (sequence == null) {
+            throw new ArgumentNullException(nameof(sequence));
+        }
+
+        if (selector == null) {
+            throw new ArgumentNullException(nameof(selector));
+        }
+
         return sequence.SelectMany(x => selector(x).AsAsyncEnumerable());
     }
+
+    //public static IAsyncEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(
+    //    this IAsyncEnumerable<TSource> sequence,
+    //    Func<TSource, IEnumerable<TCollection>> selector,
+    //    Func<TSource, TCollection, TResult> resultSelector) {
+
+    //    return sequence.SelectMany(x => selector(x).AsAsyncEnumerable()).Select();
+    //}
 
     private static async IAsyncEnumerable<E> SelectManyHelper<T, E>(
         this IAsyncEnumerable<T> sequence, 
