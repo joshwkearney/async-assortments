@@ -3,6 +3,10 @@
 namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
+    /// <summary>Appends a value to the end of the sequence.</summary>
+    /// <param name="elementProducer">An async function that returns the element to append.</param>
+    /// <returns>A new sequence that ends with the new element.</returns>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> AsyncAppend<TSource>(
         this IAsyncEnumerable<TSource> source, 
         Func<ValueTask<TSource>> elementProducer) {
@@ -16,16 +20,16 @@ public static partial class AsyncEnumerable {
         }
 
         if (source is IAsyncLinqOperator<TSource> op) {
-            if (op.ExecutionMode == AsyncLinqExecutionMode.Sequential) {
-                return new AsyncAppendOperator<TSource>(op, elementProducer);
-            }
             if (op.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
                 var task = Task.Run(() => elementProducer().AsTask());
 
                 return source.Concat(task.AsAsyncEnumerable());
             }
-            else {
+            else if (op.ExecutionMode == AsyncLinqExecutionMode.Concurrent) {
                 return source.Concat(elementProducer().AsAsyncEnumerable());
+            }
+            else {
+                return new AsyncAppendOperator<TSource>(op, elementProducer);
             }
         }
 

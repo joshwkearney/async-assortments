@@ -13,7 +13,7 @@ public static partial class AsyncEnumerable {
 
         var list = await source.ToListAsync(cancellationToken);
 
-        foreach (var item in list.Order()) {
+        foreach (var item in list.OrderBy(x => x)) {
             yield return item;
         }
     }
@@ -44,7 +44,7 @@ public static partial class AsyncEnumerable {
 
         var list = await source.ToListAsync(cancellationToken);
 
-        foreach (var item in list.OrderDescending()) {
+        foreach (var item in list.OrderByDescending(x => x)) {
             yield return item;
         }
     }

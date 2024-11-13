@@ -62,7 +62,7 @@ public static partial class AsyncEnumerableExtensions {
             public ValueTask DisposeAsync() {
                 this.channelSub.Dispose();
 
-                return ValueTask.CompletedTask;
+                return default;
             }
 
             public async ValueTask<bool> MoveNextAsync() {

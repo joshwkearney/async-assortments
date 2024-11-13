@@ -1,6 +1,20 @@
 ﻿namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
+    /// <summary>
+    ///     Asynchronously applies an accumulator function over a sequence. The specified 
+    ///     seed value is used as the initial accumulator value.
+    /// </summary>
+    /// <param name="seed">The initial accumulator value.</param>
+    /// <param name="accumulator">An accumulator function to be invoked on each element.</param>
+    /// <param name="cancellationToken">
+    ///     A cancellation token that can be used to cancel the enumeration before it finishes.
+    /// </param>
+    /// <returns>A <see cref="ValueTask" /> representing final accumulator value.</returns>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
+    /// <exception cref="OperationCanceledException">
+    ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
+    /// </exception>
     public static async ValueTask<TAccumulate> AggregateAsync<TSource, TAccumulate>(
         this IAsyncEnumerable<TSource> source, 
         TAccumulate seed, 
@@ -22,6 +36,16 @@ public static partial class AsyncEnumerable {
         return seed;
     }
 
+    /// <summary>Asynchronously applies an accumulator function over a sequence.</summary>
+    /// <param name="reducer">An accumulator function to be invoked on each element.</param>
+    /// <param name="cancellationToken">
+    ///     A cancellation token that can be used to cancel the enumeration before it finishes.
+    /// </param>
+    /// <returns>A <see cref="ValueTask" /> representing final accumulator value.</returns>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
+    /// <exception cref="OperationCanceledException">
+    ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
+    /// </exception>
     public static async ValueTask<TSource> AggregateAsync<TSource>(
         this IAsyncEnumerable<TSource> source,
         Func<TSource, TSource, TSource> reducer,

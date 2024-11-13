@@ -1,4 +1,4 @@
-# Async Collections
+# Async Linq
 
 Hey look! It's LINQ operators for `IAsyncEnumerable`!
 

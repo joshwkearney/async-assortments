@@ -1,6 +1,13 @@
 ﻿namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
+    /// <summary>Exposes a sequence as an <see cref="IObservable{T}"/>.</summary>
+    /// <remarks>
+    ///     Subscribing to the returned observable creates an 
+    ///     <see cref="IAsyncEnumerator{T}"/> on the input sequence, which yields the 
+    ///     sequence items to the subscriber.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IObservable<TSource> AsObservable<TSource>(this IAsyncEnumerable<TSource> source) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));

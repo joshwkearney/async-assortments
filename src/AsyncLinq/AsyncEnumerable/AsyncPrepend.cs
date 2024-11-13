@@ -16,16 +16,16 @@ public static partial class AsyncEnumerable {
         }
 
         if (source is IAsyncLinqOperator<TSource> op) {
-            if (op.ExecutionMode == AsyncLinqExecutionMode.Sequential) {
-                return new AsyncPrependOperator<TSource>(op, elementProducer);
-            }
-            else if (op.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
+            if (op.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
                 var task = Task.Run(() => elementProducer().AsTask());
 
                 return task.AsAsyncEnumerable().Concat(source);
             }
-            else {
+            else if (op.ExecutionMode == AsyncLinqExecutionMode.Concurrent) {
                 return elementProducer().AsAsyncEnumerable().Concat(source);
+            }
+            else {
+                return new AsyncPrependOperator<TSource>(op, elementProducer);
             }
         }
 
@@ -37,17 +37,10 @@ public static partial class AsyncEnumerable {
         Func<ValueTask<T>> newItem,
         [EnumeratorCancellation] CancellationToken cancellationToken = default) {
 
-        // Create the iterator first so subscribe works correctly
-        var iterator = sequence.WithCancellation(cancellationToken).GetAsyncEnumerator();
-        var moveNextTask = iterator.MoveNextAsync();
-
-        // Then yield the first item
         yield return await newItem();
 
-        // Then yield the rest
-        while (await moveNextTask) {
-            yield return iterator.Current;
-            moveNextTask = iterator.MoveNextAsync();
+        await foreach (var item in sequence) {
+            yield return item;
         }
     }
 
