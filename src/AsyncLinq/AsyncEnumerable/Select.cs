@@ -24,46 +24,30 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(selector));
         }
 
-        if (source is IAsyncLinqOperator<TSource> collection) {
-            return new SelectOperator<TSource, TResult>(collection, selector);
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
         }
 
-        return SelectHelper(source, selector);
+        return new SelectOperator<TSource, TResult>(source, selector, pars);
     }
 
-    private static async IAsyncEnumerable<E> SelectHelper<T, E>(
-        this IAsyncEnumerable<T> sequence, 
-        Func<T, E> selector,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
-
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
-            yield return selector(item);
-        }
-    }
-
-    private static IAsyncEnumerable<E> ParallelSelectHelper<T, E>(this IAsyncEnumerable<T> sequence, Func<T, E> selector) {
-        return sequence.DoParallel<T, E>(async (item, channel) => {
-            await channel.Writer.WriteAsync(selector(item));
-        });
-    }
-
-    private class SelectOperator<T, E> : IAsyncLinqOperator<E> {
-        private readonly IAsyncLinqOperator<T> parent;
+    private class SelectOperator<T, E> : IAsyncOperator<E> {
+        private readonly IAsyncEnumerable<T> parent;
         private readonly Func<T, E> selector;
-        
-        public AsyncLinqExecutionMode ExecutionMode => this.parent.ExecutionMode;
 
-        public SelectOperator(IAsyncLinqOperator<T> collection, Func<T, E> selector) {
+        public AsyncOperatorParams Params { get; }
+
+        public SelectOperator(IAsyncEnumerable<T> collection, Func<T, E> selector, AsyncOperatorParams pars) {
             this.parent = collection;
             this.selector = selector;
+            this.Params = pars;
         }
 
-        public IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
-                return ParallelSelectHelper(this.parent, this.selector).GetAsyncEnumerator(cancellationToken);
-            }
-            else {
-                return SelectHelper(this.parent, this.selector).GetAsyncEnumerator(cancellationToken);
+        public async IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                yield return this.selector(item);
             }
         }
     }

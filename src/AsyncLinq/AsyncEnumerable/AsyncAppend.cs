@@ -19,85 +19,45 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(elementProducer));
         }
 
-        if (source is IAsyncLinqOperator<TSource> op) {
-            if (op.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
-                var task = Task.Run(() => elementProducer().AsTask());
+        // TODO: If the previous operator is an append or concat of an IEnumerable,
+        // Replace it instead of tacking on a new one
 
-                return source.Concat(task.AsAsyncEnumerable());
-            }
-            else if (op.ExecutionMode == AsyncLinqExecutionMode.Concurrent) {
-                return source.Concat(elementProducer().AsAsyncEnumerable());
-            }
-            else {
-                return new AsyncAppendOperator<TSource>(op, elementProducer);
-            }
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
         }
 
-        return AsyncAppendHelper(source, elementProducer);
-    }
-
-    private static async IAsyncEnumerable<T> AsyncAppendHelper<T>(
-        this IAsyncEnumerable<T> sequence, 
-        Func<ValueTask<T>> newItem,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
-
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
-            yield return item;
+        if (pars.ExecutionMode == AsyncExecutionMode.Parallel) {
+            elementProducer = () => new ValueTask<TSource>(Task.Run(() => elementProducer().AsTask()));
         }
 
-        yield return await newItem();
-    }
-
-    private static async IAsyncEnumerable<T> ConcurrentAsyncAppendHelper<T>(
-        this IAsyncEnumerable<T> sequence, 
-        Func<ValueTask<T>> newItem,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
-
-        var newItemTask = newItem();
-        
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
-            yield return item;
+        if (pars.IsUnordered) {
+            return source.Concat(elementProducer().AsAsyncEnumerable());
         }
-
-        yield return await newItemTask;
-    }
-
-    private static async IAsyncEnumerable<T> ParallelAsyncAppendHelper<T>(
-        this IAsyncEnumerable<T> sequence, 
-        Func<ValueTask<T>> newItem,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
-
-        var newItemTask = Task.Run(async () => await newItem());
-
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
-            yield return item;
+        else {
+            return new SequentialAsyncAppendOperator<TSource>(source, elementProducer, pars);
         }
-
-        yield return await newItemTask;
     }
 
-    private class AsyncAppendOperator<T> : IAsyncLinqOperator<T> {
-        private readonly IAsyncLinqOperator<T> parent;
+    private class SequentialAsyncAppendOperator<T> : IAsyncOperator<T> {
+        private readonly IAsyncEnumerable<T> parent;
         private readonly Func<ValueTask<T>> toAppend;
 
-        public AsyncAppendOperator(IAsyncLinqOperator<T> parent, Func<ValueTask<T>> item) {
+        public AsyncOperatorParams Params { get; }
+
+        public SequentialAsyncAppendOperator(IAsyncEnumerable<T> parent, Func<ValueTask<T>> item, AsyncOperatorParams pars) {
             this.parent = parent;
             this.toAppend = item;
-            this.ExecutionMode = this.parent.ExecutionMode;
-        }
-        
-        public AsyncLinqExecutionMode ExecutionMode { get; }
+            this.Params = pars;
+        }       
 
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.ExecutionMode == AsyncLinqExecutionMode.Concurrent) {
-                return ConcurrentAsyncAppendHelper(this.parent, this.toAppend).GetAsyncEnumerator(cancellationToken);
+        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                yield return item;
             }
-            else if (this.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
-                return ParallelAsyncAppendHelper(this.parent, this.toAppend).GetAsyncEnumerator(cancellationToken);
-            }
-            else {
-                return AsyncAppendHelper(this.parent, this.toAppend).GetAsyncEnumerator(cancellationToken);
-            }
+
+            yield return await this.toAppend();
         }
     }
 }

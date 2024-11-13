@@ -8,53 +8,46 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncLinqOperator<TSource> op) {
-            return new DistinctUntilChangedOperator<TSource>(op);
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
         }
 
-        return DistinctUntilChangedHelper(source);
+        return new DistinctUntilChangedOperator<TSource>(source, pars);
     }
 
-    private static async IAsyncEnumerable<T> DistinctUntilChangedHelper<T>(
-        this IAsyncEnumerable<T> sequence, 
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
+    private class DistinctUntilChangedOperator<T> : IAsyncOperator<T> {
+        private readonly IAsyncEnumerable<T> parent;
 
-        await using var iterator = sequence.GetAsyncEnumerator(cancellationToken);
-        var hasFirst = await iterator.MoveNextAsync();
+        public AsyncOperatorParams Params { get; }
 
-        if (!hasFirst) {
-            yield break;
+        public DistinctUntilChangedOperator(IAsyncEnumerable<T> parent, AsyncOperatorParams pars) {
+            this.parent = parent;
+            this.Params = pars;
         }
 
-        var current = iterator.Current;
-        yield return current;
+        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            await using var iterator = this.parent.GetAsyncEnumerator(cancellationToken);
+            var hasFirst = await iterator.MoveNextAsync();
 
-        while (await iterator.MoveNextAsync()) {
-            var item = iterator.Current;
-
-            if (EqualityComparer<T>.Default.Equals(item, current)) {
-                continue;
+            if (!hasFirst) {
+                yield break;
             }
 
-            current = item;
+            var current = iterator.Current;
             yield return current;
-        }
-    }
 
-    private class DistinctUntilChangedOperator<T> : IAsyncLinqOperator<T> {
-        private readonly IAsyncLinqOperator<T> parent;
+            while (await iterator.MoveNextAsync()) {
+                var item = iterator.Current;
 
-        public int Count => -1;
+                if (EqualityComparer<T>.Default.Equals(item, current)) {
+                    continue;
+                }
 
-        public AsyncLinqExecutionMode ExecutionMode { get; }
-
-        public DistinctUntilChangedOperator(IAsyncLinqOperator<T> parent) {
-            this.parent = parent;
-            this.ExecutionMode = parent.ExecutionMode;
-        }
-
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            return DistinctUntilChangedHelper(this.parent).GetAsyncEnumerator(cancellationToken);
+                current = item;
+                yield return current;
+            }
         }
     }
 }

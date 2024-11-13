@@ -4,55 +4,49 @@ namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Appends a value to the end of the sequence.</summary>
-    /// <param name="newItem">The value to append to the source sequence.</param>
+    /// <param name="element">The value to append to the source sequence.</param>
     /// <returns>A new sequence that ends with the new element.</returns>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> Append<TSource>(
         this IAsyncEnumerable<TSource> source, 
-        TSource newItem) {
+        TSource element) {
 
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncLinqOperator<TSource> op) {
-            if (op.ExecutionMode == AsyncLinqExecutionMode.Sequential) {
-                return new AppendOperator<TSource>(op, newItem);
-            }
-            else {
-                return source.Concat(new[] { newItem }.AsAsyncEnumerable());
-            }
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
         }
 
-        return AppendHelper(source, newItem);
-    }
-
-    private static async IAsyncEnumerable<T> AppendHelper<T>(
-        this IAsyncEnumerable<T> sequence, 
-        T newItem,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
-
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
-            yield return item;
+        if (pars.IsUnordered) {
+            return source.Concat([element]);
         }
-
-        cancellationToken.ThrowIfCancellationRequested();
-        yield return newItem;
+        else {
+            return new SequentialAppendOperator<TSource>(source, element, pars);
+        }
     }
 
-    private class AppendOperator<T> : IAsyncLinqOperator<T> {
-        private readonly IAsyncLinqOperator<T> parent;
+    private class SequentialAppendOperator<T> : IAsyncOperator<T> {
+        private readonly IAsyncEnumerable<T> parent;
         private readonly T toAppend;
 
-        public AppendOperator(IAsyncLinqOperator<T> parent, T item) {
+        public AsyncOperatorParams Params { get; }
+
+        public SequentialAppendOperator(IAsyncEnumerable<T> parent, T item, AsyncOperatorParams pars) {
             this.parent = parent;
             this.toAppend = item;
+            this.Params = pars;
         }
-        
-        public AsyncLinqExecutionMode ExecutionMode => this.parent.ExecutionMode;
 
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            return AppendHelper(this.parent, this.toAppend).GetAsyncEnumerator(cancellationToken);
+        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                yield return item;
+            }
+
+            yield return this.toAppend;
         }
     }
 }

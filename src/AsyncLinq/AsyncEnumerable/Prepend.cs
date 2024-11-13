@@ -11,51 +11,46 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncLinqOperator<TSource> op) {
-            if (op.ExecutionMode == AsyncLinqExecutionMode.Sequential) {
-                return new PrependOperator<TSource>(op, element);
-            }
-            else {
-                return source.Concat(new[] { element }.AsAsyncEnumerable());
-            }
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
         }
 
-        return PrependHelper(source, element);
-    }
-
-    private static async IAsyncEnumerable<T> PrependHelper<T>(
-        this IAsyncEnumerable<T> sequence, 
-        T newItem, 
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
-
-        // Create the iterator first so subscribe works correctly
-        var iterator = sequence.WithCancellation(cancellationToken).GetAsyncEnumerator();
-        var moveNextTask = iterator.MoveNextAsync();
-
-        // Then yield the prepended item
-        cancellationToken.ThrowIfCancellationRequested();
-        yield return newItem;
-
-        // Then yield the rest
-        while (await moveNextTask) {
-            yield return iterator.Current;
-            moveNextTask = iterator.MoveNextAsync();
+        if (pars.IsUnordered) {
+            return source.Concat([element]);
+        }
+        else {
+            return new SequentialPrependOperator<TSource>(source, element, pars);
         }
     }
 
-    private class PrependOperator<T> : IAsyncLinqOperator<T> {
-        private readonly IAsyncLinqOperator<T> parent;
+    private class SequentialPrependOperator<T> : IAsyncOperator<T> {
+        private readonly IAsyncEnumerable<T> parent;
         private readonly T newItem;
 
-        public PrependOperator(IAsyncLinqOperator<T> parent, T item) {
+        public AsyncOperatorParams Params { get; }
+
+        public SequentialPrependOperator(IAsyncEnumerable<T> parent, T item, AsyncOperatorParams pars) {
             this.parent = parent;
             this.newItem = item;
+            this.Params = pars;
         }
-        
-        public AsyncLinqExecutionMode ExecutionMode => this.parent.ExecutionMode;
+       
+        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            // Create the iterator first so subscribe works correctly
+            var iterator = this.parent.WithCancellation(cancellationToken).GetAsyncEnumerator();
+            var moveNextTask = iterator.MoveNextAsync();
 
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            return PrependHelper(this.parent, newItem).GetAsyncEnumerator(cancellationToken);
+            // Then yield the prepended item
+            cancellationToken.ThrowIfCancellationRequested();
+            yield return newItem;
+
+            // Then yield the rest
+            while (await moveNextTask) {
+                yield return iterator.Current;
+                moveNextTask = iterator.MoveNextAsync();
+            }
         }
     }
 }

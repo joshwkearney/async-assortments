@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace AsyncLinq;
 
@@ -15,60 +17,107 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(selector));
         }
 
-        if (source is IAsyncLinqOperator<TSource> op) {
-            return new AsyncSelectingOperator<TSource, TResult>(op, selector);
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
         }
 
-        return AsyncSelectHelper(source, selector);
-    }
-
-    private static async IAsyncEnumerable<E> AsyncSelectHelper<T, E>(
-        this IAsyncEnumerable<T> sequence, 
-        Func<T, ValueTask<E>> selector,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
-
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
-            yield return await selector(item);
+        if (pars.ExecutionMode == AsyncExecutionMode.Sequential) {
+            return new SequentialAsyncSelectOperator<TSource, TResult>(source, selector, pars);
+        }
+        else if (pars.IsUnordered) {
+            return new UnorderedAsyncSelectOperator<TSource, TResult>(source, selector, pars);
+        }
+        else {
+            return new OrderedAsyncSelectOperator<TSource, TResult>(source, selector, pars);
         }
     }
 
-    private static IAsyncEnumerable<E> ParallelAsyncSelectHelper<T, E>(this IAsyncEnumerable<T> sequence, Func<T, ValueTask<E>> selector) {
-        return sequence.DoParallel<T, E>(async (item, channel) => {
-            var selected = await selector(item);
-
-            await channel.Writer.WriteAsync(selected);
-        });
-    }
-
-    private static IAsyncEnumerable<E> ConcurrentAsyncSelectHelper<T, E>(this IAsyncEnumerable<T> sequence, Func<T, ValueTask<E>> selector) {
-        return sequence.DoConcurrent<T, E>(async (item, channel) => {
-            var selected = await selector(item);
-
-            await channel.Writer.WriteAsync(selected);
-        });
-    }
-
-    private class AsyncSelectingOperator<T, E> : IAsyncLinqOperator<E> {
-        private readonly IAsyncLinqOperator<T> parent;
+    private class SequentialAsyncSelectOperator<T, E> : IAsyncOperator<E> {
+        private readonly IAsyncEnumerable<T> parent;
         private readonly Func<T, ValueTask<E>> selector;
         
-        public AsyncLinqExecutionMode ExecutionMode { get; }
+        public AsyncOperatorParams Params { get; }
 
-        public AsyncSelectingOperator(IAsyncLinqOperator<T> collection, Func<T, ValueTask<E>> selector) {
+        public SequentialAsyncSelectOperator(
+            IAsyncEnumerable<T> collection, 
+            Func<T, ValueTask<E>> selector, 
+            AsyncOperatorParams pars) {
+
             this.parent = collection;
             this.selector = selector;
-            this.ExecutionMode = this.parent.ExecutionMode;
+            this.Params = pars;
+        }
+
+        public async IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                yield return await this.selector(item);
+            }
+        }
+    }
+
+    private class UnorderedAsyncSelectOperator<T, E> : IAsyncOperator<E> {
+        private readonly IAsyncEnumerable<T> parent;
+        private readonly Func<T, ValueTask<E>> selector;
+
+        public AsyncOperatorParams Params { get; }
+
+        public UnorderedAsyncSelectOperator(
+            IAsyncEnumerable<T> collection,
+            Func<T, ValueTask<E>> selector,
+            AsyncOperatorParams pars) {
+
+            this.parent = collection;
+            this.selector = selector;
+            this.Params = pars;
+
+            Debug.Assert(this.Params.ExecutionMode != AsyncExecutionMode.Sequential);
         }
 
         public IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
-                return ParallelAsyncSelectHelper(this.parent, this.selector).GetAsyncEnumerator(cancellationToken);
-            }
-            else if (this.ExecutionMode == AsyncLinqExecutionMode.Concurrent) {
-                return ConcurrentAsyncSelectHelper(this.parent, this.selector).GetAsyncEnumerator(cancellationToken);
+            return ParallelHelper.DoUnordered<T, E>(
+                this.parent,
+                async (x, channel) => {
+                    await channel.Writer.WriteAsync(await this.selector(x), cancellationToken);
+                },
+                this.Params.ExecutionMode == AsyncExecutionMode.Parallel,
+                cancellationToken);
+        }
+    }
+
+    private class OrderedAsyncSelectOperator<T, E> : IAsyncOperator<E> {
+        private readonly IAsyncEnumerable<T> parent;
+        private readonly Func<T, ValueTask<E>> selector;
+
+        public AsyncOperatorParams Params { get; }
+
+        public OrderedAsyncSelectOperator(
+            IAsyncEnumerable<T> collection,
+            Func<T, ValueTask<E>> selector,
+            AsyncOperatorParams pars) {
+
+            this.parent = collection;
+            this.selector = selector;
+            this.Params = pars;
+
+            Debug.Assert(this.Params.ExecutionMode != AsyncExecutionMode.Sequential);
+        }
+
+        public IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            var isParallel = this.Params.ExecutionMode == AsyncExecutionMode.Parallel;
+
+            if (isParallel) {
+                return ParallelHelper.DoOrdered<T, E>(
+                    this.parent, 
+                    (x, list) => list.Add(new ValueTask<E>(Task.Run(() => this.selector(x).AsTask()))), 
+                    cancellationToken);
             }
             else {
-                return AsyncSelectHelper(this.parent, this.selector).GetAsyncEnumerator(cancellationToken);
+                return ParallelHelper.DoOrdered<T, E>(
+                    this.parent, 
+                    (x, list) => list.Add(this.selector(x)), 
+                    cancellationToken);
             }
         }
     }

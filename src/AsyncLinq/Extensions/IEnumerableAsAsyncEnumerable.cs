@@ -9,10 +9,10 @@ public static partial class AsyncEnumerableExtensions {
         return new ReadOnlyAsyncCollection<TSource>(source);
     }
 
-    private class ReadOnlyAsyncCollection<T> : IAsyncLinqOperator<T> {
+    private class ReadOnlyAsyncCollection<T> : IAsyncOperator<T> {
         private readonly IEnumerable<T> collection;
 
-        public AsyncLinqExecutionMode ExecutionMode => AsyncLinqExecutionMode.Sequential;
+        public AsyncOperatorParams Params => default;
 
         public ReadOnlyAsyncCollection(IEnumerable<T> collection) {
             this.collection = collection;

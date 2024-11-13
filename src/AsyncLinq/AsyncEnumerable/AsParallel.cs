@@ -2,6 +2,10 @@
 
 public static partial class AsyncEnumerable {
     /// <summary>Instructs asynchronous operators to run in parallel on the thread pool.</summary>
+    /// <param name="preserveOrder">
+    ///     Determines if asynchronous operations should be returned in the order of the original
+    ///     sequence (<c>true</c>), or the order in which they finish (<c>false</c>)
+    /// </param>
     /// <remarks>
     ///     <para>
     ///         This method changes the behavior of operators that involve asynchronous operations,
@@ -15,19 +19,29 @@ public static partial class AsyncEnumerable {
     ///     </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
-    public static IAsyncEnumerable<TSource> AsParallel<TSource>(this IAsyncEnumerable<TSource> source) {
+    public static IAsyncEnumerable<TSource> AsParallel<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncLinqOperator<TSource> op && op.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
-            return source;
+        var pars = new AsyncOperatorParams(AsyncExecutionMode.Parallel, !preserveOrder);
+
+        if (source is IAsyncOperator<TSource> op && op.Params == pars) {
+            return op;
         }
 
-        return new AsParallelOperator<TSource>(source, AsyncLinqExecutionMode.Parallel);
+        if (source is ParamsChangeOperator<TSource> changeOp) {
+            return new ParamsChangeOperator<TSource>(changeOp.Parent, pars);
+        }
+
+        return new ParamsChangeOperator<TSource>(source, pars);
     }
 
     /// <summary>Instructs asynchronous operators to run concurrently</summary>
+    /// <param name="preserveOrder">
+    ///     Determines if asynchronous operations should be returned in the order of the original
+    ///     sequence (<c>true</c>), or the order in which they finish (<c>false</c>)
+    /// </param>
     /// <remarks>
     ///     <para>
     ///         This method changes the behavior of operators that involve asynchronous operations,
@@ -42,21 +56,25 @@ public static partial class AsyncEnumerable {
     ///     </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
-    public static IAsyncEnumerable<TSource> AsConcurrent<TSource>(this IAsyncEnumerable<TSource> source) {
+    public static IAsyncEnumerable<TSource> AsConcurrent<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncLinqOperator<TSource> op && op.ExecutionMode == AsyncLinqExecutionMode.Concurrent) {
-            return source;
+        var pars = new AsyncOperatorParams(AsyncExecutionMode.Concurrent, !preserveOrder);
+
+        if (source is IAsyncOperator<TSource> op && op.Params == pars) {
+            return op;
         }
 
-        return new AsParallelOperator<TSource>(source, AsyncLinqExecutionMode.Concurrent);
+        if (source is ParamsChangeOperator<TSource> changeOp) {
+            return new ParamsChangeOperator<TSource>(changeOp.Parent, pars);
+        }
+
+        return new ParamsChangeOperator<TSource>(source, pars);
     }
 
-    /// <summary>
-    /// Instructs asynchronous operators to run sequentially
-    /// </summary>
+    /// <summary>Instructs asynchronous operators to run sequentially</summary>
     /// <remarks>
     ///     <para>
     ///         This method changes the behavior of operators that involve asynchronous operations,
@@ -78,25 +96,31 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncLinqOperator<TSource> op && op.ExecutionMode == AsyncLinqExecutionMode.Sequential) {
-            return source;
+        var pars = new AsyncOperatorParams(AsyncExecutionMode.Sequential, false);
+
+        if (source is IAsyncOperator<TSource> op && op.Params == pars) {
+            return op;
         }
 
-        return new AsParallelOperator<TSource>(source, AsyncLinqExecutionMode.Sequential);
+        if (source is ParamsChangeOperator<TSource> changeOp) {
+            return new ParamsChangeOperator<TSource>(changeOp.Parent, pars);
+        }
+
+        return new ParamsChangeOperator<TSource>(source, pars);
     }
 
-    private class AsParallelOperator<T> : IAsyncLinqOperator<T> {
-        private readonly IAsyncEnumerable<T> parent;
+    private class ParamsChangeOperator<T> : IAsyncOperator<T> {
+        public IAsyncEnumerable<T> Parent { get; }
 
-        public AsyncLinqExecutionMode ExecutionMode { get; }
+        public AsyncOperatorParams Params { get; }
 
-        public AsParallelOperator(IAsyncEnumerable<T> parent, AsyncLinqExecutionMode mode) {
-            this.parent = parent;
-            this.ExecutionMode = mode;
+        public ParamsChangeOperator(IAsyncEnumerable<T> parent, AsyncOperatorParams pars) {
+            this.Parent = parent;
+            this.Params = pars;
         }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            return this.parent.GetAsyncEnumerator(cancellationToken);
+            return this.Parent.GetAsyncEnumerator(cancellationToken);
         }
     }
 }

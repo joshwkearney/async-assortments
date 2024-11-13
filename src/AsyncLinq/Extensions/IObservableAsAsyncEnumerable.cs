@@ -14,7 +14,7 @@ public static partial class AsyncEnumerableExtensions {
         return new ObservableWrapper<TSource>(source, maxBuffer);
     }
 
-    private class ObservableWrapper<T> : IAsyncLinqOperator<T> {
+    private class ObservableWrapper<T> : IAsyncOperator<T> {
         private readonly IObservable<T> source;
         private readonly int maxBuffer;
 
@@ -23,7 +23,7 @@ public static partial class AsyncEnumerableExtensions {
             this.maxBuffer = maxBuffer;
         }
 
-        public AsyncLinqExecutionMode ExecutionMode => AsyncLinqExecutionMode.Sequential;
+        public AsyncOperatorParams Params => default;
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
             Channel<T> channel;

@@ -9,18 +9,14 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        var isEmpty = true;
-        var last = default(TSource);
+        await using var iterator = source.GetAsyncEnumerator(cancellationToken);
 
-        await foreach (var item in source.WithCancellation(cancellationToken)) {
-            last = item;
-            isEmpty = false;
-        }
-
-        if (isEmpty) {
+        if (!await iterator.MoveNextAsync()) {
             throw new InvalidOperationException("Sequence contains no elements");
         }
 
-        return last!;
+        while (await iterator.MoveNextAsync()) { }
+
+        return iterator.Current;
     }
 }

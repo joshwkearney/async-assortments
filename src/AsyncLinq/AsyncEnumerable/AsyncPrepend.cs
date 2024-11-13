@@ -15,48 +15,42 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(elementProducer));
         }
 
-        if (source is IAsyncLinqOperator<TSource> op) {
-            if (op.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
-                var task = Task.Run(() => elementProducer().AsTask());
+        var pars = new AsyncOperatorParams();
 
-                return task.AsAsyncEnumerable().Concat(source);
-            }
-            else if (op.ExecutionMode == AsyncLinqExecutionMode.Concurrent) {
-                return elementProducer().AsAsyncEnumerable().Concat(source);
-            }
-            else {
-                return new AsyncPrependOperator<TSource>(op, elementProducer);
-            }
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
         }
 
-        return AsyncPrependHelper(source, elementProducer);
-    }
+        if (pars.ExecutionMode == AsyncExecutionMode.Parallel) {
+            elementProducer = () => new ValueTask<TSource>(Task.Run(() => elementProducer().AsTask()));
+        }
 
-    private static async IAsyncEnumerable<T> AsyncPrependHelper<T>(
-        this IAsyncEnumerable<T> sequence,
-        Func<ValueTask<T>> newItem,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
-
-        yield return await newItem();
-
-        await foreach (var item in sequence) {
-            yield return item;
+        if (pars.IsUnordered) {
+            return elementProducer().AsAsyncEnumerable().Concat(source);
+        }
+        else {
+            return new SequentialAsyncPrependOperator<TSource>(source, elementProducer, pars);
         }
     }
 
-    private class AsyncPrependOperator<T> : IAsyncLinqOperator<T> {
-        private readonly IAsyncLinqOperator<T> parent;
+    private class SequentialAsyncPrependOperator<T> : IAsyncOperator<T> {
+        private readonly IAsyncEnumerable<T> parent;
         private readonly Func<ValueTask<T>> newItem;
 
-        public AsyncPrependOperator(IAsyncLinqOperator<T> parent, Func<ValueTask<T>> item) {
+        public AsyncOperatorParams Params { get; }
+
+        public SequentialAsyncPrependOperator(IAsyncEnumerable<T> parent, Func<ValueTask<T>> item, AsyncOperatorParams pars) {
             this.parent = parent;
             this.newItem = item;
+            this.Params = pars;
         }
         
-        public AsyncLinqExecutionMode ExecutionMode => this.parent.ExecutionMode;
+        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            yield return await newItem();
 
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            return AsyncPrependHelper(this.parent, this.newItem).GetAsyncEnumerator(cancellationToken);
+            await foreach (var item in this.parent) {
+                yield return item;
+            }
         }
     }
 }

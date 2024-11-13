@@ -15,43 +15,44 @@ public static partial class AsyncEnumerable {
             throw new ArgumentOutOfRangeException(nameof(numToSkip), "Cannot skip less than zero elements");
         }
 
-        if (source is IAsyncLinqOperator<TSource> collection) {
-            return new SkipOperator<TSource>(collection, numToSkip);
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
         }
 
-        return SkipHelper(source, numToSkip);
+        return new SkipOperator<TSource>(source, numToSkip, pars);
     }
 
-    private static async IAsyncEnumerable<T> SkipHelper<T>(
-        this IAsyncEnumerable<T> sequence, 
-        int numToSkip,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
-
-        int skipped = 0;
-
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
-            if (skipped < numToSkip) {
-                skipped++;
-                continue;
-            }
-
-            yield return item;
-        }
-    }
-
-    private class SkipOperator<T> : IAsyncLinqOperator<T> {
-        private readonly IAsyncLinqOperator<T> parent;
+    private class SkipOperator<T> : IAsyncOperator<T> {
+        private readonly IAsyncEnumerable<T> parent;
         private readonly int numToSkip;
-        
-        public AsyncLinqExecutionMode ExecutionMode => this.parent.ExecutionMode;
 
-        public SkipOperator(IAsyncLinqOperator<T> parent, int numToSkip) {
+        public AsyncOperatorParams Params { get; }
+
+        public SkipOperator(IAsyncEnumerable<T> parent, int numToSkip, AsyncOperatorParams pars) {
             this.parent = parent;
             this.numToSkip = numToSkip;
+            this.Params = pars;
         }
 
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            return SkipHelper(this.parent, this.numToSkip).GetAsyncEnumerator(cancellationToken);
+        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            await using var iterator = this.parent.GetAsyncEnumerator(cancellationToken);
+            int skipped = 0;
+
+            while (skipped < this.numToSkip) {
+                var hasNext = await iterator.MoveNextAsync();
+
+                if (!hasNext) {
+                    yield break;
+                }
+
+                skipped++;
+            }
+
+            while (await iterator.MoveNextAsync()) {
+                yield return iterator.Current;
+            }
         }
     }
 }

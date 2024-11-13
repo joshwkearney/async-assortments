@@ -15,43 +15,41 @@ public static partial class AsyncEnumerable {
             throw new ArgumentOutOfRangeException(nameof(numToTake), "Cannot take less than zero elements");
         }
 
-        if (source is IAsyncLinqOperator<TSource> collection) {
-            return new TakeOperator<TSource>(collection, numToTake);
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
         }
 
-        return TakeHelper(source, numToTake);
+        return new TakeOperator<TSource>(source, numToTake, pars);
     }
 
-    private static async IAsyncEnumerable<T> TakeHelper<T>(
-        this IAsyncEnumerable<T> sequence, 
-        int numToTake,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
-
-        int taken = 0;
-
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
-            if (taken >= numToTake) {
-                yield break;
-            }
-
-            yield return item;
-            taken++;
-        }
-    }
-
-    private class TakeOperator<T> : IAsyncLinqOperator<T> {
-        private readonly IAsyncLinqOperator<T> parent;
+    private class TakeOperator<T> : IAsyncOperator<T> {
+        private readonly IAsyncEnumerable<T> parent;
         private readonly int numToTake;
-        
-        public AsyncLinqExecutionMode ExecutionMode => this.parent.ExecutionMode;
 
-        public TakeOperator(IAsyncLinqOperator<T> parent, int numToTake) {
+        public AsyncOperatorParams Params { get; }
+
+        public TakeOperator(IAsyncEnumerable<T> parent, int numToTake, AsyncOperatorParams pars) {
             this.parent = parent;
             this.numToTake = numToTake;
+            this.Params = pars;
         }
 
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            return TakeHelper(this.parent, this.numToTake).GetAsyncEnumerator(cancellationToken);
+        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            await using var iterator = this.parent.GetAsyncEnumerator(cancellationToken);
+            int taken = 0;
+
+            while (taken < this.numToTake) {
+                var hasNext = await iterator.MoveNextAsync();
+
+                if (!hasNext) {
+                    break;
+                }
+
+                yield return iterator.Current;
+                taken++;
+            }
         }
     }
 }

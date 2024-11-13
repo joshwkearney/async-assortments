@@ -22,11 +22,15 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(second));
         }
 
-        if (source is IAsyncLinqOperator<TSource> col1) {
-            return new ConcatOperator<TSource>(col1, second);
+        // TODO: If second is an IEnumerable, return a different operator
+
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
         }
 
-        return ConcatHelper(source, second);
+        return new ConcatOperator<TSource>(source, second, pars);
     }
 
     public static IAsyncEnumerable<TSource> Concat<TSource>(
@@ -41,115 +45,169 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(second));
         }
 
-        return source.Concat(second.AsAsyncEnumerable());
+        // TODO: If source is an ienumerble, return a different operator
+
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
+        }
+
+        return new EnumerableConcatOperator<TSource>(source, second, pars);
     }
 
-    private static async IAsyncEnumerable<T> ConcatHelper<T>(
-        this IAsyncEnumerable<T> sequence,
-        IAsyncEnumerable<T> other,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
+    private class EnumerableConcatOperator<T> : IAsyncOperator<T> {
+        private readonly IAsyncEnumerable<T> parent;
+        private readonly IEnumerable<T> other;
 
-        // Get the enumerators first so subscribe works correctly
-        var iterator1 = sequence.GetAsyncEnumerator(cancellationToken);
-        var moveTask1 = iterator1.MoveNextAsync();
+        public AsyncOperatorParams Params { get; }
 
-        var iterator2 = other.GetAsyncEnumerator(cancellationToken);
-        var moveTask2 = iterator2.MoveNextAsync();
+        public EnumerableConcatOperator(
+            IAsyncEnumerable<T> parent, 
+            IEnumerable<T> other, 
+            AsyncOperatorParams pars) {
 
-        while (await moveTask1) {
-            yield return iterator1.Current;
-            moveTask1 = iterator1.MoveNextAsync();
+            this.parent = parent;
+            this.other = other;
+            this.Params = pars;
         }
 
-        while (await moveTask2) {
-            yield return iterator2.Current;
-            moveTask2 = iterator2.MoveNextAsync();
+        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            if (this.Params.IsUnordered) {
+                return this.UnorderedHelper(cancellationToken);
+            }
+            else {
+                return this.OrderedHelper(cancellationToken);
+            }
+        }
+
+        private async IAsyncEnumerator<T> UnorderedHelper(CancellationToken cancellationToken) {
+            await using var iterator = this.parent.GetAsyncEnumerator(cancellationToken);
+            var nextTask = iterator.MoveNextAsync();
+
+            // Yield as many from the parent synchronously as we can
+            while (nextTask.IsCompletedSuccessfully) {
+                yield return iterator.Current;
+                nextTask = iterator.MoveNextAsync();
+            }
+
+            // Yield all of the enumerable, which we don't have to wait on
+            foreach (var item in this.other) {
+                yield return item;
+            }
+
+            // Yield all the rest of the parent asynchronously
+            while (await nextTask) {
+                yield return iterator.Current;
+                nextTask = iterator.MoveNextAsync();
+            }
+        }
+
+        private async IAsyncEnumerator<T> OrderedHelper(CancellationToken cancellationToken) {
+            await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                yield return item;
+            }
+
+            foreach (var item in this.other) {
+                yield return item;
+            }
         }
     }
 
-    private static async IAsyncEnumerable<T> ConcurrentConcatHelper<T>(
-        this IAsyncEnumerable<T> sequence,
-        IAsyncEnumerable<T> other,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
+    private class ConcatOperator<T> : IAsyncOperator<T> {
+        private readonly IAsyncEnumerable<T> parent;
+        private readonly IAsyncEnumerable<T> other;
 
-        var channel = Channel.CreateUnbounded<T>(channelOptions);
-        var channelCompleteLock = new object();
-        var firstFinished = false;
-        var secondFinished = false;
+        public AsyncOperatorParams Params { get; }
 
-        async ValueTask IterateFirst() {
-            await foreach (var item in sequence.WithCancellation(cancellationToken)) {
-                channel.Writer.TryWrite(item);
+        public ConcatOperator(
+            IAsyncEnumerable<T> parent, 
+            IAsyncEnumerable<T> other, 
+            AsyncOperatorParams pars) {
+
+            this.parent = parent;
+            this.other = other;
+            this.Params = pars;
+        }
+
+        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            if (this.Params.IsUnordered) {
+                return this.UnorderedHelper(cancellationToken);
             }
-
-            lock (channelCompleteLock) {
-                firstFinished = true;
-
-                if (firstFinished && secondFinished) {
-                    channel.Writer.Complete();
-                }
+            else {
+                return this.OrderedHelper(cancellationToken);
             }
         }
 
-        async ValueTask IterateSecond() {
-            await foreach (var item in other.WithCancellation(cancellationToken)) {
-                channel.Writer.TryWrite(item);
+        private async IAsyncEnumerator<T> OrderedHelper(CancellationToken cancellationToken) {
+            await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                yield return item;
             }
 
-            lock (channelCompleteLock) {
-                secondFinished = true;
-
-                if (firstFinished && secondFinished) {
-                    channel.Writer.Complete();
-                }
+            await foreach (var item in this.other.WithCancellation(cancellationToken)) {
+                yield return item;
             }
         }
 
-        var task1 = IterateFirst();
-        var task2 = IterateSecond();
+        private async IAsyncEnumerator<T> UnorderedHelper(CancellationToken cancellationToken) {
+            var channel = Channel.CreateUnbounded<T>(channelOptions);
+            var channelCompleteLock = new object();
+            var firstFinished = false;
+            var secondFinished = false;
 
-        try {
+            async ValueTask IterateFirst() {
+                await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                    channel.Writer.TryWrite(item);
+                }
+
+                lock (channelCompleteLock) {
+                    firstFinished = true;
+
+                    if (firstFinished && secondFinished) {
+                        channel.Writer.Complete();
+                    }
+                }
+            }
+
+            async ValueTask IterateSecond() {
+                await foreach (var item in this.other.WithCancellation(cancellationToken)) {
+                    channel.Writer.TryWrite(item);
+                }
+
+                lock (channelCompleteLock) {
+                    secondFinished = true;
+
+                    if (firstFinished && secondFinished) {
+                        channel.Writer.Complete();
+                    }
+                }
+            }
+
+            var task1 = IterateFirst();
+            var task2 = IterateSecond();
+
             try {
-                while (true) {
-                    var canRead = await channel.Reader.WaitToReadAsync(cancellationToken);
+                try {
+                    while (true) {
+                        var canRead = await channel.Reader.WaitToReadAsync(cancellationToken);
 
-                    if (!canRead) {
-                        break;
+                        if (!canRead) {
+                            break;
+                        }
+
+                        if (!channel.Reader.TryRead(out var item)) {
+                            break;
+                        }
+
+                        yield return item;
                     }
-
-                    if (!channel.Reader.TryRead(out var item)) {
-                        break;
-                    }
-
-                    yield return item;
+                }
+                finally {
+                    await task1;
                 }
             }
             finally {
-                await task1;
-            }
-        }
-        finally {
-            await task2;
-        }
-    }
-
-    private class ConcatOperator<T> : IAsyncLinqOperator<T> {
-        private readonly IAsyncLinqOperator<T> parent;
-        private readonly IAsyncEnumerable<T> other;
-
-        public ConcatOperator(IAsyncLinqOperator<T> parent, IAsyncEnumerable<T> other) {
-            this.parent = parent;
-            this.other = other;
-        }
-
-        public AsyncLinqExecutionMode ExecutionMode => this.parent.ExecutionMode;
-
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.ExecutionMode == AsyncLinqExecutionMode.Sequential) {
-                return ConcatHelper(this.parent, this.other).GetAsyncEnumerator(cancellationToken);
-            }
-            else {
-                return ConcurrentConcatHelper(this.parent, this.other).GetAsyncEnumerator(cancellationToken);
+                await task2;
             }
         }
     }

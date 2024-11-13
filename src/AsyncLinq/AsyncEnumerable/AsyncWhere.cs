@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace AsyncLinq;
 
@@ -15,65 +16,45 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(predicate));
         }
 
-        if (source is IAsyncLinqOperator<TSource> collection) {
-            return new AsyncWhereOperator<TSource>(collection, predicate);
+        var sequence = source.AsyncSelect(async x => new AsyncWhereRecord<TSource>(x, await predicate(x)));
+        var pars = new AsyncOperatorParams();
+
+        if (sequence is IAsyncOperator<AsyncWhereRecord<TSource>> op) {
+            pars = op.Params;
         }
 
-        return AsyncWhereHelper(source, predicate);
+        return new AsyncWhereOperator<TSource>(sequence, pars);
     }
 
-    private static async IAsyncEnumerable<T> AsyncWhereHelper<T>(
-        this IAsyncEnumerable<T> sequence, 
-        Func<T, ValueTask<bool>> selector,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
+    private class AsyncWhereOperator<T> : IAsyncOperator<T> {
+        private readonly IAsyncEnumerable<AsyncWhereRecord<T>> parent;
 
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
-            if (await selector(item)) {
-                yield return item;
+        public AsyncOperatorParams Params { get; }
+
+        public AsyncWhereOperator(
+            IAsyncEnumerable<AsyncWhereRecord<T>> parent, 
+            AsyncOperatorParams pars) {
+
+            this.parent = parent;
+            this.Params = pars;
+        }
+
+        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            await foreach (var item in this.parent) {
+                if (item.IsValid) {
+                    yield return item.Value;
+                }
             }
         }
     }
 
-    private static IAsyncEnumerable<T> ConcurrentAsyncWhereHelper<T>(this IAsyncEnumerable<T> sequence, Func<T, ValueTask<bool>> selector) {
-        return sequence.DoConcurrent<T, T>(async (item, channel) => {
-            if (await selector(item)) {
-                await channel.Writer.WriteAsync(item);
-            }
-        });
-    }
+    private readonly struct AsyncWhereRecord<T> {
+        public readonly T Value;
+        public readonly bool IsValid;
 
-    private static IAsyncEnumerable<T> ParallelAsyncWhereHelper<T>(this IAsyncEnumerable<T> sequence, Func<T, ValueTask<bool>> selector) {
-        return sequence.DoParallel<T, T>(async (item, channel) => {
-            if (await selector(item)) {
-                await channel.Writer.WriteAsync(item);
-            }
-        });
-    }
-
-    private class AsyncWhereOperator<T> : IAsyncLinqOperator<T> {
-        private readonly IAsyncLinqOperator<T> parent;
-        private readonly Func<T, ValueTask<bool>> selector;
-
-        public int Count => -1;
-
-        public AsyncLinqExecutionMode ExecutionMode { get; }
-
-        public AsyncWhereOperator(IAsyncLinqOperator<T> collection, Func<T, ValueTask<bool>> selector) {
-            this.parent = collection;
-            this.selector = selector;
-            this.ExecutionMode = this.parent.ExecutionMode;
-        }
-
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.ExecutionMode == AsyncLinqExecutionMode.Parallel) {
-                return ParallelAsyncWhereHelper(this.parent, this.selector).GetAsyncEnumerator(cancellationToken);
-            }
-            else if (this.ExecutionMode == AsyncLinqExecutionMode.Concurrent) {
-                return ConcurrentAsyncWhereHelper(this.parent, this.selector).GetAsyncEnumerator(cancellationToken);
-            }
-            else {
-                return AsyncWhereHelper(this.parent, this.selector).GetAsyncEnumerator(cancellationToken);
-            }
+        public AsyncWhereRecord(T value, bool isValid) {
+            this.Value = value;
+            this.IsValid = isValid;
         }
     }
 }

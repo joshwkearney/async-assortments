@@ -15,41 +15,33 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(predicate));
         }
 
-        if (source is IAsyncLinqOperator<TSource> collection) {
-            return new WhereOperator<TSource>(collection, predicate);
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
         }
 
-        return WhereHelper(source, predicate);
+        return new WhereOperator<TSource>(source, predicate, pars);
     }
 
-    private static async IAsyncEnumerable<T> WhereHelper<T>(
-        this IAsyncEnumerable<T> sequence, 
-        Func<T, bool> selector, 
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
-
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
-            if (selector(item)) {
-                yield return item;
-            }
-        }
-    }
-
-    private class WhereOperator<T> : IAsyncLinqOperator<T> {
-        private readonly IAsyncLinqOperator<T> parent;
+    private class WhereOperator<T> : IAsyncOperator<T> {
+        private readonly IAsyncEnumerable<T> parent;
         private readonly Func<T, bool> selector;
 
-        public int Count => -1;
+        public AsyncOperatorParams Params { get; }
 
-        public AsyncLinqExecutionMode ExecutionMode { get; }
-
-        public WhereOperator(IAsyncLinqOperator<T> collection, Func<T, bool> selector) {
+        public WhereOperator(IAsyncEnumerable<T> collection, Func<T, bool> selector, AsyncOperatorParams pars) {
             this.parent = collection;
             this.selector = selector;
-            this.ExecutionMode = this.parent.ExecutionMode;
+            this.Params = pars;
         }
 
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            return WhereHelper(this.parent, this.selector).GetAsyncEnumerator(cancellationToken);
+        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+            await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                if (this.selector(item)) {
+                    yield return item;
+                }
+            }
         }
     }
 }

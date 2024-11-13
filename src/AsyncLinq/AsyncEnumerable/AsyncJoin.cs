@@ -44,8 +44,13 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(resultSelector));
         }
 
+        // NOTE: We have to return a tuple from the join and then call resultSelector()
+        // separately in the AsyncSelect because otherwise it would instantiate all the
+        // tasks at once, but this way the AsyncSelect controls how that happens depending
+        // on the ordering and execution
+
         return outer
-            .Join(inner, outerKeySelector, innerKeySelector, resultSelector)
-            .AsyncSelect(x => x);
+            .Join(inner, outerKeySelector, innerKeySelector, (x, y) => (x, y))
+            .AsyncSelect(pair => resultSelector(pair.x, pair.y));
     }
 }

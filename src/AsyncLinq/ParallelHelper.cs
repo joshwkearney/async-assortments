@@ -1,41 +1,73 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Threading;
 using System.Threading.Channels;
+using System.Threading.Tasks;
 
 namespace AsyncLinq;
 
-public static partial class AsyncEnumerable {
+internal static class ParallelHelper {
     private static readonly UnboundedChannelOptions parallelChannelOptions = new() {
         AllowSynchronousContinuations = true,
         SingleReader = false,
         SingleWriter = false
     };
 
-    internal static IAsyncEnumerable<E> DoParallel<T, E>(
-        this IAsyncEnumerable<T> sequence, 
-        Func<T, Channel<E>, ValueTask> action) {
+    internal static async IAsyncEnumerator<E> DoOrdered<T, E>(
+        IAsyncEnumerable<T> sequence,
+        Action<T, List<ValueTask<E>>> action,
+        CancellationToken cancellationToken) {
 
-        return DoConcurrentHelper(sequence, action, true);
+        var list = new List<ValueTask<E>>();
+        var exceptions = null as List<Exception>;
+
+        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
+            try {
+                action(item, list);
+            }
+            catch (Exception ex) {
+                exceptions ??= [];
+                exceptions.Add(ex);
+            }
+        }
+
+        foreach (var task in list) {
+            var result = default(E);
+            var hasResult = false;
+
+            try {
+                result = await task;
+                hasResult = true;
+            }
+            catch (Exception ex) {
+                exceptions ??= [];
+                exceptions.Add(ex);
+            }
+
+            if (hasResult) {
+                yield return result!;
+            }
+        }
+
+        if (exceptions != null && exceptions.Count > 1) {
+            throw new AggregateException(exceptions);
+        }
+        else if (exceptions != null && exceptions.Count == 1) {
+            throw exceptions[0];
+        }
     }
 
-    internal static IAsyncEnumerable<E> DoConcurrent<T, E>(
-        this IAsyncEnumerable<T> sequence,
-        Func<T, Channel<E>, ValueTask> action) {
-
-        return DoConcurrentHelper(sequence, action, false);
-    }
-
-    private static async IAsyncEnumerable<E> DoConcurrentHelper<T, E>(
-        this IAsyncEnumerable<T> sequence,
+    internal static async IAsyncEnumerator<E> DoUnordered<T, E>(
+        IAsyncEnumerable<T> sequence, 
         Func<T, Channel<E>, ValueTask> action,
         bool isParallel,
-        [EnumeratorCancellation] CancellationToken cancellationToken = default) {
+        CancellationToken cancellationToken) {
 
         var result = Channel.CreateUnbounded<E>(parallelChannelOptions);
         var exceptions = Channel.CreateBounded<Exception>(1);
 
         // NOTE: This is fire and forget (never awaited) because any exceptions will be propagated 
         // through the channel 
-        IterateConcurrently(sequence, action, result, isParallel, cancellationToken);
+        IterateUnorderedHelper(sequence, action, result, isParallel, cancellationToken);
 
         while (true) {
             var canRead = await result.Reader.WaitToReadAsync(cancellationToken);
@@ -52,7 +84,7 @@ public static partial class AsyncEnumerable {
         }
     }
 
-    private static async void IterateConcurrently<T, E>(
+    private static async void IterateUnorderedHelper<T, E>(
         IAsyncEnumerable<T> sequence,
         Func<T, Channel<E>, ValueTask> action, 
         Channel<E> result,
@@ -71,13 +103,13 @@ public static partial class AsyncEnumerable {
                     asyncTasks.Add(task);
                 }
                 else {
-                    var valuetask = action(item, result);
+                    var valueTask = action(item, result);
 
-                    if (valuetask.IsCompletedSuccessfully) {
+                    if (valueTask.IsCompletedSuccessfully) {
                         continue;
                     }
 
-                    var task = valuetask.AsTask();
+                    var task = valueTask.AsTask();
 
                     if (task.Exception != null) {
                         exceptions ??= [];
