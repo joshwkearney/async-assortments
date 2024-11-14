@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using AsyncLinq.Operators;
 
 namespace AsyncLinq;
 
@@ -15,33 +15,20 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(predicate));
         }
 
+        // This is our SelectWhere selector
+        SelectWhereResult<TSource> selectWhereFunc(TSource item) => new(predicate(item), item);
+
+        // Try to compose with a previous operator
+        if (source is ISelectWhereOperator<TSource> selectWhereOp) {
+            return selectWhereOp.ComposeWith(selectWhereFunc);
+        }
+
         var pars = new AsyncOperatorParams();
 
         if (source is IAsyncOperator<TSource> op) {
             pars = op.Params;
         }
 
-        return new WhereOperator<TSource>(source, predicate, pars);
-    }
-
-    private class WhereOperator<T> : IAsyncOperator<T> {
-        private readonly IAsyncEnumerable<T> parent;
-        private readonly Func<T, bool> selector;
-
-        public AsyncOperatorParams Params { get; }
-
-        public WhereOperator(IAsyncEnumerable<T> collection, Func<T, bool> selector, AsyncOperatorParams pars) {
-            this.parent = collection;
-            this.selector = selector;
-            this.Params = pars;
-        }
-
-        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
-                if (this.selector(item)) {
-                    yield return item;
-                }
-            }
-        }
+        return new SelectWhereOperator<TSource, TSource>(source, selectWhereFunc, pars);
     }
 }

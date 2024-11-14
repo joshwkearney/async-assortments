@@ -1,4 +1,6 @@
-﻿namespace AsyncLinq;
+﻿using AsyncLinq.Operators;
+
+namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Instructs asynchronous operators to run in parallel on the thread pool.</summary>

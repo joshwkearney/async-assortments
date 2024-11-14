@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using AsyncLinq.Operators;
 
 namespace AsyncLinq;
 

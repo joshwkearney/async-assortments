@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using System.Threading;
+﻿using AsyncLinq.Operators;
 
 namespace AsyncLinq;
 
@@ -16,45 +15,22 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(predicate));
         }
 
-        var sequence = source.AsyncSelect(async x => new AsyncWhereRecord<TSource>(x, await predicate(x)));
+        // Local function to be our SelectWhere selector
+        async ValueTask<SelectWhereResult<TSource>> selector(TSource x) {
+            return new(await predicate(x), x);
+        }
+
+        // First try to compose this operation with a previous SelectWhere
+        if (source is IAsyncSelectWhereOperator<TSource> selectWhereOp) {
+            return selectWhereOp.ComposeWith(selector);
+        }
+
         var pars = new AsyncOperatorParams();
 
-        if (sequence is IAsyncOperator<AsyncWhereRecord<TSource>> op) {
+        if (source is IAsyncOperator<TSource> op) {
             pars = op.Params;
         }
 
-        return new AsyncWhereOperator<TSource>(sequence, pars);
-    }
-
-    private class AsyncWhereOperator<T> : IAsyncOperator<T> {
-        private readonly IAsyncEnumerable<AsyncWhereRecord<T>> parent;
-
-        public AsyncOperatorParams Params { get; }
-
-        public AsyncWhereOperator(
-            IAsyncEnumerable<AsyncWhereRecord<T>> parent, 
-            AsyncOperatorParams pars) {
-
-            this.parent = parent;
-            this.Params = pars;
-        }
-
-        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            await foreach (var item in this.parent) {
-                if (item.IsValid) {
-                    yield return item.Value;
-                }
-            }
-        }
-    }
-
-    private readonly struct AsyncWhereRecord<T> {
-        public readonly T Value;
-        public readonly bool IsValid;
-
-        public AsyncWhereRecord(T value, bool isValid) {
-            this.Value = value;
-            this.IsValid = isValid;
-        }
+        return new AsyncSelectWhereOperator<TSource, TSource>(source, selector, pars);
     }
 }

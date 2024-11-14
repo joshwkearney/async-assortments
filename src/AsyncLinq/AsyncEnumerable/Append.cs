@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using AsyncLinq.Operators;
 
 namespace AsyncLinq;
 
@@ -15,38 +15,16 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
+        if (source is IEnumerableConcatOperator<TSource> concatOp) {
+            return concatOp.ComposeWith([], [element]);
+        }
+
         var pars = new AsyncOperatorParams();
 
         if (source is IAsyncOperator<TSource> op) {
             pars = op.Params;
         }
 
-        if (pars.IsUnordered) {
-            return source.Concat([element]);
-        }
-        else {
-            return new SequentialAppendOperator<TSource>(source, element, pars);
-        }
-    }
-
-    private class SequentialAppendOperator<T> : IAsyncOperator<T> {
-        private readonly IAsyncEnumerable<T> parent;
-        private readonly T toAppend;
-
-        public AsyncOperatorParams Params { get; }
-
-        public SequentialAppendOperator(IAsyncEnumerable<T> parent, T item, AsyncOperatorParams pars) {
-            this.parent = parent;
-            this.toAppend = item;
-            this.Params = pars;
-        }
-
-        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
-                yield return item;
-            }
-
-            yield return this.toAppend;
-        }
+        return new Operators.EnumerableConcatOperator<TSource>(source, [], [element], pars);
     }
 }

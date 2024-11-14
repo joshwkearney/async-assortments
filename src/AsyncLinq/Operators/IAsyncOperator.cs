@@ -1,4 +1,4 @@
-namespace AsyncLinq;
+namespace AsyncLinq.Operators;
 
 internal interface IAsyncOperator<out T> : IAsyncEnumerable<T> {
     public AsyncOperatorParams Params { get; }
@@ -15,15 +15,15 @@ internal readonly record struct AsyncOperatorParams {
     public readonly bool IsUnordered;
 
     public AsyncOperatorParams(AsyncExecutionMode executionMode, bool isUnordered) {
-        this.ExecutionMode = executionMode;
-        this.IsUnordered = isUnordered;
+        ExecutionMode = executionMode;
+        IsUnordered = isUnordered;
     }
 
     public AsyncOperatorParams WithExecution(AsyncExecutionMode execution) {
-        return new AsyncOperatorParams(execution, this.IsUnordered);
+        return new AsyncOperatorParams(execution, IsUnordered);
     }
 
     public AsyncOperatorParams WithIsUnordered(bool isUnordered) {
-        return new AsyncOperatorParams(this.ExecutionMode, isUnordered);
+        return new AsyncOperatorParams(ExecutionMode, isUnordered);
     }
 }

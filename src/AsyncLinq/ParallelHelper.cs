@@ -1,7 +1,5 @@
-﻿using System.Runtime.CompilerServices;
-using System.Threading;
+﻿using AsyncLinq.Operators;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 
 namespace AsyncLinq;
 
@@ -12,50 +10,6 @@ internal static class ParallelHelper {
         SingleWriter = false
     };
 
-    internal static async IAsyncEnumerator<E> DoOrdered<T, E>(
-        IAsyncEnumerable<T> sequence,
-        Action<T, List<ValueTask<E>>> action,
-        CancellationToken cancellationToken) {
-
-        var list = new List<ValueTask<E>>();
-        var exceptions = null as List<Exception>;
-
-        await foreach (var item in sequence.WithCancellation(cancellationToken)) {
-            try {
-                action(item, list);
-            }
-            catch (Exception ex) {
-                exceptions ??= [];
-                exceptions.Add(ex);
-            }
-        }
-
-        foreach (var task in list) {
-            var result = default(E);
-            var hasResult = false;
-
-            try {
-                result = await task;
-                hasResult = true;
-            }
-            catch (Exception ex) {
-                exceptions ??= [];
-                exceptions.Add(ex);
-            }
-
-            if (hasResult) {
-                yield return result!;
-            }
-        }
-
-        if (exceptions != null && exceptions.Count > 1) {
-            throw new AggregateException(exceptions);
-        }
-        else if (exceptions != null && exceptions.Count == 1) {
-            throw exceptions[0];
-        }
-    }
-
     internal static async IAsyncEnumerator<E> DoUnordered<T, E>(
         IAsyncEnumerable<T> sequence, 
         Func<T, Channel<E>, ValueTask> action,
@@ -63,7 +17,6 @@ internal static class ParallelHelper {
         CancellationToken cancellationToken) {
 
         var result = Channel.CreateUnbounded<E>(parallelChannelOptions);
-        var exceptions = Channel.CreateBounded<Exception>(1);
 
         // NOTE: This is fire and forget (never awaited) because any exceptions will be propagated 
         // through the channel 

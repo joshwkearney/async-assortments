@@ -1,4 +1,6 @@
-﻿namespace AsyncLinq;
+﻿using AsyncLinq.Operators;
+
+namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
     public static async ValueTask<TSource> FirstAsync<TSource>(

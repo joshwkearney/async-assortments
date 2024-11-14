@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using AsyncLinq.Operators;
 
 namespace AsyncLinq;
 
@@ -15,41 +15,17 @@ public static partial class AsyncEnumerable {
             throw new ArgumentOutOfRangeException(nameof(numToTake), "Cannot take less than zero elements");
         }
 
+        // Try to compose with a previous skip or take
+        if (source is ISkipTakeOperator<TSource> skipTakeOp) {
+            return skipTakeOp.ComposeWith(0, numToTake);
+        }
+
         var pars = new AsyncOperatorParams();
 
         if (source is IAsyncOperator<TSource> op) {
             pars = op.Params;
         }
 
-        return new TakeOperator<TSource>(source, numToTake, pars);
-    }
-
-    private class TakeOperator<T> : IAsyncOperator<T> {
-        private readonly IAsyncEnumerable<T> parent;
-        private readonly int numToTake;
-
-        public AsyncOperatorParams Params { get; }
-
-        public TakeOperator(IAsyncEnumerable<T> parent, int numToTake, AsyncOperatorParams pars) {
-            this.parent = parent;
-            this.numToTake = numToTake;
-            this.Params = pars;
-        }
-
-        public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            await using var iterator = this.parent.GetAsyncEnumerator(cancellationToken);
-            int taken = 0;
-
-            while (taken < this.numToTake) {
-                var hasNext = await iterator.MoveNextAsync();
-
-                if (!hasNext) {
-                    break;
-                }
-
-                yield return iterator.Current;
-                taken++;
-            }
-        }
+        return new SkipTakeOperator<TSource>(source, 0, numToTake, pars);
     }
 }
