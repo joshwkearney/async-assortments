@@ -76,7 +76,7 @@ public static partial class AsyncEnumerable {
             var secondKeys = new Dictionary<TKey, List<E>>();
 
             var keyLock = new object();
-            var channel = Channel.CreateUnbounded<TResult>(channelOptions);
+            var channel = Channel.CreateUnbounded<TResult>();
 
             var channelCompleteLock = new object();
             var firstFinished = false;

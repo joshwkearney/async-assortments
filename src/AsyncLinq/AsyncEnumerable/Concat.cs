@@ -16,8 +16,12 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(second));
         }
 
-        if (source is IConcatManyOperator<TSource> concatOp) {
-            return concatOp.ComposeWith([second]);
+        if (second == EmptyOperator<TSource>.Instance) {
+            return source;
+        }
+
+        if (source is IConcatOperator<TSource> concatOp) {
+            return concatOp.Concat(second);
         }
 
         var pars = new AsyncOperatorParams();
@@ -26,7 +30,7 @@ public static partial class AsyncEnumerable {
             pars = op.Params;
         }
 
-        return new ConcatManyOperator<TSource>([source, second], pars);
+        return new ConcatOperator<TSource>([source, second], pars);
     }
 
     public static IAsyncEnumerable<TSource> Concat<TSource>(
@@ -41,8 +45,15 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(second));
         }
 
+        var isSecondEmpty = object.ReferenceEquals(second, Array.Empty<TSource>()) ||
+                            object.ReferenceEquals(second, Enumerable.Empty<TSource>());
+
+        if (isSecondEmpty) {
+            return source;
+        }
+
         if (source is IEnumerableConcatOperator<TSource> concatOp) {
-            return concatOp.ComposeWith([], second);
+            return concatOp.ConcatEnumerables([], second);
         }
 
         var pars = new AsyncOperatorParams();

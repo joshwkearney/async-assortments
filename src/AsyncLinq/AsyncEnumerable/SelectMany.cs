@@ -52,27 +52,6 @@ public static partial class AsyncEnumerable {
         return new EnumerableSelectManyAsyncOperator<TSource, TResult>(source, selector, pars);
     }
 
-    //private class UnorderedSelectManyAsyncOperator<T, E> : IAsyncOperator<E> {
-    //    private readonly IAsyncEnumerable<T> parent;
-    //    private readonly Func<T, IAsyncEnumerable<E>> selector;
-
-    //    public AsyncOperatorParams Params { get; }
-
-    //    public UnorderedSelectManyAsyncOperator(
-    //        IAsyncEnumerable<T> sequence,
-    //        Func<T, IAsyncEnumerable<E>> selector,
-    //        AsyncOperatorParams pars) {
-
-    //        this.parent = sequence;
-    //        this.selector = selector;
-    //        this.Params = pars;
-    //    }
-
-    //    public async IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-    //        throw new NotImplementedException();
-    //    }
-    //}
-
     private class SequentialSelectManyAsyncOperator<T, E> : IAsyncOperator<E> {
         private readonly IAsyncEnumerable<T> parent;
         private readonly Func<T, IAsyncEnumerable<E>> selector;

@@ -15,9 +15,13 @@ public static partial class AsyncEnumerable {
             throw new ArgumentOutOfRangeException(nameof(numToSkip), "Cannot skip less than zero elements");
         }
 
+        if (numToSkip == 0) {
+            return source;
+        }
+        
         // Try to compose with a previous skip or take
         if (source is ISkipTakeOperator<TSource> skipTakeOp) {
-            return skipTakeOp.ComposeWith(numToSkip, long.MaxValue);
+            return skipTakeOp.SkipTake(numToSkip, int.MaxValue);
         }
 
         var pars = new AsyncOperatorParams();
@@ -26,6 +30,6 @@ public static partial class AsyncEnumerable {
             pars = op.Params;
         }
 
-        return new SkipTakeOperator<TSource>(source, numToSkip, long.MaxValue, pars);
+        return new SkipTakeOperator<TSource>(source, numToSkip, int.MaxValue, pars);
     }
 }

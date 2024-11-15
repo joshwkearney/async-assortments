@@ -1,8 +1,8 @@
 ﻿using System.Threading.Channels;
 
 namespace AsyncLinq.Operators {
-    internal interface ISelectWhereOperator<T> {
-        public IAsyncEnumerable<E> ComposeWith<E>(SelectWhereFunc<T, E> nextSelector);
+    internal interface ISelectWhereOperator<T> : IAsyncOperator<T> {
+        public IAsyncEnumerable<E> SelectWhere<E>(SelectWhereFunc<T, E> nextSelector);
     }
 
     internal record struct SelectWhereResult<T>(bool IsValid, T Value);
@@ -35,7 +35,7 @@ namespace AsyncLinq.Operators {
             }
         }
 
-        public IAsyncEnumerable<G> ComposeWith<G>(SelectWhereFunc<E, G> nextSelector) {
+        public IAsyncEnumerable<G> SelectWhere<G>(SelectWhereFunc<E, G> nextSelector) {
             return new SelectWhereOperator<T, G>(
                 this.parent, 
                 x => {
@@ -50,7 +50,7 @@ namespace AsyncLinq.Operators {
                 this.Params);
         }
 
-        public IAsyncEnumerable<G> ComposeWith<G>(AsyncSelectWhereFunc<E, G> nextSelector) {
+        public IAsyncEnumerable<G> AsyncSelectWhere<G>(AsyncSelectWhereFunc<E, G> nextSelector) {
             return new AsyncSelectWhereOperator<T, G>(
                 this.parent,
                 async x => {

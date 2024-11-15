@@ -1,8 +1,8 @@
 ﻿using System.Threading.Channels;
 
 namespace AsyncLinq.Operators {
-    internal interface IAsyncSelectWhereOperator<E> {
-        public IAsyncEnumerable<G> ComposeWith<G>(AsyncSelectWhereFunc<E, G> nextSelector);
+    internal interface IAsyncSelectWhereOperator<E> : IAsyncOperator<E> {
+        public IAsyncEnumerable<G> AsyncSelectWhere<G>(AsyncSelectWhereFunc<E, G> nextSelector);
     }
 
     internal delegate ValueTask<SelectWhereResult<E>> AsyncSelectWhereFunc<T, E>(T item);
@@ -23,7 +23,7 @@ namespace AsyncLinq.Operators {
             this.Params = pars;
         }
 
-        public IAsyncEnumerable<G> ComposeWith<G>(SelectWhereFunc<E, G> nextSelector) {
+        public IAsyncEnumerable<G> SelectWhere<G>(SelectWhereFunc<E, G> nextSelector) {
             return new AsyncSelectWhereOperator<T, G>(
                 this.parent,
                 async item => {
@@ -38,7 +38,7 @@ namespace AsyncLinq.Operators {
                 this.Params);
         }
 
-        public IAsyncEnumerable<G> ComposeWith<G>(AsyncSelectWhereFunc<E, G> nextSelector) {
+        public IAsyncEnumerable<G> AsyncSelectWhere<G>(AsyncSelectWhereFunc<E, G> nextSelector) {
             return new AsyncSelectWhereOperator<T, G>(
                 this.parent,
                 async item => {
@@ -52,7 +52,7 @@ namespace AsyncLinq.Operators {
                 },
                 this.Params);
         }
-
+        
         public IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
             if (this.Params.ExecutionMode == AsyncExecutionMode.Sequential) {
                 return this.SequentialHelper(cancellationToken);
@@ -96,10 +96,8 @@ namespace AsyncLinq.Operators {
             var channel = Channel.CreateUnbounded<ValueTask<SelectWhereResult<E>>>(new UnboundedChannelOptions() {
                 AllowSynchronousContinuations = true
             });
-
-            // NOTE: This is fire and forget (never awaited) because any exceptions will be propagated 
-            // through the channel 
-            this.OrderedIterateHelper(channel, cancellationToken);
+            
+            var iterateTask = this.OrderedIterateHelper(channel, cancellationToken);
 
             while (true) {
                 var canRead = await channel.Reader.WaitToReadAsync(cancellationToken);
@@ -118,9 +116,11 @@ namespace AsyncLinq.Operators {
                     yield return value;
                 }
             }
+
+            await iterateTask;
         }
 
-        private async void OrderedIterateHelper(Channel<ValueTask<SelectWhereResult<E>>> channel, CancellationToken token) {
+        private async Task OrderedIterateHelper(Channel<ValueTask<SelectWhereResult<E>>> channel, CancellationToken token) {
             try {
                 var isParallel = this.Params.ExecutionMode == AsyncExecutionMode.Parallel;
                 var selector = this.selector;
@@ -132,11 +132,9 @@ namespace AsyncLinq.Operators {
                 await foreach (var item in this.parent.WithCancellation(token)) {
                     channel.Writer.TryWrite(selector(item));
                 }
-
-                channel.Writer.Complete();
             }
-            catch (Exception ex) {
-                channel.Writer.Complete(ex);
+            finally {
+                channel.Writer.Complete();
             }
         }
     }

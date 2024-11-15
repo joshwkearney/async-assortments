@@ -15,8 +15,12 @@ public static partial class AsyncEnumerable {
             throw new InvalidOperationException("Sequence contains no elements");
         }
 
-        while (await iterator.MoveNextAsync()) { }
+        var last = iterator.Current;
 
-        return iterator.Current;
+        while (await iterator.MoveNextAsync()) {
+            last = iterator.Current;
+        }
+
+        return last;
     }
 }

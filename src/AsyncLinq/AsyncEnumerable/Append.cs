@@ -16,7 +16,7 @@ public static partial class AsyncEnumerable {
         }
 
         if (source is IEnumerableConcatOperator<TSource> concatOp) {
-            return concatOp.ComposeWith([], [element]);
+            return concatOp.ConcatEnumerables([], [element]);
         }
 
         var pars = new AsyncOperatorParams();

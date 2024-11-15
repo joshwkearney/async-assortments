@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AsyncLinq.Operators {
-    internal interface ISkipTakeOperator<T> {
-        public IAsyncEnumerable<T> ComposeWith(int skip, int take);
+    internal interface ISkipTakeOperator<out T> : IAsyncOperator<T> {
+        public IAsyncEnumerable<T> SkipTake(int skip, int take);
     }
 
     internal class SkipTakeOperator<T> : IAsyncOperator<T>, ISkipTakeOperator<T> {
@@ -23,7 +23,7 @@ namespace AsyncLinq.Operators {
             this.Params = pars;
         }
 
-        public IAsyncEnumerable<T> ComposeWith(int skip, int take) {
+        public IAsyncEnumerable<T> SkipTake(int skip, int take) {
             return new SkipTakeOperator<T>(
                 this.parent, 
                 this.skip + skip, 

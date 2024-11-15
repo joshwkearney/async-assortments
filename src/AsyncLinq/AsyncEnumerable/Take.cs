@@ -17,7 +17,7 @@ public static partial class AsyncEnumerable {
 
         // Try to compose with a previous skip or take
         if (source is ISkipTakeOperator<TSource> skipTakeOp) {
-            return skipTakeOp.ComposeWith(0, numToTake);
+            return skipTakeOp.SkipTake(0, numToTake);
         }
 
         var pars = new AsyncOperatorParams();

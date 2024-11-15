@@ -29,7 +29,7 @@ public static partial class AsyncEnumerable {
 
         // Try to compose with a previous operator
         if (source is ISelectWhereOperator<TSource> selectWhereOp) {
-            return selectWhereOp.ComposeWith(selectWhereFunc);
+            return selectWhereOp.SelectWhere(selectWhereFunc);
         }
 
         var pars = new AsyncOperatorParams();

@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace AsyncLinq.Operators {
     internal interface IEnumerableConcatOperator<T> : IAsyncOperator<T> {
-        public IAsyncEnumerable<T> ComposeWith(IEnumerable<T> before, IEnumerable<T> after);
+        public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after);
     }
 
-    internal class EnumerableConcatOperator<T> : IAsyncOperator<T>, IEnumerableConcatOperator<T> {
+    internal class EnumerableConcatOperator<T> : IAsyncOperator<T>, IEnumerableConcatOperator<T>, IConcatOperator<T> {
         private readonly IEnumerable<T> before;
         private readonly IEnumerable<T> after;
         private readonly IAsyncEnumerable<T> parent;
@@ -28,12 +28,18 @@ namespace AsyncLinq.Operators {
             Params = pars;
         }
 
-        public IAsyncEnumerable<T> ComposeWith(IEnumerable<T> before, IEnumerable<T> after) {
+        public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
             return new EnumerableConcatOperator<T>(
                 this.parent,
                 before.Concat(this.before),
                 this.after.Concat(after),
                 this.Params);
+        }
+        
+        public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
+            var seqs = new[] { this.before.AsAsyncEnumerable(), this.parent, this.after.AsAsyncEnumerable(), sequence };
+
+            return new ConcatOperator<T>(seqs, this.Params);
         }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

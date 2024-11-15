@@ -1,26 +1,32 @@
 ﻿using System.Threading.Channels;
 
 namespace AsyncLinq.Operators {
-    internal interface IConcatManyOperator<T> : IAsyncEnumerable<T> {
-        public IAsyncEnumerable<T> ComposeWith(IEnumerable<IAsyncEnumerable<T>> sequences);
+    internal interface IConcatOperator<T> : IAsyncOperator<T> {
+        public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequences);
     }
 
-    internal class ConcatManyOperator<T> : IAsyncOperator<T>, IConcatManyOperator<T> {
+    internal class ConcatOperator<T> : IAsyncOperator<T>, IConcatOperator<T>, IEnumerableConcatOperator<T> {
         private readonly IEnumerable<IAsyncEnumerable<T>> sequences;
 
         public AsyncOperatorParams Params { get; }
 
-        public ConcatManyOperator(IEnumerable<IAsyncEnumerable<T>> sequences, AsyncOperatorParams pars) {
+        public ConcatOperator(IEnumerable<IAsyncEnumerable<T>> sequences, AsyncOperatorParams pars) {
             this.sequences = sequences;
             this.Params = pars;
         }
 
-        public IAsyncEnumerable<T> ComposeWith(IEnumerable<IAsyncEnumerable<T>> sequences) {
-            var seqs = this.sequences.Concat(sequences);
+        public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequences) {
+            var seqs = this.sequences.Append(sequences);
 
-            return new ConcatManyOperator<T>(seqs, this.Params);
+            return new ConcatOperator<T>(seqs, this.Params);
         }
 
+        public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
+            var seqs = this.sequences.Prepend(before.AsAsyncEnumerable()).Append(after.AsAsyncEnumerable());
+
+            return new ConcatOperator<T>(seqs, this.Params);
+        }
+        
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
             if (this.Params.IsUnordered) {
                 return this.UnorderedHelper(cancellationToken);
@@ -64,7 +70,7 @@ namespace AsyncLinq.Operators {
 
             async Task UnorderedIterateHelper(IAsyncEnumerable<T> seq) {
                 try {
-                    await foreach (var item in seq) {
+                    await foreach (var item in seq.WithCancellation(cancellationToken)) {
                         channel.Writer.TryWrite(item);
                     }
                 }
