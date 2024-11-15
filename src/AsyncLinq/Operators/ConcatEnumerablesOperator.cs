@@ -5,18 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AsyncLinq.Operators {
-    internal interface IEnumerableConcatOperator<T> : IAsyncOperator<T> {
+    internal interface IConcatEnumerablesOperator<T> : IAsyncOperator<T> {
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after);
     }
 
-    internal class EnumerableConcatOperator<T> : IAsyncOperator<T>, IEnumerableConcatOperator<T>, IConcatOperator<T> {
+    internal class ConcatEnumerablesOperator<T> : IAsyncOperator<T>, IConcatEnumerablesOperator<T>, IConcatOperator<T> {
         private readonly IEnumerable<T> before;
         private readonly IEnumerable<T> after;
         private readonly IAsyncEnumerable<T> parent;
 
         public AsyncOperatorParams Params { get; }
 
-        public EnumerableConcatOperator(
+        public ConcatEnumerablesOperator(
             IAsyncEnumerable<T> parent,
             IEnumerable<T> before, 
             IEnumerable<T> after, 
@@ -29,7 +29,7 @@ namespace AsyncLinq.Operators {
         }
 
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
-            return new EnumerableConcatOperator<T>(
+            return new ConcatEnumerablesOperator<T>(
                 this.parent,
                 before.Concat(this.before),
                 this.after.Concat(after),

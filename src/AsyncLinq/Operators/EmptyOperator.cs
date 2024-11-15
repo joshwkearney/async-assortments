@@ -1,7 +1,8 @@
 namespace AsyncLinq.Operators;
 
-internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectWhereOperator<T>, IConcatOperator<T>, 
-    IEnumerableConcatOperator<T>, ISelectWhereOperator<T>, ISkipTakeOperator<T> {
+internal class EmptyOperator<T> : IAsyncOperator<T>, ISelectWhereTaskOperator<T>, IConcatOperator<T>, 
+    IConcatEnumerablesOperator<T>, ISelectWhereOperator<T>, ISkipTakeOperator<T> {
+
     public static IAsyncOperator<T> Instance { get; } = new EmptyOperator<T>();
     
     public AsyncOperatorParams Params => default;
@@ -12,7 +13,7 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectWhereOperator<T
         yield break;
     }
 
-    public IAsyncEnumerable<G> AsyncSelectWhere<G>(AsyncSelectWhereFunc<T, G> nextSelector) {
+    public IAsyncEnumerable<G> SelectWhereTask<G>(AsyncSelectWhereFunc<T, G> nextSelector) {
         return EmptyOperator<G>.Instance;
     }
 

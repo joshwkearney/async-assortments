@@ -16,6 +16,10 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(second));
         }
 
+        if (source == EmptyOperator<TSource>.Instance) {
+            return second;
+        }
+
         if (second == EmptyOperator<TSource>.Instance) {
             return source;
         }
@@ -52,7 +56,7 @@ public static partial class AsyncEnumerable {
             return source;
         }
 
-        if (source is IEnumerableConcatOperator<TSource> concatOp) {
+        if (source is IConcatEnumerablesOperator<TSource> concatOp) {
             return concatOp.ConcatEnumerables([], second);
         }
 
@@ -62,6 +66,6 @@ public static partial class AsyncEnumerable {
             pars = op.Params;
         }
 
-        return new EnumerableConcatOperator<TSource>(source, [], second, pars);
+        return new ConcatEnumerablesOperator<TSource>(source, [], second, pars);
     }
 }

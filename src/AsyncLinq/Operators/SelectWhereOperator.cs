@@ -9,7 +9,9 @@ namespace AsyncLinq.Operators {
 
     internal delegate SelectWhereResult<E> SelectWhereFunc<T, E>(T item);
 
-    internal class SelectWhereOperator<T, E> : IAsyncOperator<E>, ISelectWhereOperator<E>, IAsyncSelectWhereOperator<E> {
+    internal class SelectWhereOperator<T, E> : IAsyncOperator<E>, ISelectWhereOperator<E>, 
+        ISelectWhereTaskOperator<E> {
+
         private readonly IAsyncEnumerable<T> parent;
         private readonly SelectWhereFunc<T, E> selector;
 
@@ -25,6 +27,36 @@ namespace AsyncLinq.Operators {
             this.Params = pars;
         }
 
+        public IAsyncEnumerable<G> SelectWhere<G>(SelectWhereFunc<E, G> nextSelector) {
+            return new SelectWhereOperator<T, G>(this.parent, newSelector, this.Params);
+
+            SelectWhereResult<G> newSelector(T item) {
+                var (isValid, value) = this.selector(item);
+
+                if (!isValid) {
+                    return new(false, default!);
+                }
+
+                return nextSelector(value);
+            }
+        }
+
+        public IAsyncEnumerable<G> SelectWhereTask<G>(AsyncSelectWhereFunc<E, G> nextSelector) {
+            return new SelectWhereTaskOperator<T, G>(this.parent, newSelector, this.Params);
+
+            ValueTask<SelectWhereResult<G>> newSelector(T item) {
+                var (isValid, value) = this.selector(item);
+
+                if (!isValid) {
+                    var result = new SelectWhereResult<G>(false, default!);
+
+                    return new ValueTask<SelectWhereResult<G>>(result);
+                }
+
+                return nextSelector(value);
+            }
+        }
+
         public async IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
             await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
                 var (isValid, value) = this.selector(item);
@@ -33,36 +65,6 @@ namespace AsyncLinq.Operators {
                     yield return value;
                 }
             }
-        }
-
-        public IAsyncEnumerable<G> SelectWhere<G>(SelectWhereFunc<E, G> nextSelector) {
-            return new SelectWhereOperator<T, G>(
-                this.parent, 
-                x => {
-                    var (isValid, value) = this.selector(x);
-
-                    if (!isValid) {
-                        return new(false, default!);
-                    }
-
-                    return nextSelector(value);
-                },
-                this.Params);
-        }
-
-        public IAsyncEnumerable<G> AsyncSelectWhere<G>(AsyncSelectWhereFunc<E, G> nextSelector) {
-            return new AsyncSelectWhereOperator<T, G>(
-                this.parent,
-                async x => {
-                    var (isValid, value) = this.selector(x);
-
-                    if (!isValid) {
-                        return new(false, default!);
-                    }
-
-                    return await nextSelector(value);
-                },
-                this.Params);
         }
     }
 }

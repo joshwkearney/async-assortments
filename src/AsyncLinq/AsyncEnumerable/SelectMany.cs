@@ -21,14 +21,7 @@ public static partial class AsyncEnumerable {
             pars = op.Params;
         }
 
-        // TODO: Implement unordered select many
-
-        //if (pars.IsUnordered) {
-        //    return new UnorderedSelectManyAsyncOperator<TSource, TResult>(source, selector, pars);
-        //}
-        //else {
-            return new SequentialSelectManyAsyncOperator<TSource, TResult>(source, selector, pars);
-        //}
+        return new FlattenOperator<TResult>(pars, source.Select(selector));
     }
 
     public static IAsyncEnumerable<TResult> SelectMany<TSource, TResult>(
@@ -49,56 +42,6 @@ public static partial class AsyncEnumerable {
             pars = op.Params;
         }
 
-        return new EnumerableSelectManyAsyncOperator<TSource, TResult>(source, selector, pars);
-    }
-
-    private class SequentialSelectManyAsyncOperator<T, E> : IAsyncOperator<E> {
-        private readonly IAsyncEnumerable<T> parent;
-        private readonly Func<T, IAsyncEnumerable<E>> selector;
-        
-        public AsyncOperatorParams Params { get; }
-
-        public SequentialSelectManyAsyncOperator(
-            IAsyncEnumerable<T> sequence,
-            Func<T, IAsyncEnumerable<E>> selector,
-            AsyncOperatorParams pars) {
-
-            this.parent = sequence;
-            this.selector = selector;
-            this.Params = pars;
-        }
-
-        public async IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
-                await foreach (var sub in selector(item).WithCancellation(cancellationToken)) {
-                    yield return sub;
-                }
-            }
-        }
-    }
-
-    private class EnumerableSelectManyAsyncOperator<T, E> : IAsyncOperator<E> {
-        private readonly IAsyncEnumerable<T> parent;
-        private readonly Func<T, IEnumerable<E>> selector;
-
-        public AsyncOperatorParams Params { get; }
-
-        public EnumerableSelectManyAsyncOperator(
-            IAsyncEnumerable<T> sequence,
-            Func<T, IEnumerable<E>> selector,
-            AsyncOperatorParams pars) {
-
-            this.parent = sequence;
-            this.selector = selector;
-            this.Params = pars;
-        }
-
-        public async IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
-                foreach (var sub in selector(item)) {
-                    yield return sub;
-                }
-            }
-        }
+        return new FlattenEnumerablesOperator<TResult>(pars, source.Select(selector));
     }
 }

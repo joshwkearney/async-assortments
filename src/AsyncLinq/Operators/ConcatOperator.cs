@@ -5,7 +5,7 @@ namespace AsyncLinq.Operators {
         public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequences);
     }
 
-    internal class ConcatOperator<T> : IAsyncOperator<T>, IConcatOperator<T>, IEnumerableConcatOperator<T> {
+    internal class ConcatOperator<T> : IAsyncOperator<T>, IConcatOperator<T>, IConcatEnumerablesOperator<T> {
         private readonly IEnumerable<IAsyncEnumerable<T>> sequences;
 
         public AsyncOperatorParams Params { get; }
@@ -38,6 +38,10 @@ namespace AsyncLinq.Operators {
 
         public async IAsyncEnumerator<T> SequentialHelper(CancellationToken cancellationToken) {
             foreach (var sequence in this.sequences) {
+                if (sequence == EmptyOperator<T>.Instance) {
+                    continue;
+                }
+
                 await foreach (var item in sequence) {
                     yield return item;
                 }
@@ -70,6 +74,10 @@ namespace AsyncLinq.Operators {
 
             async Task UnorderedIterateHelper(IAsyncEnumerable<T> seq) {
                 try {
+                    if (seq == EmptyOperator<T>.Instance) {
+                        return;
+                    }
+
                     await foreach (var item in seq.WithCancellation(cancellationToken)) {
                         channel.Writer.TryWrite(item);
                     }

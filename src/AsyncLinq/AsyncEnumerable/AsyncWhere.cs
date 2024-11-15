@@ -21,8 +21,8 @@ public static partial class AsyncEnumerable {
         }
 
         // First try to compose this operation with a previous SelectWhere
-        if (source is IAsyncSelectWhereOperator<TSource> selectWhereOp) {
-            return selectWhereOp.AsyncSelectWhere(selector);
+        if (source is ISelectWhereTaskOperator<TSource> selectWhereOp) {
+            return selectWhereOp.SelectWhereTask(selector);
         }
 
         var pars = new AsyncOperatorParams();
@@ -31,6 +31,6 @@ public static partial class AsyncEnumerable {
             pars = op.Params;
         }
 
-        return new AsyncSelectWhereOperator<TSource, TSource>(source, selector, pars);
+        return new SelectWhereTaskOperator<TSource, TSource>(source, selector, pars);
     }
 }

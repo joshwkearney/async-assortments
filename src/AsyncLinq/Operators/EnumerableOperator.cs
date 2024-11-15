@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AsyncLinq.Operators {
-    internal class EnumerableOperator<T> : IAsyncOperator<T>, ISkipTakeOperator<T>, ISelectWhereOperator<T>, IEnumerableConcatOperator<T> {
+    internal class EnumerableOperator<T> : IAsyncOperator<T>, ISkipTakeOperator<T>, ISelectWhereOperator<T>, 
+        IConcatEnumerablesOperator<T> {
+
         private readonly IEnumerable<T> collection;
 
         public AsyncOperatorParams Params => default;
