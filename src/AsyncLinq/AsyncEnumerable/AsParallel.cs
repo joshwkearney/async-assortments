@@ -20,6 +20,8 @@ public static partial class AsyncEnumerable {
     ///         multithreading is needed.
     ///     </para>
     /// </remarks>
+    /// <seealso cref="AsSequential{TSource}" />
+    /// <seealso cref="AsConcurrent{TSource}" />
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> AsParallel<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
         if (source == null) {
@@ -48,8 +50,7 @@ public static partial class AsyncEnumerable {
     ///     <para>
     ///         This method changes the behavior of operators that involve asynchronous operations,
     ///         such as <c>AsyncSelect</c>, <c>AsyncWhere</c>, etc. For these methods, the returned
-    ///         tasks are allowed to run at the same time, but are not scheduled to run on the thread
-    ///         pool.
+    ///         tasks are allowed to run at the same time, but they still only use one thread.
     ///     </para>
     ///     
     ///     <para>
@@ -57,6 +58,8 @@ public static partial class AsyncEnumerable {
     ///         multithreading is not needed.
     ///     </para>
     /// </remarks>
+    /// <seealso cref="AsSequential{TSource}" />
+    /// <seealso cref="AsParallel{TSource}" />
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> AsConcurrent<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
         if (source == null) {
