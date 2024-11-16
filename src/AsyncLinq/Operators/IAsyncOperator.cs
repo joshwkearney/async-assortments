@@ -2,6 +2,8 @@ namespace AsyncLinq.Operators;
 
 internal interface IAsyncOperator<out T> : IAsyncEnumerable<T> {
     public AsyncOperatorParams Params { get; }
+
+    public IAsyncOperator<T> WithParams(AsyncOperatorParams pars);
 }
 
 internal enum AsyncExecutionMode {

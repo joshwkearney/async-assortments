@@ -30,6 +30,6 @@ public static partial class AsyncEnumerable {
             pars = op.Params;
         }
 
-        return new SkipTakeOperator<TSource>(source, numToSkip, int.MaxValue, pars);
+        return new SkipTakeOperator<TSource>(pars, source, numToSkip, int.MaxValue);
     }
 }

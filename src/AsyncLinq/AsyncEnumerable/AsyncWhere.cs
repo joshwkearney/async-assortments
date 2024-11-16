@@ -31,6 +31,6 @@ public static partial class AsyncEnumerable {
             pars = op.Params;
         }
 
-        return new SelectWhereTaskOperator<TSource, TSource>(source, selector, pars);
+        return new SelectWhereTaskOperator<TSource, TSource>(pars, source, selector);
     }
 }

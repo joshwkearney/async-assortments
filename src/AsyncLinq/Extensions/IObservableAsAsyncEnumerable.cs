@@ -12,19 +12,24 @@ public static partial class AsyncEnumerableExtensions {
             throw new ArgumentNullException(nameof(source));
         }
 
-        return new ObservableWrapper<TSource>(source, maxBuffer);
+        return new ObservableWrapper<TSource>(default, source, maxBuffer);
     }
 
     private class ObservableWrapper<T> : IAsyncOperator<T> {
         private readonly IObservable<T> source;
         private readonly int maxBuffer;
+        
+        public AsyncOperatorParams Params { get; }
 
-        public ObservableWrapper(IObservable<T> source, int maxBuffer) {
+        public ObservableWrapper(AsyncOperatorParams pars, IObservable<T> source, int maxBuffer) {
+            this.Params = pars;
             this.source = source;
             this.maxBuffer = maxBuffer;
         }
-
-        public AsyncOperatorParams Params => default;
+        
+        public IAsyncOperator<T> WithParams(AsyncOperatorParams pars) {
+            return new ObservableWrapper<T>(pars, this.source, this.maxBuffer);
+        }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
             Channel<T> channel;

@@ -14,11 +14,15 @@ namespace AsyncLinq.Operators {
             this.parent = parent;
             Params = pars;
         }
+        
+        public IAsyncOperator<T> WithParams(AsyncOperatorParams pars) {
+            return new FlattenEnumerablesOperator<T>(pars, parent);
+        }
 
         public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
             if (this.parent is EnumerableOperator<IEnumerable<T>> op) {
                 var newItems = op.Items.Select(x => x.AsAsyncEnumerable()).Append(sequence);
-                var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(newItems);
+                var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(op.Params, newItems);
                 
                 return new FlattenOperator<T>(this.Params, newParent);
             }
@@ -30,7 +34,7 @@ namespace AsyncLinq.Operators {
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
             if (this.parent is EnumerableOperator<IEnumerable<T>> op) {
                 var newItems = op.Items.Prepend(before).Append(after);
-                var newParent = new EnumerableOperator<IEnumerable<T>>(newItems);
+                var newParent = new EnumerableOperator<IEnumerable<T>>(op.Params, newItems);
                 
                 return new FlattenEnumerablesOperator<T>(this.Params, newParent);
             }

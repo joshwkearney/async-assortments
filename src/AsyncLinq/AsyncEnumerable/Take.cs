@@ -26,6 +26,6 @@ public static partial class AsyncEnumerable {
             pars = op.Params;
         }
 
-        return new SkipTakeOperator<TSource>(source, 0, numToTake, pars);
+        return new SkipTakeOperator<TSource>(pars, source, 0, numToTake);
     }
 }

@@ -25,7 +25,11 @@ namespace AsyncLinq.Operators {
             this.parent = parent;
             this.before = before;
             this.after = after;
-            Params = pars;
+            this.Params = pars;
+        }
+        
+        public IAsyncOperator<T> WithParams(AsyncOperatorParams pars) {
+            return new ConcatEnumerablesOperator<T>(pars, this.parent, this.before, this.after);
         }
 
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {

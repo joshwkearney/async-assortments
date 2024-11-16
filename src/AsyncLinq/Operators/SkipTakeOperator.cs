@@ -16,19 +16,23 @@ namespace AsyncLinq.Operators {
 
         public AsyncOperatorParams Params { get; }
 
-        public SkipTakeOperator(IAsyncEnumerable<T> parent, int skip, int take, AsyncOperatorParams pars) {
+        public SkipTakeOperator(AsyncOperatorParams pars, IAsyncEnumerable<T> parent, int skip, int take) {
             this.parent = parent;
             this.skip = skip;
             this.take = take;
             this.Params = pars;
         }
+        
+        public IAsyncOperator<T> WithParams(AsyncOperatorParams pars) {
+            return new SkipTakeOperator<T>(pars, parent, skip, take);
+        }
 
         public IAsyncEnumerable<T> SkipTake(int skip, int take) {
             return new SkipTakeOperator<T>(
+                this.Params,
                 this.parent, 
                 this.skip + skip, 
-                Math.Min(this.take, take), 
-                this.Params);
+                Math.Min(this.take, take));
         }
 
         public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

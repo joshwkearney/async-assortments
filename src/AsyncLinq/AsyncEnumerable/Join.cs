@@ -38,12 +38,12 @@ public static partial class AsyncEnumerable {
         }
 
         return new JoinOperator<TOuter, TInner, TKey, TResult>(
+            pars,
             outer, 
             inner, 
             outerKeySelector, 
             innerKeySelector, 
-            resultSelector, 
-            pars);
+            resultSelector);
     }
 
     private class JoinOperator<T, E, TKey, TResult> : IAsyncOperator<TResult> where TKey : notnull {
@@ -56,12 +56,12 @@ public static partial class AsyncEnumerable {
         public AsyncOperatorParams Params { get; }
 
         public JoinOperator(
+            AsyncOperatorParams pars,
             IAsyncEnumerable<T> parent, 
             IAsyncEnumerable<E> other, 
             Func<T, TKey> parentKeySelector, 
             Func<E, TKey> otherKeySelector,
-            Func<T, E, TResult> resultSelector,
-            AsyncOperatorParams pars) {
+            Func<T, E, TResult> resultSelector) {
 
             this.parent = parent;
             this.other = other;
@@ -69,6 +69,16 @@ public static partial class AsyncEnumerable {
             this.otherKeySelector = otherKeySelector;
             this.resultSelector = resultSelector;
             this.Params = pars;
+        }
+        
+        public IAsyncOperator<TResult> WithParams(AsyncOperatorParams pars) {
+            return new JoinOperator<T, E, TKey, TResult>(
+                pars, 
+                this.parent, 
+                this.other, 
+                this.parentKeySelector,
+                this.otherKeySelector, 
+                this.resultSelector);
         }
 
         public async IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

@@ -18,17 +18,21 @@ namespace AsyncLinq.Operators {
         public AsyncOperatorParams Params { get; }
 
         public SelectWhereOperator(
-            IAsyncEnumerable<T> collection,
-            SelectWhereFunc<T, E> selector,
-            AsyncOperatorParams pars) {
+            AsyncOperatorParams pars,
+            IAsyncEnumerable<T> parent,
+            SelectWhereFunc<T, E> selector) {
 
-            this.parent = collection;
+            this.parent = parent;
             this.selector = selector;
             this.Params = pars;
         }
+        
+        public IAsyncOperator<E> WithParams(AsyncOperatorParams pars) {
+            return new SelectWhereOperator<T, E>(pars, this.parent, this.selector);
+        }
 
         public IAsyncEnumerable<G> SelectWhere<G>(SelectWhereFunc<E, G> nextSelector) {
-            return new SelectWhereOperator<T, G>(this.parent, newSelector, this.Params);
+            return new SelectWhereOperator<T, G>(this.Params, this.parent, newSelector);
 
             SelectWhereResult<G> newSelector(T item) {
                 var (isValid, value) = this.selector(item);
@@ -42,7 +46,7 @@ namespace AsyncLinq.Operators {
         }
 
         public IAsyncEnumerable<G> SelectWhereTask<G>(AsyncSelectWhereFunc<E, G> nextSelector) {
-            return new SelectWhereTaskOperator<T, G>(this.parent, newSelector, this.Params);
+            return new SelectWhereTaskOperator<T, G>(this.Params, this.parent, newSelector);
 
             ValueTask<SelectWhereResult<G>> newSelector(T item) {
                 var (isValid, value) = this.selector(item);

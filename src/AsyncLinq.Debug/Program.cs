@@ -18,7 +18,7 @@ async ValueTask Test() {
         .AsConcurrent()
         .Append(300)
         .Concat([400, 500])
-        .Concat(new[]{600}.AsAsyncEnumerable().AsConcurrent());
+        .Concat(new[] { 600 }.AsAsyncEnumerable().AsConcurrent());
 
     var x = 78;
 

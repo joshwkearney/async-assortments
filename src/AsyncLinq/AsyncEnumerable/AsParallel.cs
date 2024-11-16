@@ -30,15 +30,16 @@ public static partial class AsyncEnumerable {
 
         var pars = new AsyncOperatorParams(AsyncExecutionMode.Parallel, !preserveOrder);
 
-        if (source is IAsyncOperator<TSource> op && op.Params == pars) {
+        if (source is not IAsyncOperator<TSource> op) {
+            return new WrapperOperator<TSource>(pars, source);
+        }
+
+        if (op.Params == pars) {
             return op;
         }
-
-        if (source is ParamsChangeOperator<TSource> changeOp) {
-            return new ParamsChangeOperator<TSource>(changeOp.Parent, pars);
+        else {
+            return op.WithParams(pars);
         }
-
-        return new ParamsChangeOperator<TSource>(source, pars);
     }
 
     /// <summary>Instructs asynchronous operators to run concurrently</summary>
@@ -68,15 +69,16 @@ public static partial class AsyncEnumerable {
 
         var pars = new AsyncOperatorParams(AsyncExecutionMode.Concurrent, !preserveOrder);
 
-        if (source is IAsyncOperator<TSource> op && op.Params == pars) {
+        if (source is not IAsyncOperator<TSource> op) {
+            return new WrapperOperator<TSource>(pars, source);
+        }
+
+        if (op.Params == pars) {
             return op;
         }
-
-        if (source is ParamsChangeOperator<TSource> changeOp) {
-            return new ParamsChangeOperator<TSource>(changeOp.Parent, pars);
+        else {
+            return op.WithParams(pars);
         }
-
-        return new ParamsChangeOperator<TSource>(source, pars);
     }
 
     /// <summary>Instructs asynchronous operators to run sequentially</summary>
@@ -103,29 +105,15 @@ public static partial class AsyncEnumerable {
 
         var pars = new AsyncOperatorParams(AsyncExecutionMode.Sequential, false);
 
-        if (source is IAsyncOperator<TSource> op && op.Params == pars) {
+        if (source is not IAsyncOperator<TSource> op) {
+            return new WrapperOperator<TSource>(pars, source);
+        }
+
+        if (op.Params == pars) {
             return op;
         }
-
-        if (source is ParamsChangeOperator<TSource> changeOp) {
-            return new ParamsChangeOperator<TSource>(changeOp.Parent, pars);
-        }
-
-        return new ParamsChangeOperator<TSource>(source, pars);
-    }
-
-    private class ParamsChangeOperator<T> : IAsyncOperator<T> {
-        public IAsyncEnumerable<T> Parent { get; }
-
-        public AsyncOperatorParams Params { get; }
-
-        public ParamsChangeOperator(IAsyncEnumerable<T> parent, AsyncOperatorParams pars) {
-            this.Parent = parent;
-            this.Params = pars;
-        }
-
-        public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            return this.Parent.GetAsyncEnumerator(cancellationToken);
+        else {
+            return op.WithParams(pars);
         }
     }
 }

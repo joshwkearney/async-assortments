@@ -15,6 +15,6 @@ public static partial class AsyncEnumerableExtensions {
             return EmptyOperator<TSource>.Instance;
         }
 
-        return new EnumerableOperator<TSource>(source);
+        return new EnumerableOperator<TSource>(default, source);
     }    
 }
