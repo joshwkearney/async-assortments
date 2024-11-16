@@ -24,6 +24,10 @@ public static partial class AsyncEnumerable {
             return source;
         }
 
+        if (second is EnumerableOperator<TSource> listOp) {
+            return source.Concat(listOp.Items);
+        }
+
         if (source is IConcatOperator<TSource> concatOp) {
             return concatOp.Concat(second);
         }
@@ -34,7 +38,7 @@ public static partial class AsyncEnumerable {
             pars = op.Params;
         }
 
-        return new ConcatOperator<TSource>([source, second], pars);
+        return new FlattenOperator<TSource>(pars, new[] { source, second }.AsAsyncEnumerable());
     }
 
     public static IAsyncEnumerable<TSource> Concat<TSource>(
@@ -66,6 +70,6 @@ public static partial class AsyncEnumerable {
             pars = op.Params;
         }
 
-        return new ConcatEnumerablesOperator<TSource>(source, [], second, pars);
+        return new ConcatEnumerablesOperator<TSource>(pars, source, [], second);
     }
 }

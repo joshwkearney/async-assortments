@@ -17,10 +17,10 @@ namespace AsyncLinq.Operators {
         public AsyncOperatorParams Params { get; }
 
         public ConcatEnumerablesOperator(
+            AsyncOperatorParams pars,
             IAsyncEnumerable<T> parent,
             IEnumerable<T> before, 
-            IEnumerable<T> after, 
-            AsyncOperatorParams pars) {
+            IEnumerable<T> after) {
 
             this.parent = parent;
             this.before = before;
@@ -30,16 +30,16 @@ namespace AsyncLinq.Operators {
 
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
             return new ConcatEnumerablesOperator<T>(
+                this.Params,
                 this.parent,
                 before.Concat(this.before),
-                this.after.Concat(after),
-                this.Params);
+                this.after.Concat(after));
         }
         
         public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
             var seqs = new[] { this.before.AsAsyncEnumerable(), this.parent, this.after.AsAsyncEnumerable(), sequence };
 
-            return new ConcatOperator<T>(seqs, this.Params);
+            return new FlattenOperator<T>(this.Params, seqs.AsAsyncEnumerable());
         }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

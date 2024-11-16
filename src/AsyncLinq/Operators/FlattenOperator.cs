@@ -6,7 +6,11 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace AsyncLinq.Operators {
-    internal class FlattenOperator<T> : IAsyncOperator<T> {
+    internal interface IConcatOperator<T> : IAsyncOperator<T> {
+        public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence);
+    }
+    
+    internal class FlattenOperator<T> : IAsyncOperator<T>, IConcatOperator<T>, IConcatEnumerablesOperator<T> {
         private static readonly UnboundedChannelOptions channelOptions = new UnboundedChannelOptions() {
             AllowSynchronousContinuations = true
         };
@@ -18,6 +22,30 @@ namespace AsyncLinq.Operators {
         public FlattenOperator(AsyncOperatorParams pars, IAsyncEnumerable<IAsyncEnumerable<T>> parent) {
             this.parent = parent;
             Params = pars;
+        }
+        
+        public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
+            if (this.parent is EnumerableOperator<IAsyncEnumerable<T>> op) {
+                var newItems = op.Items.Append(sequence);
+                var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(newItems);
+                
+                return new FlattenOperator<T>(this.Params, newParent);
+            }
+            else {
+                return new FlattenOperator<T>(this.Params, new[] { this, sequence }.AsAsyncEnumerable());
+            }
+        }
+
+        public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
+            if (this.parent is EnumerableOperator<IAsyncEnumerable<T>> op) {
+                var newItems = op.Items.Prepend(before.AsAsyncEnumerable()).Append(after.AsAsyncEnumerable());
+                var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(newItems);
+                
+                return new FlattenOperator<T>(this.Params, newParent);
+            }
+            else {
+                return new ConcatEnumerablesOperator<T>(this.Params, this, before, after);
+            }
         }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
@@ -42,12 +70,20 @@ namespace AsyncLinq.Operators {
 
         private async IAsyncEnumerator<T> OrderedHelper(CancellationToken cancellationToken) {
             var channel = Channel.CreateUnbounded<Channel<T>>(channelOptions);
-            var iterateTask = IterateOuter();
+            var errors = new ErrorCollection();
+            
+            IterateOuter();
 
             while (true) {
-                var canRead = await channel.Reader.WaitToReadAsync(cancellationToken);
+                try {
+                    var canRead = await channel.Reader.WaitToReadAsync(cancellationToken);
 
-                if (!canRead) {
+                    if (!canRead) {
+                        break;
+                    }
+                }
+                catch (Exception ex) {
+                    errors.Add(ex);
                     break;
                 }
 
@@ -56,9 +92,15 @@ namespace AsyncLinq.Operators {
                 }
 
                 while (true) {
-                    var canReadSub = await subChannel.Reader.WaitToReadAsync(cancellationToken);
+                    try {
+                        var canReadSub = await subChannel.Reader.WaitToReadAsync(cancellationToken);
 
-                    if (!canReadSub) {
+                        if (!canReadSub) {
+                            break;
+                        }
+                    }
+                    catch (Exception ex) {
+                        errors.Add(ex);
                         break;
                     }
 
@@ -69,59 +111,51 @@ namespace AsyncLinq.Operators {
                     yield return item;
                 }
             }
+            
+            var finalError = errors.ToException();
 
-            // Await the iteration so that exceptions are joined back in
-            await iterateTask;
+            if (finalError != null) {
+                throw finalError;
+            }
 
-            async Task IterateOuter() {
+            async void IterateOuter() {
                 try {
-                    var tasks = new List<Task>();
-
-                    try {
-                        await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
-                            if (item == EmptyOperator<T>.Instance) {
-                                continue;
-                            }
-
-                            var subChannel = Channel.CreateUnbounded<T>(channelOptions);
-                            var task = IterateInner(item, subChannel);
-
-                            if (!task.IsCompletedSuccessfully) {
-                                tasks.Add(task.AsTask());
-                            }
-
-                            channel.Writer.TryWrite(subChannel);
+                    await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                        if (item == EmptyOperator<T>.Instance) {
+                            continue;
                         }
-                    }
-                    catch (Exception ex) {
-                        // Add a task to our list to throw this exception so that
-                        // it is included in the aggregate exception, along with
-                        // whatever other errors are thrown
-                        tasks.Add(new Task(() => throw ex));
-                    }
 
-                    await Task.WhenAll(tasks);
-                }
-                finally {
+                        var subChannel = Channel.CreateUnbounded<T>(channelOptions);
+                        channel.Writer.TryWrite(subChannel);
+
+                        IterateInner(item, subChannel);
+                    }
+                    
                     channel.Writer.Complete();
+                }
+                catch (Exception ex) {
+                    channel.Writer.Complete(ex);
                 }
             }
 
-            async ValueTask IterateInner(IAsyncEnumerable<T> seq, Channel<T> channel) {
-                try {                   
+            async void IterateInner(IAsyncEnumerable<T> seq, Channel<T> subChannel) {
+                try {
                     await foreach (var item in seq.WithCancellation(cancellationToken)) {
-                        channel.Writer.TryWrite(item);
+                        subChannel.Writer.TryWrite(item);
                     }
+
+                    subChannel.Writer.Complete();
                 }
-                finally {
-                    channel.Writer.Complete();
-                }                
+                catch (Exception ex) {
+                    subChannel.Writer.Complete(ex);
+                }
             }
         }
 
         private async IAsyncEnumerator<T> UnorderedHelper(CancellationToken cancellationToken) {
             var channel = Channel.CreateUnbounded<T>(channelOptions);
-            var iterateTask = IterateOuter();
+            
+            IterateOuter();
 
             while (true) {
                 var canRead = await channel.Reader.WaitToReadAsync(cancellationToken);
@@ -137,36 +171,50 @@ namespace AsyncLinq.Operators {
                 yield return item;
             }
 
-            // Await the iteration so that exceptions are joined back in
-            await iterateTask;
-
-            async Task IterateOuter() {
+            async void IterateOuter() {
+                var tasks = new List<Task>();
+                var errors = new ErrorCollection();
+                
                 try {
-                    var tasks = new List<Task>();
+                    await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                        if (item == EmptyOperator<T>.Instance) {
+                            continue;
+                        }
 
-                    try {
-                        await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
-                            if (item == EmptyOperator<T>.Instance) {
-                                continue;
-                            }
+                        var task = IterateInner(item);
 
-                            var task = IterateInner(item);
-
-                            if (!task.IsCompletedSuccessfully) {
-                                tasks.Add(task.AsTask());
-                            }
+                        if (!task.IsCompletedSuccessfully) {
+                            tasks.Add(task.AsTask());
                         }
                     }
-                    catch (Exception ex) {
-                        // Add a task to our list to throw this exception so that
-                        // it is included in the aggregate exception, along with
-                        // whatever other errors are thrown
-                        tasks.Add(new Task(() => throw ex));
+                }
+                catch (Exception ex) {
+                    // Whoops, our async enumerable blew up. Catch it so we can handle errors from the
+                    // async tasks that are already running
+                    errors.Add(ex);
+                }
+
+                foreach (var task in tasks) {
+                    if (task.Exception != null) {
+                        errors.Add(task.Exception);
+
+                        continue;
                     }
 
-                    await Task.WhenAll(tasks);
+                    try {
+                        await task;
+                    }
+                    catch (Exception ex) {
+                        errors.Add(ex);
+                    }
                 }
-                finally {
+
+                var finalError = errors.ToException();
+
+                if (finalError != null) {
+                    channel.Writer.Complete(finalError);
+                }
+                else {
                     channel.Writer.Complete();
                 }
             }

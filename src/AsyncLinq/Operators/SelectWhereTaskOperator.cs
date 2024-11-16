@@ -161,10 +161,11 @@ namespace AsyncLinq.Operators {
                 if (finalError != null) {
                     channel.Writer.Complete(finalError);
                 }
-                else 
+                else {
                     channel.Writer.Complete();
                 }
-            }        
+            }
+        }        
 
         private async IAsyncEnumerator<E> OrderedHelper(CancellationToken cancellationToken) {
             var isParallel = this.Params.ExecutionMode == AsyncExecutionMode.Parallel;

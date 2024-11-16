@@ -8,28 +8,28 @@ namespace AsyncLinq.Operators {
     internal class EnumerableOperator<T> : IAsyncOperator<T>, ISkipTakeOperator<T>, ISelectWhereOperator<T>, 
         IConcatEnumerablesOperator<T> {
 
-        private readonly IEnumerable<T> collection;
+        public IEnumerable<T> Items { get; }
 
         public AsyncOperatorParams Params => default;
 
-        public EnumerableOperator(IEnumerable<T> collection) {
-            this.collection = collection;
+        public EnumerableOperator(IEnumerable<T> items) {
+            this.Items = items;
         }
 
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
-            var seq = before.Concat(this.collection).Concat(after);
+            var seq = before.Concat(this.Items).Concat(after);
 
             return new EnumerableOperator<T>(seq);
         }
 
         public IAsyncEnumerable<T> SkipTake(int skip, int take) {
-            var seq = this.collection.Skip(skip).Take(take);
+            var seq = this.Items.Skip(skip).Take(take);
 
             return new EnumerableOperator<T>(seq);
         }
 
         public IAsyncEnumerable<E> SelectWhere<E>(SelectWhereFunc<T, E> nextSelector) {
-            var seq = SelectWhereHelper(this.collection, nextSelector);
+            var seq = SelectWhereHelper(this.Items, nextSelector);
 
             return new EnumerableOperator<E>(seq);
         }
@@ -43,12 +43,10 @@ namespace AsyncLinq.Operators {
                 }
             }
         }
-
+        
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            foreach (var item in collection) {
-                cancellationToken.ThrowIfCancellationRequested();
-
+            foreach (var item in Items) {
                 yield return item;
             }
         }
