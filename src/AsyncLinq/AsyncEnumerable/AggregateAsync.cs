@@ -15,7 +15,7 @@ public static partial class AsyncEnumerable {
     /// <exception cref="OperationCanceledException">
     ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
     /// </exception>
-    public static async ValueTask<TAccumulate> AggregateAsync<TSource, TAccumulate>(
+    public static ValueTask<TAccumulate> AggregateAsync<TSource, TAccumulate>(
         this IAsyncEnumerable<TSource> source, 
         TAccumulate seed, 
         Func<TAccumulate, TSource, TAccumulate> accumulator,
@@ -29,11 +29,15 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(accumulator));
         }
 
-        await foreach (var item in source.WithCancellation(cancellationToken)) {
-            seed = accumulator(seed, item);
-        }
+        return Helper();
 
-        return seed;
+        async ValueTask<TAccumulate> Helper() {
+            await foreach (var item in source.WithCancellation(cancellationToken)) {
+                seed = accumulator(seed, item);
+            }
+
+            return seed;
+        }
     }
 
     /// <summary>Asynchronously applies an accumulator function over a sequence.</summary>
@@ -46,7 +50,7 @@ public static partial class AsyncEnumerable {
     /// <exception cref="OperationCanceledException">
     ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
     /// </exception>
-    public static async ValueTask<TSource> AggregateAsync<TSource>(
+    public static ValueTask<TSource> AggregateAsync<TSource>(
         this IAsyncEnumerable<TSource> source,
         Func<TSource, TSource, TSource> reducer,
         CancellationToken cancellationToken = default) {
@@ -59,19 +63,23 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(reducer));
         }
 
-        await using var iterator = source.GetAsyncEnumerator(cancellationToken);
+        return Helper();
 
-        var hasFirst = await iterator.MoveNextAsync();
-        var first = iterator.Current;
+        async ValueTask<TSource> Helper() {
+            await using var iterator = source.GetAsyncEnumerator(cancellationToken);
 
-        if (!hasFirst) {
-            throw new InvalidOperationException("Sequence contains no elements");
+            var hasFirst = await iterator.MoveNextAsync();
+            var first = iterator.Current;
+
+            if (!hasFirst) {
+                throw new InvalidOperationException("Sequence contains no elements");
+            }
+
+            while (await iterator.MoveNextAsync()) {
+                first = reducer(first, iterator.Current);
+            }
+
+            return first;
         }
-
-        while (await iterator.MoveNextAsync()) {
-            first = reducer(first, iterator.Current);
-        }
-
-        return first;
     }
 }

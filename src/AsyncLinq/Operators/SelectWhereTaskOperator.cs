@@ -7,7 +7,7 @@ namespace AsyncLinq.Operators {
         public IAsyncEnumerable<G> SelectWhereTask<G>(AsyncSelectWhereFunc<E, G> nextSelector);
     }
 
-    internal delegate ValueTask<SelectWhereResult<E>> AsyncSelectWhereFunc<T, E>(T item);
+    internal delegate ValueTask<SelectWhereResult<E>> AsyncSelectWhereFunc<T, E>(T item, CancellationToken cancellationToken);
 
     internal class SelectWhereTaskOperator<T, E> : IAsyncOperator<E>, ISelectWhereOperator<E>, 
         ISelectWhereTaskOperator<E> {
@@ -38,8 +38,8 @@ namespace AsyncLinq.Operators {
         public IAsyncEnumerable<G> SelectWhere<G>(SelectWhereFunc<E, G> nextSelector) {
             return new SelectWhereTaskOperator<T, G>(this.Params, this.parent, newSelector);
 
-            async ValueTask<SelectWhereResult<G>> newSelector(T item) {
-                var (isValid, value) = await this.selector(item);
+            async ValueTask<SelectWhereResult<G>> newSelector(T item, CancellationToken token) {
+                var (isValid, value) = await this.selector(item, token);
 
                 if (!isValid) {
                     return new(false, default!);
@@ -52,14 +52,14 @@ namespace AsyncLinq.Operators {
         public IAsyncEnumerable<G> SelectWhereTask<G>(AsyncSelectWhereFunc<E, G> nextSelector) {
             return new SelectWhereTaskOperator<T, G>(this.Params, this.parent, newSelector);
 
-            async ValueTask<SelectWhereResult<G>> newSelector(T item) {
-                var (isValid, value) = await this.selector(item);
+            async ValueTask<SelectWhereResult<G>> newSelector(T item, CancellationToken token) {
+                var (isValid, value) = await this.selector(item, token);
 
                 if (!isValid) {
                     return new(false, default!);
                 }
 
-                return await nextSelector(value);
+                return await nextSelector(value, token);
             }
         }
 
@@ -77,7 +77,7 @@ namespace AsyncLinq.Operators {
 
         private async IAsyncEnumerator<E> SequentialHelper(CancellationToken cancellationToken) {
             await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
-                var (keep, value) = await this.selector(item);
+                var (keep, value) = await this.selector(item, cancellationToken);
 
                 if (keep) {
                     yield return value;
@@ -85,13 +85,14 @@ namespace AsyncLinq.Operators {
             }
         }
 
-        private async IAsyncEnumerator<E> UnorderedHelper(CancellationToken cancellationToken) {
+        private async IAsyncEnumerator<E> UnorderedHelper(CancellationToken parentToken) {
+            using var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(parentToken);
             var isParallel = this.Params.ExecutionMode == AsyncExecutionMode.Parallel;
             var selector = this.selector;
 
             // Run the tasks on the thread pool if we're supposed to be doing this in parallel
             if (isParallel) {
-                selector = x => new ValueTask<SelectWhereResult<E>>(Task.Run(() => this.selector(x).AsTask()));
+                selector = (x, t) => new ValueTask<SelectWhereResult<E>>(Task.Run(() => this.selector(x, t).AsTask(), t));
             }
 
             var channel = Channel.CreateUnbounded<E>(channelOptions);
@@ -102,8 +103,9 @@ namespace AsyncLinq.Operators {
 
             while (true) {
                 // This may throw an exception, but we don't need to handle it because that is done
-                // in the iterate method
-                var canRead = await channel.Reader.WaitToReadAsync(cancellationToken);
+                // in the iterate method. Don't pass the token here, we want to receive the exception
+                // from the other side
+                var canRead = await channel.Reader.WaitToReadAsync();
 
                 if (!canRead) {
                     break;
@@ -117,7 +119,7 @@ namespace AsyncLinq.Operators {
             }
 
             async ValueTask AddToChannel(T item) {
-                var (isValid, value) = await selector(item);
+                var (isValid, value) = await selector(item, cancelSource.Token);
 
                 if (isValid) {
                     channel.Writer.TryWrite(value);
@@ -129,7 +131,7 @@ namespace AsyncLinq.Operators {
                 var errors = new ErrorCollection();
 
                 try {
-                    await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                    await foreach (var item in this.parent.WithCancellation(cancelSource.Token)) {
                         var valueTask = AddToChannel(item);
 
                         if (valueTask.IsCompletedSuccessfully) {
@@ -143,12 +145,14 @@ namespace AsyncLinq.Operators {
                     // Whoops, our async enumerable blew up. Catch it so we can handle errors from the
                     // async tasks that are already running
                     errors.Add(ex);
+                    cancelSource.Cancel();
                 }
 
                 foreach (var task in asyncTasks) {
                     if (task.Exception != null) {
                         errors.Add(task.Exception);
-
+                        cancelSource.Cancel();
+                        
                         continue;
                     }
 
@@ -157,6 +161,7 @@ namespace AsyncLinq.Operators {
                     }
                     catch (Exception ex) {
                         errors.Add(ex);
+                        cancelSource.Cancel();
                     }
                 }
 
@@ -171,13 +176,14 @@ namespace AsyncLinq.Operators {
             }
         }        
 
-        private async IAsyncEnumerator<E> OrderedHelper(CancellationToken cancellationToken) {
+        private async IAsyncEnumerator<E> OrderedHelper(CancellationToken parentToken) {
+            using var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(parentToken);
             var isParallel = this.Params.ExecutionMode == AsyncExecutionMode.Parallel;
             var selector = this.selector;
 
             // Run the tasks on the thread pool if we're supposed to be doing this in parallel
             if (isParallel) {
-                selector = x => new ValueTask<SelectWhereResult<E>>(Task.Run(() => this.selector(x).AsTask()));
+                selector = (x, t) => new ValueTask<SelectWhereResult<E>>(Task.Run(() => this.selector(x, t).AsTask(), t));
             }
 
             var errors = new ErrorCollection();
@@ -191,7 +197,9 @@ namespace AsyncLinq.Operators {
                 var value = default(E);
 
                 try {
-                    var canRead = await channel.Reader.WaitToReadAsync(cancellationToken);
+                    // Don't pass a cancellation token here, we want the channel to finish, either normally
+                    // or with an exception from the other side
+                    var canRead = await channel.Reader.WaitToReadAsync();
 
                     if (!canRead) {
                         break;
@@ -200,6 +208,7 @@ namespace AsyncLinq.Operators {
                 catch (Exception ex) {
                     // If the whole channel blows up, we're done
                     errors.Add(ex);
+                    cancelSource.Cancel();
                     break;
                 }
 
@@ -214,8 +223,10 @@ namespace AsyncLinq.Operators {
                     value = pair.Value;
                 }
                 catch (Exception ex) {
-                    // If just one item blows up, keep fetching the next ones
+                    // If just one item blows up, keep fetching the next ones, but cancel any ongoing work so we
+                    // can wrap up
                     errors.Add(ex);
+                    cancelSource.Cancel();
                     isValid = false;
                 }
 
@@ -235,15 +246,14 @@ namespace AsyncLinq.Operators {
             // thrown by the selector are also handled in the reading loop
             async void Iterate() {
                 try {
-                    await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
-                        channel.Writer.TryWrite(selector(item));
+                    await foreach (var item in this.parent.WithCancellation(cancelSource.Token)) {
+                        channel.Writer.TryWrite(selector(item, cancelSource.Token));
                     }
+                    
+                    channel.Writer.Complete();
                 }
                 catch (Exception ex) {
                     channel.Writer.Complete(ex);
-                }
-                finally {
-                    channel.Writer.Complete();
                 }
             }
         }        

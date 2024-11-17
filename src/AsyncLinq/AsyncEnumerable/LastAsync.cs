@@ -1,7 +1,7 @@
 ﻿namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
-    public static async ValueTask<TSource> LastAsync<TSource>(
+    public static ValueTask<TSource> LastAsync<TSource>(
         this IAsyncEnumerable<TSource> source,
         CancellationToken cancellationToken = default) {
 
@@ -9,18 +9,38 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        await using var iterator = source.GetAsyncEnumerator(cancellationToken);
+        return Helper();
 
-        if (!await iterator.MoveNextAsync()) {
-            throw new InvalidOperationException("Sequence contains no elements");
+        async ValueTask<TSource> Helper() {
+            await using var iterator = source.GetAsyncEnumerator(cancellationToken);
+
+            if (!await iterator.MoveNextAsync()) {
+                throw new InvalidOperationException("Sequence contains no elements");
+            }
+
+            var last = iterator.Current;
+
+            while (await iterator.MoveNextAsync()) {
+                last = iterator.Current;
+            }
+
+            return last;
+        }
+    }
+    
+    public static ValueTask<TSource> LastAsync<TSource>(
+        this IAsyncEnumerable<TSource> source,
+        Func<TSource, bool> predicate,
+        CancellationToken cancellationToken = default) {
+
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
         }
 
-        var last = iterator.Current;
-
-        while (await iterator.MoveNextAsync()) {
-            last = iterator.Current;
+        if (predicate == null) {
+            throw new ArgumentNullException(nameof(predicate));
         }
 
-        return last;
+        return source.Where(predicate).LastAsync(cancellationToken);
     }
 }

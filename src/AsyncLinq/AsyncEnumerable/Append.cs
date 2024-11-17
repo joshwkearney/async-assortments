@@ -25,6 +25,6 @@ public static partial class AsyncEnumerable {
             pars = op.Params;
         }
 
-        return new Operators.ConcatEnumerablesOperator<TSource>(pars, source, [], [element]);
+        return new ConcatEnumerablesOperator<TSource>(pars, source, [], [element]);
     }
 }

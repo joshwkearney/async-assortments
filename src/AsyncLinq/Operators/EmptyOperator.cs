@@ -9,7 +9,9 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, ISelectWhereTaskOperator<T>
 
     private EmptyOperator() { }
 
-    public IAsyncOperator<T> WithParams(AsyncOperatorParams pars) => this;
+    public IAsyncOperator<T> WithParams(AsyncOperatorParams pars) {
+        return new WrapperOperator<T>(pars, this);
+    }
 
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken()) {
         yield break;

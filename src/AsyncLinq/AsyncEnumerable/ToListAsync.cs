@@ -1,20 +1,24 @@
 ﻿namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
-    public static async ValueTask<List<TSource>> ToListAsync<TSource>(
-        this IAsyncEnumerable<TSource> source, 
+    public static ValueTask<List<TSource>> ToListAsync<TSource>(
+        this IAsyncEnumerable<TSource> source,
         CancellationToken cancellationToken = default) {
 
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }
 
-        var list = new List<TSource>();
+        return Helper();
 
-        await foreach (var item in source.WithCancellation(cancellationToken)) {
-            list.Add(item);
+        async ValueTask<List<TSource>> Helper() {
+            var list = new List<TSource>();
+
+            await foreach (var item in source.WithCancellation(cancellationToken)) {
+                list.Add(item);
+            }
+
+            return list;
         }
-
-        return list;
     }
 }

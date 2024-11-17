@@ -1,4 +1,4 @@
-﻿namespace AsyncLinq;
+﻿/*namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Correlates the elements of two sequences based on matching keys.</summary>
@@ -53,4 +53,4 @@ public static partial class AsyncEnumerable {
             .Join(inner, outerKeySelector, innerKeySelector, (x, y) => (x, y))
             .AsyncSelect(pair => resultSelector(pair.x, pair.y));
     }
-}
+}*/

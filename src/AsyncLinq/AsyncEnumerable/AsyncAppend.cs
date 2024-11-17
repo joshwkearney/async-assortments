@@ -9,6 +9,27 @@ public static partial class AsyncEnumerable {
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> AsyncAppend<TSource>(
         this IAsyncEnumerable<TSource> source, 
+        Func<CancellationToken, ValueTask<TSource>> elementProducer) {
+
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
+        }
+
+        if (elementProducer == null) {
+            throw new ArgumentNullException(nameof(elementProducer));
+        }
+
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
+        }
+        
+        return source.Concat(new SingletonOperator<TSource>(pars, elementProducer));
+    }
+    
+    public static IAsyncEnumerable<TSource> AsyncAppend<TSource>(
+        this IAsyncEnumerable<TSource> source, 
         Func<ValueTask<TSource>> elementProducer) {
 
         if (source == null) {
@@ -19,6 +40,12 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(elementProducer));
         }
 
-        return source.Concat(elementProducer().AsAsyncEnumerable());
+        var pars = new AsyncOperatorParams();
+
+        if (source is IAsyncOperator<TSource> op) {
+            pars = op.Params;
+        }
+        
+        return source.Concat(new SingletonOperator<TSource>(pars, _ => elementProducer()));
     }
 }

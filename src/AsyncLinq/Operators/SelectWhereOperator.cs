@@ -48,7 +48,7 @@ namespace AsyncLinq.Operators {
         public IAsyncEnumerable<G> SelectWhereTask<G>(AsyncSelectWhereFunc<E, G> nextSelector) {
             return new SelectWhereTaskOperator<T, G>(this.Params, this.parent, newSelector);
 
-            ValueTask<SelectWhereResult<G>> newSelector(T item) {
+            ValueTask<SelectWhereResult<G>> newSelector(T item, CancellationToken token) {
                 var (isValid, value) = this.selector(item);
 
                 if (!isValid) {
@@ -57,7 +57,7 @@ namespace AsyncLinq.Operators {
                     return new ValueTask<SelectWhereResult<G>>(result);
                 }
 
-                return nextSelector(value);
+                return nextSelector(value, token);
             }
         }
 

@@ -13,14 +13,28 @@ async ValueTask Test() {
     var watch = new Stopwatch();
     watch.Restart();
 
-    var query = new[] { 100, 200 }
-        .AsAsyncEnumerable()
-        .AsConcurrent()
-        .Append(300)
-        .Concat([400, 500])
-        .Concat(new[] { 600 }.AsAsyncEnumerable().AsConcurrent());
+    try {
+        var query = await new[] { 100 }
+            .AsAsyncEnumerable()
+            .AsConcurrent(preserveOrder: false)
+            .AsyncSelect(async (x, c) => {
+                await Task.Delay(200, c);
+                return x;
+            })
+            .Concat(new[] { 200 }.AsAsyncEnumerable().AsyncSelect(async (x, c) => {
+                await Task.Delay(500);
+                Console.WriteLine("GOTTEM! " + x);
+                return x;
+            }))
+            .FirstAsync();
+        
+        Console.WriteLine(query);
+        Console.WriteLine();
+    }
+    catch (Exception ex) {
+        Console.WriteLine("Cancelled in " + watch.ElapsedMilliseconds + " ms");
+    }
 
-    var x = 78;
 
     // var query = new[] { 1500, 100 }
     //     .AsAsyncEnumerable()

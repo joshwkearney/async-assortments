@@ -72,7 +72,8 @@ namespace AsyncLinq.Operators {
             }
         }
 
-        private async IAsyncEnumerator<T> OrderedHelper(CancellationToken cancellationToken) {
+        private async IAsyncEnumerator<T> OrderedHelper(CancellationToken parentToken) {
+            using var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(parentToken);
             var channel = Channel.CreateUnbounded<Channel<T>>(channelOptions);
             var errors = new ErrorCollection();
             
@@ -80,7 +81,8 @@ namespace AsyncLinq.Operators {
 
             while (true) {
                 try {
-                    var canRead = await channel.Reader.WaitToReadAsync(cancellationToken);
+                    // Don't pass a cancellation token here
+                    var canRead = await channel.Reader.WaitToReadAsync();
 
                     if (!canRead) {
                         break;
@@ -88,6 +90,7 @@ namespace AsyncLinq.Operators {
                 }
                 catch (Exception ex) {
                     errors.Add(ex);
+                    cancelSource.Cancel();
                     break;
                 }
 
@@ -97,7 +100,8 @@ namespace AsyncLinq.Operators {
 
                 while (true) {
                     try {
-                        var canReadSub = await subChannel.Reader.WaitToReadAsync(cancellationToken);
+                        // Also don't pass a cancellation source here
+                        var canReadSub = await subChannel.Reader.WaitToReadAsync();
 
                         if (!canReadSub) {
                             break;
@@ -105,6 +109,7 @@ namespace AsyncLinq.Operators {
                     }
                     catch (Exception ex) {
                         errors.Add(ex);
+                        cancelSource.Cancel();
                         break;
                     }
 
@@ -124,7 +129,7 @@ namespace AsyncLinq.Operators {
 
             async void IterateOuter() {
                 try {
-                    await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                    await foreach (var item in this.parent.WithCancellation(cancelSource.Token)) {
                         if (item == EmptyOperator<T>.Instance) {
                             continue;
                         }
@@ -144,7 +149,7 @@ namespace AsyncLinq.Operators {
 
             async void IterateInner(IAsyncEnumerable<T> seq, Channel<T> subChannel) {
                 try {
-                    await foreach (var item in seq.WithCancellation(cancellationToken)) {
+                    await foreach (var item in seq.WithCancellation(cancelSource.Token)) {
                         subChannel.Writer.TryWrite(item);
                     }
 
@@ -156,13 +161,15 @@ namespace AsyncLinq.Operators {
             }
         }
 
-        private async IAsyncEnumerator<T> UnorderedHelper(CancellationToken cancellationToken) {
+        private async IAsyncEnumerator<T> UnorderedHelper(CancellationToken parentToken) {
+            using var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(parentToken);
             var channel = Channel.CreateUnbounded<T>(channelOptions);
             
             IterateOuter();
 
             while (true) {
-                var canRead = await channel.Reader.WaitToReadAsync(cancellationToken);
+                // Don't pass a cancellation token here, we want the channel to finish on its own
+                var canRead = await channel.Reader.WaitToReadAsync();
 
                 if (!canRead) {
                     break;
@@ -180,7 +187,7 @@ namespace AsyncLinq.Operators {
                 var errors = new ErrorCollection();
                 
                 try {
-                    await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
+                    await foreach (var item in this.parent.WithCancellation(cancelSource.Token)) {
                         if (item == EmptyOperator<T>.Instance) {
                             continue;
                         }
@@ -196,11 +203,13 @@ namespace AsyncLinq.Operators {
                     // Whoops, our async enumerable blew up. Catch it so we can handle errors from the
                     // async tasks that are already running
                     errors.Add(ex);
+                    cancelSource.Cancel();
                 }
 
                 foreach (var task in tasks) {
                     if (task.Exception != null) {
                         errors.Add(task.Exception);
+                        cancelSource.Cancel();
 
                         continue;
                     }
@@ -210,21 +219,22 @@ namespace AsyncLinq.Operators {
                     }
                     catch (Exception ex) {
                         errors.Add(ex);
+                        cancelSource.Cancel();
                     }
                 }
 
                 var finalError = errors.ToException();
 
-                if (finalError != null) {
-                    channel.Writer.Complete(finalError);
+                if (finalError == null) {
+                    channel.Writer.Complete();
                 }
                 else {
-                    channel.Writer.Complete();
+                    channel.Writer.Complete(finalError);
                 }
             }
 
             async ValueTask IterateInner(IAsyncEnumerable<T> seq) {               
-                await foreach (var item in seq.WithCancellation(cancellationToken)) {
+                await foreach (var item in seq.WithCancellation(cancelSource.Token)) {
                     channel.Writer.TryWrite(item);
                 }
             }
