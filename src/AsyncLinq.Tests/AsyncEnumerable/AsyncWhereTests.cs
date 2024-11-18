@@ -3,21 +3,21 @@ using System.Diagnostics;
 
 namespace AsyncLinq.Tests;
 
-public class AsyncSelectTests {
+public class AsyncWhereTests {
     [Fact]
     public void TestNullInputs() {
         var nullSeq = null as IAsyncEnumerable<int>;
 
-        Assert.Throws<ArgumentNullException>(() => nullSeq.AsyncSelect(async x => 45));
-        Assert.Throws<ArgumentNullException>(() => nullSeq.AsyncSelect(async (c, x) => 45));
+        Assert.Throws<ArgumentNullException>(() => nullSeq.AsyncWhere(async x => true));
+        Assert.Throws<ArgumentNullException>(() => nullSeq.AsyncWhere(async (c, x) => true));
     }
 
     [Fact]
     public async void TimeCancellation() {
         var seq = new TestEnumerable<int>([1, 2, 3])
-            .AsyncSelect(async (x, c) => {
+            .AsyncWhere(async (x, c) => {
                 await Task.Delay(1000, c);
-                return x;
+                return true;
             });
 
         var cancellation = new CancellationTokenSource();
@@ -40,12 +40,12 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TestRandomSequence1() {
         var list = TestHelper.CreateRandomList(100);
-        var expected = list.Select(x => x / 2 - 1).ToArray();
+        var expected = list.Where(x => x >= 35).ToArray();
 
         var test = await new TestEnumerable<int>(list)
-            .AsyncSelect(async x => {
+            .AsyncWhere(async x => {
                 await Task.Delay(5);
-                return x / 2 - 1;
+                return x >= 35;
             })
             .ToListAsync();
 
@@ -55,13 +55,13 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TestRandomSequence2() {
         var list = TestHelper.CreateRandomList(100);
-        var expected = list.Select(x => x / 2 - 1).ToArray();
+        var expected = list.Where(x => x >= 35).ToArray();
 
         var test = await new TestEnumerable<int>(list)
             .AsConcurrent(true)
-            .AsyncSelect(async x => {
+            .AsyncWhere(async x => {
                 await Task.Delay(5);
-                return x / 2 - 1;
+                return x >= 35;
             })
             .ToListAsync();
 
@@ -71,13 +71,13 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TestRandomSequence3() {
         var list = TestHelper.CreateRandomList(100);
-        var expected = list.Select(x => x / 2 - 1).ToArray();
+        var expected = list.Where(x => x >= 35).ToArray();
 
         var test = await new TestEnumerable<int>(list)
             .AsConcurrent(false)
-            .AsyncSelect(async x => {
+            .AsyncWhere(async x => {
                 await Task.Delay(5);
-                return x / 2 - 1;
+                return x >= 35;
             })
             .ToListAsync();
 
@@ -87,13 +87,13 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TestRandomSequence4() {
         var list = TestHelper.CreateRandomList(100);
-        var expected = list.Select(x => x / 2 - 1).ToArray();
+        var expected = list.Where(x => x >= 35).ToArray();
 
         var test = await new TestEnumerable<int>(list)
             .AsParallel(true)
-            .AsyncSelect(async x => {
+            .AsyncWhere(async x => {
                 await Task.Delay(5);
-                return x / 2 - 1;
+                return x >= 35;
             })
             .ToListAsync();
 
@@ -103,13 +103,13 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TestRandomSequence5() {
         var list = TestHelper.CreateRandomList(100);
-        var expected = list.Select(x => x / 2 - 1).ToArray();
+        var expected = list.Where(x => x >= 35).ToArray();
 
         var test = await new TestEnumerable<int>(list)
             .AsParallel(false)
-            .AsyncSelect(async x => {
+            .AsyncWhere(async x => {
                 await Task.Delay(5);
-                return x / 2 - 1;
+                return x >= 35;
             })
             .ToListAsync();
 
@@ -118,14 +118,14 @@ public class AsyncSelectTests {
 
     [Fact]
     public async Task TestEmptySequence() {
-        var elements = await AsyncEnumerable.Empty<int>().Select(x => x + 1).ToListAsync();
+        var elements = await AsyncEnumerable.Empty<int>().Where(x => x > 1).ToListAsync();
 
         Assert.Equal([], elements);
     }
 
     [Fact]
     public async Task TestExceptions1() {
-        var seq = new TestEnumerable<int>([1, 2, 3]).AsyncSelect<int, int>(x => throw new TestException());
+        var seq = new TestEnumerable<int>([1, 2, 3]).AsyncWhere(x => throw new TestException());
 
         await Assert.ThrowsAsync<TestException>(async () => await seq.ToListAsync());
     }
@@ -134,7 +134,7 @@ public class AsyncSelectTests {
     public async Task TestExceptions2() {
         var seq = new TestEnumerable<int>([1, 2, 3])
             .AsConcurrent(true)
-            .AsyncSelect<int, int>(x => throw new TestException());
+            .AsyncWhere(x => throw new TestException());
 
         await Assert.ThrowsAsync<AggregateException>(async () => await seq.ToListAsync());
     }
@@ -143,7 +143,7 @@ public class AsyncSelectTests {
     public async Task TestExceptions3() {
         var seq = new TestEnumerable<int>([1, 2, 3])
             .AsParallel(true)
-            .AsyncSelect<int, int>(x => throw new TestException());
+            .AsyncWhere(x => throw new TestException());
 
         await Assert.ThrowsAsync<AggregateException>(async () => await seq.ToListAsync());
     }
@@ -152,7 +152,7 @@ public class AsyncSelectTests {
     public async Task TestExceptions4() {
         var seq = new TestEnumerable<int>([1, 2, 3])
             .AsConcurrent(false)
-            .AsyncSelect<int, int>(x => throw new TestException());
+            .AsyncWhere(x => throw new TestException());
 
         await Assert.ThrowsAsync<AggregateException>(async () => await seq.ToListAsync());
     }
@@ -161,7 +161,7 @@ public class AsyncSelectTests {
     public async Task TestExceptions5() {
         var seq = new TestEnumerable<int>([1, 2, 3])
             .AsParallel(false)
-            .AsyncSelect<int, int>(x => throw new TestException());
+            .AsyncWhere(x => throw new TestException());
 
         await Assert.ThrowsAsync<AggregateException>(async () => await seq.ToListAsync());
     }
@@ -169,12 +169,12 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TimeOrdered1() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
-            return await new[] { 300, 200, 100 }
+            return await new[] { 300, 200, 100, 0 }
                 .AsAsyncEnumerable()
                 .AsConcurrent(true)
-                .AsyncSelect(async x => {
+                .AsyncWhere(async x => {
                     await Task.Delay(x);
-                    return x;
+                    return x > 50;
                 })
                 .ToListAsync();
         });
@@ -186,14 +186,14 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TimeOrdered2() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
-            return await new[] { 300, 200, 100 }
-             .AsAsyncEnumerable()
-             .AsConcurrent(true)
-             .AsyncSelect(async x => {
-                 Thread.Sleep(x);
-                 return x;
-             })
-             .ToListAsync();
+            return await new[] { 300, 200, 100, 0 }
+                .AsAsyncEnumerable()
+                .AsConcurrent(true)
+                .AsyncWhere(async x => {
+                    Thread.Sleep(x);
+                    return x > 50;
+                })
+                .ToListAsync();
         });
 
         Assert.InRange(time, 550, 650);
@@ -203,12 +203,12 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TimeOrdered3() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
-            return await new[] { 300, 200, 100 }
+            return await new[] { 300, 200, 100, 0 }
                 .AsAsyncEnumerable()
                 .AsParallel(true)
-                .AsyncSelect(async x => {
+                .AsyncWhere(async x => {
                     await Task.Delay(x);
-                    return x;
+                    return x > 50;
                 })
                 .ToListAsync();
         });
@@ -220,14 +220,14 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TimeOrdered4() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
-            return await new[] { 300, 200, 100 }
-             .AsAsyncEnumerable()
-             .AsParallel(true)
-             .AsyncSelect(async x => {
-                 Thread.Sleep(x);
-                 return x;
-             })
-             .ToListAsync();
+            return await new[] { 300, 200, 100, 0 }
+                .AsAsyncEnumerable()
+                .AsParallel(true)
+                .AsyncWhere(async x => {
+                    Thread.Sleep(x);
+                    return x > 50;
+                })
+                .ToListAsync();
         });
 
         Assert.InRange(time, 250, 350);
@@ -237,12 +237,12 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TimeUnordered1() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
-            return await new[] { 300, 200, 100 }
+            return await new[] { 300, 200, 100, 0 }
                 .AsAsyncEnumerable()
                 .AsConcurrent(false)
-                .AsyncSelect(async x => {
+                .AsyncWhere(async x => {
                     await Task.Delay(x);
-                    return x;
+                    return x > 50;
                 })
                 .ToListAsync();
         });
@@ -254,12 +254,12 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TimeUnordered2() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
-            return await new[] { 300, 200, 100 }
+            return await new[] { 300, 200, 100, 0 }
                 .AsAsyncEnumerable()
                 .AsConcurrent(false)
-                .AsyncSelect(async x => {
+                .AsyncWhere(async x => {
                     Thread.Sleep(x);
-                    return x;
+                    return x > 50;
                 })
                 .ToListAsync();
         });
@@ -271,12 +271,12 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TimeUnordered3() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
-            return await new[] { 300, 200, 100 }
+            return await new[] { 300, 200, 100, 0 }
                 .AsAsyncEnumerable()
                 .AsParallel(false)
-                .AsyncSelect(async x => {
+                .AsyncWhere(async x => {
                     await Task.Delay(x);
-                    return x;
+                    return x > 50;
                 })
                 .ToListAsync();
         });
@@ -288,12 +288,12 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TimeUnordered4() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
-            return await new[] { 300, 200, 100 }
+            return await new[] { 300, 200, 100, 0 }
                 .AsAsyncEnumerable()
                 .AsParallel(false)
-                .AsyncSelect(async x => {
+                .AsyncWhere(async x => {
                     Thread.Sleep(x);
-                    return x;
+                    return x > 50;
                 })
                 .ToListAsync();
         });

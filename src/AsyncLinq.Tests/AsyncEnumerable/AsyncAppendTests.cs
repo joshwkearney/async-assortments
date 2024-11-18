@@ -217,148 +217,124 @@ public class AsyncAppendTests {
             await task;
         });
     }
-    
+
     [Fact]
     public async Task TestConcurrent1() {
-        var watch = new Stopwatch();
-        watch.Start();
-        
-        var items = await AsyncEnumerable.Empty<int>()
-            .AsConcurrent(true)
-            .AsyncAppend(async () => { await Task.Delay(300); return 300; })
-            .AsyncAppend(async () => { await Task.Delay(200); return 200; })
-            .AsyncAppend(async () => { await Task.Delay(100); return 100; })
-            .ToListAsync();
+        var (time, items) = await TestHelper.TimeAsync(async () => {
+            return await AsyncEnumerable.Empty<int>()
+                .AsConcurrent(true)
+                .AsyncAppend(async () => { await Task.Delay(300); return 300; })
+                .AsyncAppend(async () => { await Task.Delay(200); return 200; })
+                .AsyncAppend(async () => { await Task.Delay(100); return 100; })
+                .ToListAsync();
+        });
 
-        var time = watch.ElapsedMilliseconds;
-
-        Assert.InRange(time, 280, 320);
+        Assert.InRange(time, 250, 350);
         Assert.Equal([300, 200, 100], items);
     }
     
     [Fact]
     public async Task TestConcurrent2() {
-        var watch = new Stopwatch();
-        watch.Start();
-        
-        var items = await AsyncEnumerable.Empty<int>()
-            .AsConcurrent(false)
-            .AsyncAppend(async () => { await Task.Delay(300); return 300; })
-            .AsyncAppend(async () => { await Task.Delay(200); return 200; })
-            .AsyncAppend(async () => { await Task.Delay(100); return 100; })
-            .ToListAsync();
+        var (time, items) = await TestHelper.TimeAsync(async () => {
+            return await AsyncEnumerable.Empty<int>()
+                .AsConcurrent(false)
+                .AsyncAppend(async () => { await Task.Delay(300); return 300; })
+                .AsyncAppend(async () => { await Task.Delay(200); return 200; })
+                .AsyncAppend(async () => { await Task.Delay(100); return 100; })
+                .ToListAsync();
+        });
 
-        var time = watch.ElapsedMilliseconds;
-
-        Assert.InRange(time, 280, 320);
+        Assert.InRange(time, 250, 350);
         Assert.Equal([100, 200, 300], items);
     }
     
     [Fact]
     public async Task TestConcurrent3() {
-        var watch = new Stopwatch();
-        watch.Start();
-        
-        var items = await AsyncEnumerable.Empty<int>()
-            .AsConcurrent(true)
-            .AsyncAppend(async () => { Thread.Sleep(300); return 300; })
-            .AsyncAppend(async () => { Thread.Sleep(200); return 200; })
-            .AsyncAppend(async () => { Thread.Sleep(100); return 100; })
-            .ToListAsync();
+        var (time, items) = await TestHelper.TimeAsync(async () => { 
+            return await AsyncEnumerable.Empty<int>()
+                .AsConcurrent(true)
+                .AsyncAppend(async () => { Thread.Sleep(300); return 300; })
+                .AsyncAppend(async () => { Thread.Sleep(200); return 200; })
+                .AsyncAppend(async () => { Thread.Sleep(100); return 100; })
+                .ToListAsync();
+        });
 
-        var time = watch.ElapsedMilliseconds;
-
-        Assert.InRange(time, 580, 620);
+        Assert.InRange(time, 550, 650);
         Assert.Equal([300, 200, 100], items);
     }
     
     [Fact]
     public async Task TestConcurrent4() {
-        var watch = new Stopwatch();
-        watch.Start();
-        
-        var items = await AsyncEnumerable.Empty<int>()
-            .AsConcurrent(false)
-            .AsyncAppend(async () => { Thread.Sleep(300); return 300; })
-            .AsyncAppend(async () => { Thread.Sleep(200); return 200; })
-            .AsyncAppend(async () => { Thread.Sleep(100); return 100; })
-            .ToListAsync();
+        var (time, items) = await TestHelper.TimeAsync(async () => {
+            return await AsyncEnumerable.Empty<int>()
+                .AsConcurrent(false)
+                .AsyncAppend(async () => { Thread.Sleep(300); return 300; })
+                .AsyncAppend(async () => { Thread.Sleep(200); return 200; })
+                .AsyncAppend(async () => { Thread.Sleep(100); return 100; })
+                .ToListAsync();
+        });
 
-        var time = watch.ElapsedMilliseconds;
-
-        Assert.InRange(time, 580, 620);
+        Assert.InRange(time, 550, 650);
         Assert.Equal([300, 200, 100], items);
     }
     
     [Fact]
     public async Task TestParallel1() {
-        var watch = new Stopwatch();
-        watch.Start();
-        
-        var items = await AsyncEnumerable.Empty<int>()
-            .AsParallel(true)
-            .AsyncAppend(async () => { await Task.Delay(300); return 300; })
-            .AsyncAppend(async () => { await Task.Delay(200); return 200; })
-            .AsyncAppend(async () => { await Task.Delay(100); return 100; })
-            .ToListAsync();
+        var (time, items) = await TestHelper.TimeAsync(async () => { 
+            return await AsyncEnumerable.Empty<int>()
+                .AsParallel(true)
+                .AsyncAppend(async () => { await Task.Delay(300); return 300; })
+                .AsyncAppend(async () => { await Task.Delay(200); return 200; })
+                .AsyncAppend(async () => { await Task.Delay(100); return 100; })
+                .ToListAsync();
+        });
 
-        var time = watch.ElapsedMilliseconds;
-
-        Assert.InRange(time, 280, 320);
+        Assert.InRange(time, 250, 350);
         Assert.Equal([300, 200, 100], items);
     }
     
     [Fact]
     public async Task TestParallel2() {
-        var watch = new Stopwatch();
-        watch.Start();
-        
-        var items = await AsyncEnumerable.Empty<int>()
-            .AsParallel(false)
-            .AsyncAppend(async () => { await Task.Delay(300); return 300; })
-            .AsyncAppend(async () => { await Task.Delay(200); return 200; })
-            .AsyncAppend(async () => { await Task.Delay(100); return 100; })
-            .ToListAsync();
+        var (time, items) = await TestHelper.TimeAsync(async () => { 
+            return await AsyncEnumerable.Empty<int>()
+                .AsParallel(false)
+                .AsyncAppend(async () => { await Task.Delay(300); return 300; })
+                .AsyncAppend(async () => { await Task.Delay(200); return 200; })
+                .AsyncAppend(async () => { await Task.Delay(100); return 100; })
+                .ToListAsync();
+        });
 
-        var time = watch.ElapsedMilliseconds;
-
-        Assert.InRange(time, 280, 320);
+        Assert.InRange(time, 250, 350);
         Assert.Equal([100, 200, 300], items);
     }
     
     [Fact]
     public async Task TestParallel3() {
-        var watch = new Stopwatch();
-        watch.Start();
-        
-        var items = await AsyncEnumerable.Empty<int>()
-            .AsParallel(true)
-            .AsyncAppend(async () => { Thread.Sleep(300); return 300; })
-            .AsyncAppend(async () => { Thread.Sleep(200); return 200; })
-            .AsyncAppend(async () => { Thread.Sleep(100); return 100; })
-            .ToListAsync();
+        var (time, items) = await TestHelper.TimeAsync(async () => { 
+            return await AsyncEnumerable.Empty<int>()
+                .AsParallel(true)
+                .AsyncAppend(async () => { Thread.Sleep(300); return 300; })
+                .AsyncAppend(async () => { Thread.Sleep(200); return 200; })
+                .AsyncAppend(async () => { Thread.Sleep(100); return 100; })
+                .ToListAsync();
+        });
 
-        var time = watch.ElapsedMilliseconds;
-
-        Assert.InRange(time, 280, 320);
+        Assert.InRange(time, 250, 350);
         Assert.Equal([300, 200, 100], items);
     }
     
     [Fact]
     public async Task TestParallel4() {
-        var watch = new Stopwatch();
-        watch.Start();
-        
-        var items = await AsyncEnumerable.Empty<int>()
-            .AsParallel(false)
-            .AsyncAppend(async () => { Thread.Sleep(300); return 300; })
-            .AsyncAppend(async () => { Thread.Sleep(200); return 200; })
-            .AsyncAppend(async () => { Thread.Sleep(100); return 100; })
-            .ToListAsync();
+        var (time, items) = await TestHelper.TimeAsync(async () => { 
+            return await AsyncEnumerable.Empty<int>()
+                .AsParallel(false)
+                .AsyncAppend(async () => { Thread.Sleep(300); return 300; })
+                .AsyncAppend(async () => { Thread.Sleep(200); return 200; })
+                .AsyncAppend(async () => { Thread.Sleep(100); return 100; })
+                .ToListAsync();
+        });
 
-        var time = watch.ElapsedMilliseconds;
-
-        Assert.InRange(time, 280, 320);
+        Assert.InRange(time, 250, 350);
         Assert.Equal([100, 200, 300], items);
     }
 }

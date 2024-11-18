@@ -38,10 +38,9 @@ public class AnyTests {
 
         await Assert.ThrowsAsync<TaskCanceledException>(async () => {
             var tokenSource = new CancellationTokenSource();
-            var task = seq.AnyAsync(tokenSource.Token);
 
             await tokenSource.CancelAsync();
-            await task;
+            await seq.AnyAsync(tokenSource.Token);
         });
         
         await Assert.ThrowsAsync<TaskCanceledException>(async () => {

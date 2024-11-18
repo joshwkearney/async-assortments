@@ -1,5 +1,4 @@
-﻿using System.Threading.Channels;
-using AsyncLinq.Operators;
+﻿using AsyncLinq.Operators;
 
 namespace AsyncLinq;
 

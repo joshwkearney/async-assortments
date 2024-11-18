@@ -3,87 +3,87 @@
 namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
-    public static IAsyncEnumerable<TResult> AsyncSelectMany<TSource, TResult>(
-        this IAsyncEnumerable<TSource> source, 
-        Func<TSource, ValueTask<IAsyncEnumerable<TResult>>> selector) {
+    //public static IAsyncEnumerable<TResult> AsyncSelectMany<TSource, TResult>(
+    //    this IAsyncEnumerable<TSource> source, 
+    //    Func<TSource, ValueTask<IAsyncEnumerable<TResult>>> selector) {
 
-        if (source == null) {
-            throw new ArgumentNullException(nameof(source));
-        }
+    //    if (source == null) {
+    //        throw new ArgumentNullException(nameof(source));
+    //    }
 
-        if (selector == null) {
-            throw new ArgumentNullException(nameof(selector));
-        }
+    //    if (selector == null) {
+    //        throw new ArgumentNullException(nameof(selector));
+    //    }
 
-        var pars = new AsyncOperatorParams();
+    //    var pars = new AsyncOperatorParams();
 
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+    //    if (source is IAsyncOperator<TSource> op) {
+    //        pars = op.Params;
+    //    }
 
-        return new FlattenOperator<TResult>(pars, source.AsyncSelect(selector));
-    }
-    
-    public static IAsyncEnumerable<TResult> AsyncSelectMany<TSource, TResult>(
-        this IAsyncEnumerable<TSource> source, 
-        Func<TSource, CancellationToken, ValueTask<IAsyncEnumerable<TResult>>> selector) {
+    //    return new FlattenOperator<TResult>(pars, source.AsyncSelect(selector));
+    //}
 
-        if (source == null) {
-            throw new ArgumentNullException(nameof(source));
-        }
+    //public static IAsyncEnumerable<TResult> AsyncSelectMany<TSource, TResult>(
+    //    this IAsyncEnumerable<TSource> source, 
+    //    Func<TSource, CancellationToken, ValueTask<IAsyncEnumerable<TResult>>> selector) {
 
-        if (selector == null) {
-            throw new ArgumentNullException(nameof(selector));
-        }
+    //    if (source == null) {
+    //        throw new ArgumentNullException(nameof(source));
+    //    }
 
-        var pars = new AsyncOperatorParams();
+    //    if (selector == null) {
+    //        throw new ArgumentNullException(nameof(selector));
+    //    }
 
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+    //    var pars = new AsyncOperatorParams();
 
-        return new FlattenOperator<TResult>(pars, source.AsyncSelect(selector));
-    }
+    //    if (source is IAsyncOperator<TSource> op) {
+    //        pars = op.Params;
+    //    }
 
-    public static IAsyncEnumerable<TResult> AsyncSelectMany<TSource, TResult>(
-        this IAsyncEnumerable<TSource> source,
-        Func<TSource, ValueTask<IEnumerable<TResult>>> selector) {
+    //    return new FlattenOperator<TResult>(pars, source.AsyncSelect(selector));
+    //}
 
-        if (source == null) {
-            throw new ArgumentNullException(nameof(source));
-        }
+    //public static IAsyncEnumerable<TResult> AsyncSelectMany<TSource, TResult>(
+    //    this IAsyncEnumerable<TSource> source,
+    //    Func<TSource, ValueTask<IEnumerable<TResult>>> selector) {
 
-        if (selector == null) {
-            throw new ArgumentNullException(nameof(selector));
-        }
+    //    if (source == null) {
+    //        throw new ArgumentNullException(nameof(source));
+    //    }
 
-        var pars = new AsyncOperatorParams();
+    //    if (selector == null) {
+    //        throw new ArgumentNullException(nameof(selector));
+    //    }
 
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+    //    var pars = new AsyncOperatorParams();
 
-        return new FlattenEnumerablesOperator<TResult>(pars, source.AsyncSelect(selector));
-    }
-    
-    public static IAsyncEnumerable<TResult> AsyncSelectMany<TSource, TResult>(
-        this IAsyncEnumerable<TSource> source,
-        Func<TSource, CancellationToken, ValueTask<IEnumerable<TResult>>> selector) {
+    //    if (source is IAsyncOperator<TSource> op) {
+    //        pars = op.Params;
+    //    }
 
-        if (source == null) {
-            throw new ArgumentNullException(nameof(source));
-        }
+    //    return new FlattenEnumerablesOperator<TResult>(pars, source.AsyncSelect(selector));
+    //}
 
-        if (selector == null) {
-            throw new ArgumentNullException(nameof(selector));
-        }
+    //public static IAsyncEnumerable<TResult> AsyncSelectMany<TSource, TResult, G>(
+    //    this IAsyncEnumerable<TSource> source,
+    //    Func<TSource, CancellationToken, ValueTask<IEnumerable<TResult>>> selector) {
 
-        var pars = new AsyncOperatorParams();
+    //    if (source == null) {
+    //        throw new ArgumentNullException(nameof(source));
+    //    }
 
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+    //    if (selector == null) {
+    //        throw new ArgumentNullException(nameof(selector));
+    //    }
 
-        return new FlattenEnumerablesOperator<TResult>(pars, source.AsyncSelect(selector));
-    }
+    //    var pars = new AsyncOperatorParams();
+
+    //    if (source is IAsyncOperator<TSource> op) {
+    //        pars = op.Params;
+    //    }
+
+    //    return new FlattenEnumerablesOperator<TResult>(pars, source.AsyncSelect(selector));
+    //}
 }

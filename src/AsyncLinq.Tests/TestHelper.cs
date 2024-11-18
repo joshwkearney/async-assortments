@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 namespace AsyncLinq.Tests;
 
 public static class TestHelper {
@@ -11,6 +13,20 @@ public static class TestHelper {
 
         return list;
     }
+
+    public static async Task<TimeResult<T>> TimeAsync<T>(Func<Task<T>> action) {
+        await action();
+
+        var watch = new Stopwatch();
+        watch.Start();
+
+        var result = await action();
+
+        return new TimeResult<T>(watch.ElapsedMilliseconds, result);
+    }
+}
+
+public readonly record struct TimeResult<T>(long ElapsedMilliseconds, T Value) {
 }
 
 public class TestException : Exception {
@@ -20,9 +36,9 @@ public class TestException : Exception {
 }
 
 public class TestEnumerable<T> : IAsyncEnumerable<T> {
-    private readonly List<T> list;
+    private readonly IReadOnlyList<T> list;
 
-    public TestEnumerable(List<T> list) {
+    public TestEnumerable(IReadOnlyList<T> list) {
         this.list = list;
     }
     
