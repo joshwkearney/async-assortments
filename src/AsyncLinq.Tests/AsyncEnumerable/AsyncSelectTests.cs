@@ -7,9 +7,13 @@ public class AsyncSelectTests {
     [Fact]
     public void TestNullInputs() {
         var nullSeq = null as IAsyncEnumerable<int>;
+        var seq = new TestEnumerable<int>([1, 2, 3]);
 
         Assert.Throws<ArgumentNullException>(() => nullSeq.AsyncSelect(async x => 45));
         Assert.Throws<ArgumentNullException>(() => nullSeq.AsyncSelect(async (c, x) => 45));
+
+        Assert.Throws<ArgumentNullException>(() => seq.AsyncSelect(null as Func<int, CancellationToken, ValueTask<int>>));
+        Assert.Throws<ArgumentNullException>(() => seq.AsyncSelect(null as Func<int, ValueTask<int>>));
     }
 
     [Fact]

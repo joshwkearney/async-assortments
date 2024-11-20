@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AsyncLinq.Operators {
     internal class EnumerableOperator<T> : IAsyncOperator<T>, ISkipTakeOperator<T>, ISelectWhereOperator<T>, 
-        IConcatEnumerablesOperator<T> {
+        IConcatEnumerablesOperator<T>, ICountOperator<T> {
 
         public IEnumerable<T> Items { get; }
 
@@ -48,7 +48,9 @@ namespace AsyncLinq.Operators {
                 }
             }
         }
-        
+
+        public int Count() => this.Items.Count();
+
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
             foreach (var item in Items) {

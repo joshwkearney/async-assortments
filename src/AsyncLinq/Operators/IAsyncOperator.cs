@@ -6,6 +6,10 @@ internal interface IAsyncOperator<out T> : IAsyncEnumerable<T> {
     public IAsyncOperator<T> WithParams(AsyncOperatorParams pars);
 }
 
+internal interface ICountOperator<T> : IAsyncOperator<T> {
+    public int Count();
+}
+
 internal enum AsyncExecutionMode {
     Sequential = 0,
     Concurrent = 1,

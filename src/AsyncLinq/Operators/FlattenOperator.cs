@@ -137,7 +137,12 @@ namespace AsyncLinq.Operators {
                         var subChannel = Channel.CreateUnbounded<T>(channelOptions);
                         channel.Writer.TryWrite(subChannel);
 
-                        IterateInner(item, subChannel);
+                        if (this.Params.ExecutionMode == AsyncExecutionMode.Parallel) {
+                            Task.Run(() => IterateInner(item, subChannel));
+                        }
+                        else {
+                            IterateInner(item, subChannel);
+                        }
                     }
                     
                     channel.Writer.Complete();
@@ -165,6 +170,7 @@ namespace AsyncLinq.Operators {
             using var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(parentToken);
             var channel = Channel.CreateUnbounded<T>(channelOptions);
             
+            // This is async void because exceptions will be handled through the channel
             IterateOuter();
 
             while (true) {
@@ -192,7 +198,14 @@ namespace AsyncLinq.Operators {
                             continue;
                         }
 
-                        var task = IterateInner(item);
+                        ValueTask task;
+
+                        if (this.Params.ExecutionMode == AsyncExecutionMode.Parallel) {
+                            task = new ValueTask(Task.Run(() => IterateInner(item).AsTask()));
+                        }
+                        else {
+                            task = IterateInner(item);
+                        }
 
                         if (!task.IsCompletedSuccessfully) {
                             tasks.Add(task.AsTask());

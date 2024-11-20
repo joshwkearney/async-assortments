@@ -12,7 +12,7 @@ public static partial class AsyncEnumerable {
         }
 
         if (numToTake < 0) {
-            throw new ArgumentOutOfRangeException(nameof(numToTake), "Cannot take less than zero elements");
+            return Empty<TSource>();
         }
 
         // Try to compose with a previous skip or take

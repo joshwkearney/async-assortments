@@ -7,9 +7,13 @@ public class AsyncWhereTests {
     [Fact]
     public void TestNullInputs() {
         var nullSeq = null as IAsyncEnumerable<int>;
+        var seq = new TestEnumerable<int>([1, 2, 3]);
 
         Assert.Throws<ArgumentNullException>(() => nullSeq.AsyncWhere(async x => true));
         Assert.Throws<ArgumentNullException>(() => nullSeq.AsyncWhere(async (c, x) => true));
+
+        Assert.Throws<ArgumentNullException>(() => seq.AsyncWhere(null as Func<int, CancellationToken, ValueTask<bool>>));
+        Assert.Throws<ArgumentNullException>(() => seq.AsyncWhere(null as Func<int, ValueTask<bool>>));
     }
 
     [Fact]

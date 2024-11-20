@@ -1,7 +1,7 @@
 namespace AsyncLinq.Operators;
 
 internal class EmptyOperator<T> : IAsyncOperator<T>, ISelectWhereTaskOperator<T>, IConcatOperator<T>, 
-    IConcatEnumerablesOperator<T>, ISelectWhereOperator<T>, ISkipTakeOperator<T> {
+    IConcatEnumerablesOperator<T>, ISelectWhereOperator<T>, ISkipTakeOperator<T>, ICountOperator<T> {
 
     public static IAsyncOperator<T> Instance { get; } = new EmptyOperator<T>();
     
@@ -36,4 +36,6 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, ISelectWhereTaskOperator<T>
     public IAsyncEnumerable<T> SkipTake(int skip, int take) {
         return this;
     }
+
+    public int Count() => 0;
 }

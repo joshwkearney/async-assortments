@@ -32,7 +32,7 @@ namespace AsyncLinq.Operators {
                 this.Params,
                 this.parent, 
                 this.skip + skip, 
-                Math.Min(this.take, take));
+                Math.Min(this.take - skip, take));
         }
 
         public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

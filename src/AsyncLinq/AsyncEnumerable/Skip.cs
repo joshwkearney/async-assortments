@@ -12,7 +12,7 @@ public static partial class AsyncEnumerable {
         }
 
         if (numToSkip < 0) {
-            throw new ArgumentOutOfRangeException(nameof(numToSkip), "Cannot skip less than zero elements");
+            return source;
         }
 
         if (numToSkip == 0) {
