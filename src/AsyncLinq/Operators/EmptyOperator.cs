@@ -5,11 +5,11 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, ISelectWhereTaskOperator<T>
 
     public static IAsyncOperator<T> Instance { get; } = new EmptyOperator<T>();
     
-    public AsyncOperatorParams Params => default;
+    public AsyncPipelineExecution Execution => default;
 
     private EmptyOperator() { }
 
-    public IAsyncOperator<T> WithParams(AsyncOperatorParams pars) {
+    public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
         return new WrapperOperator<T>(pars, this);
     }
 

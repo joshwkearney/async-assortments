@@ -1,35 +1,30 @@
 namespace AsyncLinq.Operators;
 
-internal interface IAsyncOperator<out T> : IAsyncEnumerable<T> {
-    public AsyncOperatorParams Params { get; }
+internal interface IAsyncOperator<out T> : IAsyncPipeline<T> {
 
-    public IAsyncOperator<T> WithParams(AsyncOperatorParams pars);
+    public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars);
 }
 
 internal interface ICountOperator<T> : IAsyncOperator<T> {
     public int Count();
 }
 
-internal enum AsyncExecutionMode {
-    Sequential = 0,
-    Concurrent = 1,
-    Parallel = 2
+internal interface IConcatOperator<T> : IAsyncOperator<T> {
+    public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence);
 }
 
-internal readonly record struct AsyncOperatorParams {
-    public readonly AsyncExecutionMode ExecutionMode;
-    public readonly bool IsUnordered;
+internal interface IConcatEnumerablesOperator<T> : IAsyncOperator<T> {
+    public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after);
+}
 
-    public AsyncOperatorParams(AsyncExecutionMode executionMode, bool isUnordered) {
-        ExecutionMode = executionMode;
-        IsUnordered = isUnordered;
-    }
+internal interface ISelectWhereOperator<T> : IAsyncOperator<T> {
+    public IAsyncEnumerable<E> SelectWhere<E>(SelectWhereFunc<T, E> nextSelector);
+}
 
-    public AsyncOperatorParams WithExecution(AsyncExecutionMode execution) {
-        return new AsyncOperatorParams(execution, IsUnordered);
-    }
+internal interface ISelectWhereTaskOperator<E> : IAsyncOperator<E> {
+    public IAsyncEnumerable<G> SelectWhereTask<G>(AsyncSelectWhereFunc<E, G> nextSelector);
+}
 
-    public AsyncOperatorParams WithIsUnordered(bool isUnordered) {
-        return new AsyncOperatorParams(ExecutionMode, isUnordered);
-    }
+internal interface ISkipTakeOperator<out T> : IAsyncOperator<T> {
+    public IAsyncEnumerable<T> SkipTake(int skip, int take);
 }

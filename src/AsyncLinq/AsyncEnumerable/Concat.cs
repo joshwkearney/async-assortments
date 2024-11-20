@@ -31,11 +31,7 @@ public static partial class AsyncEnumerable {
             return concatOp.Concat(second);
         }
 
-        var pars = new AsyncOperatorParams();
-
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+        var pars = source.GetPipelineExecution();
 
         return new FlattenOperator<TSource>(pars, new[] { source, second }.AsAsyncEnumerable());
     }
@@ -63,11 +59,7 @@ public static partial class AsyncEnumerable {
             return concatOp.ConcatEnumerables([], second);
         }
 
-        var pars = new AsyncOperatorParams();
-
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+        var pars = source.GetPipelineExecution();
 
         return new ConcatEnumerablesOperator<TSource>(pars, source, [], second);
     }

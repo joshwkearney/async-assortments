@@ -3,14 +3,14 @@ namespace AsyncLinq.Operators;
 internal class WrapperOperator<T> : IAsyncOperator<T> {
     public IAsyncEnumerable<T> Parent { get; }
 
-    public AsyncOperatorParams Params { get; }
+    public AsyncPipelineExecution Execution { get; }
 
-    public WrapperOperator(AsyncOperatorParams pars, IAsyncEnumerable<T> parent) {
+    public WrapperOperator(AsyncPipelineExecution pars, IAsyncEnumerable<T> parent) {
         this.Parent = parent;
-        this.Params = pars;
+        this.Execution = pars;
     }
 
-    public IAsyncOperator<T> WithParams(AsyncOperatorParams pars) {
+    public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
         return new WrapperOperator<T>(pars, this.Parent);
     }
         

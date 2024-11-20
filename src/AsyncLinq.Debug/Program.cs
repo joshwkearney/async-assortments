@@ -35,7 +35,6 @@ async ValueTask Test() {
         Console.WriteLine("Cancelled in " + watch.ElapsedMilliseconds + " ms");
     }
 
-
     // var query = new[] { 1500, 100 }
     //     .AsAsyncEnumerable()
     //     .AsConcurrent(preserveOrder: false)

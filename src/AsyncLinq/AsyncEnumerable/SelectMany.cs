@@ -15,11 +15,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(selector));
         }
 
-        var pars = new AsyncOperatorParams();
-
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+        var pars = source.GetPipelineExecution();
 
         return new FlattenOperator<TResult>(pars, source.Select(selector));
     }
@@ -36,11 +32,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(selector));
         }
 
-        var pars = new AsyncOperatorParams();
-
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+        var pars = source.GetPipelineExecution();
 
         return new FlattenEnumerablesOperator<TResult>(pars, source.Select(selector));
     }

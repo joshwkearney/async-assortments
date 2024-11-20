@@ -20,22 +20,16 @@ public static partial class AsyncEnumerable {
     ///     </para>
     /// </remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
-    public static IAsyncEnumerable<TSource> AsSequential<TSource>(this IAsyncEnumerable<TSource> source) {
+    public static IAsyncPipeline<TSource> AsSequential<TSource>(this IAsyncEnumerable<TSource> source) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }
 
-        var pars = new AsyncOperatorParams(AsyncExecutionMode.Sequential, false);
-
-        if (source is not IAsyncOperator<TSource> op) {
-            return new WrapperOperator<TSource>(pars, source);
-        }
-
-        if (op.Params == pars) {
-            return op;
+        if (source is IAsyncOperator<TSource> op) {
+            return op.WithExecution(AsyncPipelineExecution.Sequential);
         }
         else {
-            return op.WithParams(pars);
+            return new WrapperOperator<TSource>(AsyncPipelineExecution.Sequential, source);
         }
     }
 }

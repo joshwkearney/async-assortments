@@ -23,11 +23,7 @@ public static partial class AsyncEnumerable {
             return selectWhereOp.SelectWhere(selectWhereFunc);
         }
 
-        var pars = new AsyncOperatorParams();
-
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+        var pars = source.GetPipelineExecution();
 
         return new SelectWhereOperator<TSource, TSource>(pars, source, selectWhereFunc);
     }

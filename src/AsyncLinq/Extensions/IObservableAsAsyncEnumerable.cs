@@ -19,15 +19,15 @@ public static partial class AsyncEnumerableExtensions {
         private readonly IObservable<T> source;
         private readonly int maxBuffer;
         
-        public AsyncOperatorParams Params { get; }
+        public AsyncPipelineExecution Execution { get; }
 
-        public ObservableWrapper(AsyncOperatorParams pars, IObservable<T> source, int maxBuffer) {
-            this.Params = pars;
+        public ObservableWrapper(AsyncPipelineExecution pars, IObservable<T> source, int maxBuffer) {
+            this.Execution = pars;
             this.source = source;
             this.maxBuffer = maxBuffer;
         }
         
-        public IAsyncOperator<T> WithParams(AsyncOperatorParams pars) {
+        public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
             return new ObservableWrapper<T>(pars, this.source, this.maxBuffer);
         }
 

@@ -5,31 +5,27 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AsyncLinq.Operators {
-    internal interface ISkipTakeOperator<out T> : IAsyncOperator<T> {
-        public IAsyncEnumerable<T> SkipTake(int skip, int take);
-    }
-
     internal class SkipTakeOperator<T> : IAsyncOperator<T>, ISkipTakeOperator<T> {
         private readonly IAsyncEnumerable<T> parent;
         private readonly int skip;
         private readonly int take;
 
-        public AsyncOperatorParams Params { get; }
+        public AsyncPipelineExecution Execution { get; }
 
-        public SkipTakeOperator(AsyncOperatorParams pars, IAsyncEnumerable<T> parent, int skip, int take) {
+        public SkipTakeOperator(AsyncPipelineExecution pars, IAsyncEnumerable<T> parent, int skip, int take) {
             this.parent = parent;
             this.skip = skip;
             this.take = take;
-            this.Params = pars;
+            this.Execution = pars;
         }
         
-        public IAsyncOperator<T> WithParams(AsyncOperatorParams pars) {
+        public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
             return new SkipTakeOperator<T>(pars, parent, skip, take);
         }
 
         public IAsyncEnumerable<T> SkipTake(int skip, int take) {
             return new SkipTakeOperator<T>(
-                this.Params,
+                this.Execution,
                 this.parent, 
                 this.skip + skip, 
                 Math.Min(this.take - skip, take));

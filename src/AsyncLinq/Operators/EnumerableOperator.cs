@@ -10,33 +10,33 @@ namespace AsyncLinq.Operators {
 
         public IEnumerable<T> Items { get; }
 
-        public AsyncOperatorParams Params { get; }
+        public AsyncPipelineExecution Execution { get; }
 
-        public EnumerableOperator(AsyncOperatorParams pars, IEnumerable<T> items) {
-            this.Params = pars;
+        public EnumerableOperator(AsyncPipelineExecution pars, IEnumerable<T> items) {
+            this.Execution = pars;
             this.Items = items;
         }
         
-        public IAsyncOperator<T> WithParams(AsyncOperatorParams pars) {
+        public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
             return new EnumerableOperator<T>(pars, this.Items);
         }
 
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
             var seq = before.Concat(this.Items).Concat(after);
 
-            return new EnumerableOperator<T>(this.Params, seq);
+            return new EnumerableOperator<T>(this.Execution, seq);
         }
 
         public IAsyncEnumerable<T> SkipTake(int skip, int take) {
             var seq = this.Items.Skip(skip).Take(take);
 
-            return new EnumerableOperator<T>(this.Params, seq);
+            return new EnumerableOperator<T>(this.Execution, seq);
         }
 
         public IAsyncEnumerable<E> SelectWhere<E>(SelectWhereFunc<T, E> nextSelector) {
             var seq = SelectWhereHelper(this.Items, nextSelector);
 
-            return new EnumerableOperator<E>(this.Params, seq);
+            return new EnumerableOperator<E>(this.Execution, seq);
         }
         
         private static IEnumerable<E> SelectWhereHelper<E>(IEnumerable<T> seq, SelectWhereFunc<T, E> selector) {

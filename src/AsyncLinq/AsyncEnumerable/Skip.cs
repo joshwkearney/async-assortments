@@ -24,11 +24,7 @@ public static partial class AsyncEnumerable {
             return skipTakeOp.SkipTake(numToSkip, int.MaxValue);
         }
 
-        var pars = new AsyncOperatorParams();
-
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+        var pars = source.GetPipelineExecution();
 
         return new SkipTakeOperator<TSource>(pars, source, numToSkip, int.MaxValue);
     }

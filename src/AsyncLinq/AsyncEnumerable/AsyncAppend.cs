@@ -19,11 +19,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(elementProducer));
         }
 
-        var pars = new AsyncOperatorParams();
-
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+        var pars = source.GetPipelineExecution();
         
         return source.Concat(new SingletonOperator<TSource>(pars, elementProducer));
     }
@@ -40,11 +36,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(elementProducer));
         }
 
-        var pars = new AsyncOperatorParams();
-
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+        var pars = source.GetPipelineExecution();
         
         return source.Concat(new SingletonOperator<TSource>(pars, _ => elementProducer()));
     }

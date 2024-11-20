@@ -25,11 +25,7 @@ public static partial class AsyncEnumerable {
             return selectWhereOp.SelectWhereTask(selectWhereFunc);
         }
 
-        var pars = new AsyncOperatorParams();
-
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+        var pars = source.GetPipelineExecution();
 
         return new SelectWhereTaskOperator<TSource, TResult>(pars, source, selectWhereFunc);
     }
@@ -56,11 +52,7 @@ public static partial class AsyncEnumerable {
             return selectWhereOp.SelectWhereTask(selectWhereFunc);
         }
 
-        var pars = new AsyncOperatorParams();
-
-        if (source is IAsyncOperator<TSource> op) {
-            pars = op.Params;
-        }
+        var pars = source.GetPipelineExecution();
 
         return new SelectWhereTaskOperator<TSource, TResult>(pars, source, selectWhereFunc);
     }

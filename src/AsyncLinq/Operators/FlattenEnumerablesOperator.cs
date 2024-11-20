@@ -8,38 +8,38 @@ namespace AsyncLinq.Operators {
     internal class FlattenEnumerablesOperator<T> : IAsyncOperator<T>, IConcatOperator<T>, IConcatEnumerablesOperator<T> {
         private readonly IAsyncEnumerable<IEnumerable<T>> parent;
 
-        public AsyncOperatorParams Params { get; }
+        public AsyncPipelineExecution Execution { get; }
 
-        public FlattenEnumerablesOperator(AsyncOperatorParams pars, IAsyncEnumerable<IEnumerable<T>> parent) {
+        public FlattenEnumerablesOperator(AsyncPipelineExecution pars, IAsyncEnumerable<IEnumerable<T>> parent) {
             this.parent = parent;
-            Params = pars;
+            Execution = pars;
         }
         
-        public IAsyncOperator<T> WithParams(AsyncOperatorParams pars) {
+        public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
             return new FlattenEnumerablesOperator<T>(pars, parent);
         }
 
         public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
             if (this.parent is EnumerableOperator<IEnumerable<T>> op) {
                 var newItems = op.Items.Select(x => x.AsAsyncEnumerable()).Append(sequence);
-                var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(op.Params, newItems);
+                var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(op.Execution, newItems);
                 
-                return new FlattenOperator<T>(this.Params, newParent);
+                return new FlattenOperator<T>(this.Execution, newParent);
             }
             else {
-                return new FlattenOperator<T>(this.Params, new[] { this, sequence }.AsAsyncEnumerable());
+                return new FlattenOperator<T>(this.Execution, new[] { this, sequence }.AsAsyncEnumerable());
             }
         }
 
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
             if (this.parent is EnumerableOperator<IEnumerable<T>> op) {
                 var newItems = op.Items.Prepend(before).Append(after);
-                var newParent = new EnumerableOperator<IEnumerable<T>>(op.Params, newItems);
+                var newParent = new EnumerableOperator<IEnumerable<T>>(op.Execution, newItems);
                 
-                return new FlattenEnumerablesOperator<T>(this.Params, newParent);
+                return new FlattenEnumerablesOperator<T>(this.Execution, newParent);
             }
             else {
-                return new ConcatEnumerablesOperator<T>(this.Params, this, before, after);
+                return new ConcatEnumerablesOperator<T>(this.Execution, this, before, after);
             }
         }
         

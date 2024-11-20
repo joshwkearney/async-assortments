@@ -23,22 +23,18 @@ public static partial class AsyncEnumerable {
     /// <seealso cref="AsSequential{TSource}" />
     /// <seealso cref="AsConcurrent{TSource}" />
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
-    public static IAsyncEnumerable<TSource> AsParallel<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
+    public static IAsyncPipeline<TSource> AsParallel<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }
 
-        var pars = new AsyncOperatorParams(AsyncExecutionMode.Parallel, !preserveOrder);
+        var pars = preserveOrder ? AsyncPipelineExecution.ParallelOrdered : AsyncPipelineExecution.ParallelUnordered;
 
-        if (source is not IAsyncOperator<TSource> op) {
-            return new WrapperOperator<TSource>(pars, source);
-        }
-
-        if (op.Params == pars) {
-            return op;
+        if (source is IAsyncOperator<TSource> op) {
+            return op.WithExecution(pars);
         }
         else {
-            return op.WithParams(pars);
+            return new WrapperOperator<TSource>(pars, source);
         }
     }
 }
