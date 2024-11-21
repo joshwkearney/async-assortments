@@ -15,19 +15,14 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(predicate));
         }
 
-        // Local function to be our SelectWhere selector
-        async ValueTask<SelectWhereResult<TSource>> selector(TSource x, CancellationToken token) {
-            return new(await predicate(x, token), x);
-        }
-
-        // First try to compose this operation with a previous SelectWhere
-        if (source is ISelectWhereTaskOperator<TSource> selectWhereOp) {
-            return selectWhereOp.SelectWhereTask(selector);
+        // First try to compose this operation with a previous operator
+        if (source is IAsyncWhereOperator<TSource> whereOp) {
+            return whereOp.AsyncWhere(predicate);
         }
 
         var pars = source.GetPipelineExecution();
 
-        return new SelectWhereTaskOperator<TSource, TSource>(pars, source, selector);
+        return new SelectWhereTaskOperator<TSource, TSource>(pars, source, async (x, c) => new(await predicate(x, c), x));
     }
     
     public static IAsyncEnumerable<TSource> AsyncWhere<TSource>(
@@ -42,18 +37,6 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(predicate));
         }
 
-        // Local function to be our SelectWhere selector
-        async ValueTask<SelectWhereResult<TSource>> selector(TSource x, CancellationToken _) {
-            return new(await predicate(x), x);
-        }
-
-        // First try to compose this operation with a previous SelectWhere
-        if (source is ISelectWhereTaskOperator<TSource> selectWhereOp) {
-            return selectWhereOp.SelectWhereTask(selector);
-        }
-
-        var pars = source.GetPipelineExecution();
-
-        return new SelectWhereTaskOperator<TSource, TSource>(pars, source, selector);
+        return source.AsyncWhere((x, c) => predicate(x));
     }
 }

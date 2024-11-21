@@ -17,13 +17,22 @@ internal interface IConcatEnumerablesOperator<T> : IAsyncOperator<T> {
     public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after);
 }
 
-internal interface ISelectWhereOperator<T> : IAsyncOperator<T> {
-    public IAsyncEnumerable<E> SelectWhere<E>(SelectWhereFunc<T, E> nextSelector);
+internal interface ISelectOperator<T> : IAsyncOperator<T> {
+    public IAsyncEnumerable<E> Select<E>(Func<T, E> selector);
 }
 
-internal interface ISelectWhereTaskOperator<E> : IAsyncOperator<E> {
-    public IAsyncEnumerable<G> SelectWhereTask<G>(AsyncSelectWhereFunc<E, G> nextSelector);
+internal interface IWhereOperator<T> : IAsyncOperator<T> {
+    public IAsyncEnumerable<T> Where(Func<T, bool> predicate);
 }
+
+internal interface IAsyncSelectOperator<E> : IAsyncOperator<E> {
+    public IAsyncEnumerable<G> AsyncSelect<G>(Func<E, CancellationToken, ValueTask<G>> nextSelector);
+}
+
+internal interface IAsyncWhereOperator<E> : IAsyncOperator<E> {
+    public IAsyncEnumerable<E> AsyncWhere(Func<E, CancellationToken, ValueTask<bool>> predicate);
+}
+
 
 internal interface ISkipTakeOperator<out T> : IAsyncOperator<T> {
     public IAsyncEnumerable<T> SkipTake(int skip, int take);

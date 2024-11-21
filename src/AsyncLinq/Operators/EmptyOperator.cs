@@ -1,7 +1,8 @@
 namespace AsyncLinq.Operators;
 
-internal class EmptyOperator<T> : IAsyncOperator<T>, ISelectWhereTaskOperator<T>, IConcatOperator<T>, 
-    IConcatEnumerablesOperator<T>, ISelectWhereOperator<T>, ISkipTakeOperator<T>, ICountOperator<T> {
+internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IAsyncWhereOperator<T>, 
+    IConcatOperator<T>, IConcatEnumerablesOperator<T>, ISelectOperator<T>, IWhereOperator<T>, 
+    ISkipTakeOperator<T>, ICountOperator<T> {
 
     public static IAsyncOperator<T> Instance { get; } = new EmptyOperator<T>();
     
@@ -17,10 +18,6 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, ISelectWhereTaskOperator<T>
         yield break;
     }
 
-    public IAsyncEnumerable<G> SelectWhereTask<G>(AsyncSelectWhereFunc<T, G> nextSelector) {
-        return EmptyOperator<G>.Instance;
-    }
-
     public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
         return sequence;
     }
@@ -29,13 +26,17 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, ISelectWhereTaskOperator<T>
         return before.Concat(after).AsAsyncEnumerable();
     }
 
-    public IAsyncEnumerable<E> SelectWhere<E>(SelectWhereFunc<T, E> nextSelector) {
-        return EmptyOperator<E>.Instance;
-    }
-
     public IAsyncEnumerable<T> SkipTake(int skip, int take) {
         return this;
     }
 
     public int Count() => 0;
+
+    public IAsyncEnumerable<E> Select<E>(Func<T, E> selector) => EmptyOperator<E>.Instance;
+
+    public IAsyncEnumerable<T> Where(Func<T, bool> predicate) => this;
+
+    public IAsyncEnumerable<G> AsyncSelect<G>(Func<T, CancellationToken, ValueTask<G>> nextSelector) => EmptyOperator<G>.Instance;
+
+    public IAsyncEnumerable<T> AsyncWhere(Func<T, CancellationToken, ValueTask<bool>> predicate) => this;
 }

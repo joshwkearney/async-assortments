@@ -19,16 +19,13 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(selector));
         }
 
-        // This is our SelectWhere selector
-        SelectWhereResult<TResult> selectWhereFunc(TSource item) => new(true, selector(item));
-
         // Try to compose with a previous operator
-        if (source is ISelectWhereOperator<TSource> selectWhereOp) {
-            return selectWhereOp.SelectWhere(selectWhereFunc);
+        if (source is ISelectOperator<TSource> selectOp) {
+            return selectOp.Select(selector);
         }
 
         var pars = source.GetPipelineExecution();
 
-        return new SelectWhereOperator<TSource, TResult>(pars, source, selectWhereFunc);
+        return new SelectWhereOperator<TSource, TResult>(pars, source, x => new(true, selector(x)));
     }
 }

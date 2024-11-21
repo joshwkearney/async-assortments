@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AsyncLinq.Operators {
-    internal class EnumerableOperator<T> : IAsyncOperator<T>, ISkipTakeOperator<T>, ISelectWhereOperator<T>, 
-        IConcatEnumerablesOperator<T>, ICountOperator<T> {
+    internal class EnumerableOperator<T> : IAsyncOperator<T>, ISkipTakeOperator<T>, ISelectOperator<T>, 
+        IWhereOperator<T>, IConcatEnumerablesOperator<T>, ICountOperator<T> {
 
         public IEnumerable<T> Items { get; }
 
@@ -33,23 +33,20 @@ namespace AsyncLinq.Operators {
             return new EnumerableOperator<T>(this.Execution, seq);
         }
 
-        public IAsyncEnumerable<E> SelectWhere<E>(SelectWhereFunc<T, E> nextSelector) {
-            var seq = SelectWhereHelper(this.Items, nextSelector);
+        public int Count() => this.Items.Count();
+
+
+        public IAsyncEnumerable<E> Select<E>(Func<T, E> selector) {
+            var seq = this.Items.Select(selector);
 
             return new EnumerableOperator<E>(this.Execution, seq);
         }
-        
-        private static IEnumerable<E> SelectWhereHelper<E>(IEnumerable<T> seq, SelectWhereFunc<T, E> selector) {
-            foreach (var item in seq) {
-                var (isValid, value) = selector(item);
 
-                if (isValid) {
-                    yield return value;
-                }
-            }
+        public IAsyncEnumerable<T> Where(Func<T, bool> predicate) {
+            var seq = this.Items.Where(predicate);
+
+            return new EnumerableOperator<T>(this.Execution, seq);
         }
-
-        public int Count() => this.Items.Count();
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

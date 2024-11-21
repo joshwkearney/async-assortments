@@ -5,8 +5,8 @@ using System.Transactions;
 namespace AsyncLinq.Operators {
     internal delegate ValueTask<SelectWhereResult<E>> AsyncSelectWhereFunc<T, E>(T item, CancellationToken cancellationToken);
 
-    internal class SelectWhereTaskOperator<T, E> : IAsyncOperator<E>, ISelectWhereOperator<E>, 
-        ISelectWhereTaskOperator<E> {
+    internal class SelectWhereTaskOperator<T, E> : IAsyncOperator<E>, ISelectOperator<E>, 
+        IWhereOperator<E>, IAsyncSelectOperator<E>, IAsyncWhereOperator<E> {
 
         private static readonly UnboundedChannelOptions channelOptions = new UnboundedChannelOptions() {
             AllowSynchronousContinuations = true
@@ -31,7 +31,7 @@ namespace AsyncLinq.Operators {
             return new SelectWhereTaskOperator<T, E>(pars, parent, selector);
         }
 
-        public IAsyncEnumerable<G> SelectWhere<G>(SelectWhereFunc<E, G> nextSelector) {
+        public IAsyncEnumerable<G> Select<G>(Func<E, G> selector) {
             return new SelectWhereTaskOperator<T, G>(this.Execution, this.parent, newSelector);
 
             async ValueTask<SelectWhereResult<G>> newSelector(T item, CancellationToken token) {
@@ -41,21 +41,53 @@ namespace AsyncLinq.Operators {
                     return new(false, default!);
                 }
 
-                return nextSelector(value);
+                return new SelectWhereResult<G>(true, selector(value));
             }
         }
 
-        public IAsyncEnumerable<G> SelectWhereTask<G>(AsyncSelectWhereFunc<E, G> nextSelector) {
-            return new SelectWhereTaskOperator<T, G>(this.Execution, this.parent, newSelector);
+        public IAsyncEnumerable<E> Where(Func<E, bool> predicate) {
+            return new SelectWhereTaskOperator<T, E>(this.Execution, this.parent, newSelector);
 
-            async ValueTask<SelectWhereResult<G>> newSelector(T item, CancellationToken token) {
+            async ValueTask<SelectWhereResult<E>> newSelector(T item, CancellationToken token) {
                 var (isValid, value) = await this.selector(item, token);
 
                 if (!isValid) {
                     return new(false, default!);
                 }
 
-                return await nextSelector(value, token);
+                if (!predicate(value)) {
+                    return new(false, default!);
+                }
+
+                return new SelectWhereResult<E>(true, value);
+            }
+        }
+
+        public IAsyncEnumerable<G> AsyncSelect<G>(Func<E, CancellationToken, ValueTask<G>> nextSelector) {
+            return new SelectWhereTaskOperator<T, G>(this.Execution, this.parent, newSelector);
+
+            async ValueTask<SelectWhereResult<G>> newSelector(T item, CancellationToken token) {
+                var (isValid, value) = await this.selector(item, token);
+
+                if (!isValid) {
+                    return new SelectWhereResult<G>(false, default!);
+                }
+
+                return new SelectWhereResult<G>(true, await nextSelector(value, token));
+            }
+        }
+
+        public IAsyncEnumerable<E> AsyncWhere(Func<E, CancellationToken, ValueTask<bool>> predicate) {
+            return new SelectWhereTaskOperator<T, E>(this.Execution, this.parent, newSelector);
+
+            async ValueTask<SelectWhereResult<E>> newSelector(T item, CancellationToken token) {
+                var (isValid, value) = await this.selector(item, token);
+
+                if (!isValid) {
+                    return new SelectWhereResult<E>(false, default!);
+                }
+
+                return new SelectWhereResult<E>(await predicate(value, token), value);
             }
         }
 
@@ -250,6 +282,6 @@ namespace AsyncLinq.Operators {
                     channel.Writer.Complete(ex);
                 }
             }
-        }        
+        }
     }
 }
