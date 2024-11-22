@@ -16,8 +16,8 @@ public class AsyncAppendTests {
     public async Task TestOrdered() {
         var expected = new[] { 1, 2, 3, 4, 99 };
 
-        var seq1 = new[] { 1, 2, 3, 4 }.AsAsyncEnumerable().AsyncAppend(CreateItem1);
-        var seq2 = new[] { 1, 2, 3, 4 }.AsAsyncEnumerable().AsyncAppend(CreateItem2);
+        var seq1 = new[] { 1, 2, 3, 4 }.ToAsyncEnumerable().AsyncAppend(CreateItem1);
+        var seq2 = new[] { 1, 2, 3, 4 }.ToAsyncEnumerable().AsyncAppend(CreateItem2);
         var seq3 = new TestEnumerable<int>([1, 2, 3, 4]).AsyncAppend(CreateItem1);
         var seq4 = new TestEnumerable<int>([1, 2, 3, 4]).AsyncAppend(CreateItem2);
         var seq5 = new TestEnumerable<int>([1, 2, 3, 4]).AsConcurrent().AsyncAppend(CreateItem1);

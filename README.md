@@ -6,10 +6,10 @@ Hey look! It's LINQ operators for `IAsyncEnumerable` !
 var ids = new int[] { 1, 2, 3 /* etc */ };
 
 var result = await ids
-    .AsAsyncEnumerable()
-    .AsyncSelect(async x => await ProcessItem(x))
-    .Where(x => x.Florbs.Count < 10)
-    .SelectMany(x => x.Florbs)
+    .ToAsyncEnumerable()
+    .Where(x => x <= 2)
+    .Select(x => x * 2)
+    .SelectMany(x => new[] { x, x })
     .ToListAsync();
 ```
 
@@ -100,7 +100,7 @@ You can rewrite the code above with AsyncLinq like this:
 
 ```csharp
 var results = new[] { 1, 2, 3, 4 }
-    .AsAsyncEnumerable()
+    .ToAsyncEnumerable()
     .AsConcurrent(preserveOrder: false)
     .AsyncSelect(async x => await ProcessItem(x))
     .AsyncWhere(async x => await FilterItem(x))

@@ -19,13 +19,13 @@ async ValueTask Test() {
 
     try {
         var query = await new[] { 100 }
-            .AsAsyncEnumerable()
+            .ToAsyncEnumerable()
             .AsConcurrent(preserveOrder: false)
             .AsyncSelect(async (x, c) => {
                 await Task.Delay(200, c);
                 return x;
             })
-            .Concat(new[] { 200 }.AsAsyncEnumerable().AsyncSelect(async (x, c) => {
+            .Concat(new[] { 200 }.ToAsyncEnumerable().AsyncSelect(async (x, c) => {
                 await Task.Delay(500);
                 Console.WriteLine("GOTTEM! " + x);
                 return x;

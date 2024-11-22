@@ -15,7 +15,7 @@ public class PrependTests {
         var seq1 = new TestEnumerable<int>([1, 2, 3, 4]).Prepend(5).Prepend(6);
         var seq2 = new TestEnumerable<int>([1, 2, 3, 4]).AsConcurrent().Prepend(5).Prepend(6);
         var seq3 = new TestEnumerable<int>([1, 2, 3, 4]).AsParallel().Prepend(5).Prepend(6);
-        var seq4 = new[] { 1, 2, 3, 4 }.AsAsyncEnumerable().Prepend(5).Prepend(6);
+        var seq4 = new[] { 1, 2, 3, 4 }.ToAsyncEnumerable().Prepend(5).Prepend(6);
         
         var elements1 = await seq1.ToListAsync();
         var elements2 = await seq2.ToListAsync();

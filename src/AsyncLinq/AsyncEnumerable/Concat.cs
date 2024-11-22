@@ -58,7 +58,7 @@ public static partial class AsyncEnumerable {
 
         var pars = source.GetPipelineExecution();
 
-        return new FlattenOperator<TSource>(pars, new[] { source, second }.AsAsyncEnumerable());
+        return new FlattenOperator<TSource>(pars, new[] { source, second }.ToAsyncEnumerable());
     }
 
     /// <summary>

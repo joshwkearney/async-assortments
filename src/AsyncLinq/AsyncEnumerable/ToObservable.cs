@@ -8,7 +8,7 @@ public static partial class AsyncEnumerable {
     ///     sequence's items to the subscriber.
     /// </remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
-    public static IObservable<TSource> AsObservable<TSource>(this IAsyncEnumerable<TSource> source) {
+    public static IObservable<TSource> ToObservable<TSource>(this IAsyncEnumerable<TSource> source) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }
@@ -33,8 +33,6 @@ public static partial class AsyncEnumerable {
         private bool isDisposed = false;
 
         public Subscription(IAsyncEnumerable<T> sequence, IObserver<T> target) {
-            // Start the iteration on this thread so we create the iterator and attempt
-            // a move next, which will add a subscriber if the sequence is a subject
             this.IterateSequence(sequence, target);
         }
 

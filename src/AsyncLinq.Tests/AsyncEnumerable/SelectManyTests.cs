@@ -206,7 +206,7 @@ public class SelectManyTests {
     public async Task TimeProjection1() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .SelectMany(Project)
                 .ToListAsync();
         });
@@ -225,7 +225,7 @@ public class SelectManyTests {
     public async Task TimeProjection2() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsConcurrent(true)
                 .SelectMany(Project)
                 .ToListAsync();
@@ -245,7 +245,7 @@ public class SelectManyTests {
     public async Task TimeProjection3() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsParallel(true)
                 .SelectMany(Project)
                 .ToListAsync();
@@ -265,7 +265,7 @@ public class SelectManyTests {
     public async Task TimeProjection4() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsConcurrent(false)
                 .SelectMany(Project)
                 .ToListAsync();
@@ -285,7 +285,7 @@ public class SelectManyTests {
     public async Task TimeProjection5() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsParallel(false)
                 .SelectMany(Project)
                 .ToListAsync();
@@ -305,7 +305,7 @@ public class SelectManyTests {
     public async Task TimeBlockingProjection1() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsConcurrent(true)
                 .SelectMany(Project)
                 .ToListAsync();
@@ -325,7 +325,7 @@ public class SelectManyTests {
     public async Task TimeBlockingProjection2() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsParallel(true)
                 .SelectMany(Project)
                 .ToListAsync();
@@ -345,7 +345,7 @@ public class SelectManyTests {
     public async Task TimeBlockingProjection3() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsConcurrent(false)
                 .SelectMany(Project)
                 .ToListAsync();
@@ -365,7 +365,7 @@ public class SelectManyTests {
     public async Task TimeBlockingProjection4() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsParallel(false)
                 .SelectMany(Project)
                 .ToListAsync();

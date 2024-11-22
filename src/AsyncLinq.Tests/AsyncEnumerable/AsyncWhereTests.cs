@@ -174,7 +174,7 @@ public class AsyncWhereTests {
     public async Task TimeOrdered1() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100, 0 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsConcurrent(true)
                 .AsyncWhere(async x => {
                     await Task.Delay(x);
@@ -191,7 +191,7 @@ public class AsyncWhereTests {
     public async Task TimeOrdered2() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100, 0 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsConcurrent(true)
                 .AsyncWhere(async x => {
                     Thread.Sleep(x);
@@ -208,7 +208,7 @@ public class AsyncWhereTests {
     public async Task TimeOrdered3() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100, 0 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsParallel(true)
                 .AsyncWhere(async x => {
                     await Task.Delay(x);
@@ -225,7 +225,7 @@ public class AsyncWhereTests {
     public async Task TimeOrdered4() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100, 0 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsParallel(true)
                 .AsyncWhere(async x => {
                     Thread.Sleep(x);
@@ -242,7 +242,7 @@ public class AsyncWhereTests {
     public async Task TimeUnordered1() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100, 0 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsConcurrent(false)
                 .AsyncWhere(async x => {
                     await Task.Delay(x);
@@ -259,7 +259,7 @@ public class AsyncWhereTests {
     public async Task TimeUnordered2() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100, 0 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsConcurrent(false)
                 .AsyncWhere(async x => {
                     Thread.Sleep(x);
@@ -276,7 +276,7 @@ public class AsyncWhereTests {
     public async Task TimeUnordered3() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100, 0 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsParallel(false)
                 .AsyncWhere(async x => {
                     await Task.Delay(x);
@@ -293,7 +293,7 @@ public class AsyncWhereTests {
     public async Task TimeUnordered4() {
         var (time, items) = await TestHelper.TimeAsync(async () => {
             return await new[] { 300, 200, 100, 0 }
-                .AsAsyncEnumerable()
+                .ToAsyncEnumerable()
                 .AsParallel(false)
                 .AsyncWhere(async x => {
                     Thread.Sleep(x);

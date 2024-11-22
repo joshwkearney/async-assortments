@@ -13,7 +13,7 @@ public static partial class AsyncEnumerableExtensions {
     ///     original sequence.
     /// </returns>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
-    public static IAsyncEnumerable<TSource> AsAsyncEnumerable<TSource>(this IEnumerable<TSource> source) {
+    public static IAsyncEnumerable<TSource> ToAsyncEnumerable<TSource>(this IEnumerable<TSource> source) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }

@@ -18,7 +18,7 @@ public static partial class AsyncEnumerableExtensions {
     ///     items written to the channel will only be yielded by one of the enumerators if 
     ///     multiple enumerators have been created from the same channel.
     /// </remarks>
-    public static async IAsyncEnumerable<TSource> AsAsyncEnumerable<TSource>(
+    public static async IAsyncEnumerable<TSource> ToAsyncEnumerable<TSource>(
         this ChannelReader<TSource> source, 
         [EnumeratorCancellation] CancellationToken cancellationToken = default) {
 

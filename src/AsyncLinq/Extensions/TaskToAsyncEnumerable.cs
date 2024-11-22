@@ -12,7 +12,7 @@ public static partial class AsyncEnumerableExtensions {
     ///     provided task as the only item in the sequence.
     /// </returns>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
-    public static IAsyncEnumerable<TSource> AsAsyncEnumerable<TSource>(this Task<TSource> source) {
+    public static IAsyncEnumerable<TSource> ToAsyncEnumerable<TSource>(this Task<TSource> source) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }

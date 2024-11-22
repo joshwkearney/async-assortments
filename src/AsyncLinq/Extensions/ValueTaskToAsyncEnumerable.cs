@@ -10,8 +10,8 @@ public static partial class AsyncEnumerableExtensions {
     ///     provided task as the only item in the sequence.
     /// </returns>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
-    public static IAsyncEnumerable<TSource> AsAsyncEnumerable<TSource>(this ValueTask<TSource> source) {
+    public static IAsyncEnumerable<TSource> ToAsyncEnumerable<TSource>(this ValueTask<TSource> source) {
         // We need to do this because you can call .GetEnumerator() multiple times on a sequence
-        return source.AsTask().AsAsyncEnumerable();
+        return source.AsTask().ToAsyncEnumerable();
     }
 }

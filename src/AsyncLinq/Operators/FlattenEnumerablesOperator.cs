@@ -21,13 +21,13 @@ namespace AsyncLinq.Operators {
 
         public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
             if (this.parent is EnumerableOperator<IEnumerable<T>> op) {
-                var newItems = op.Items.Select(x => x.AsAsyncEnumerable()).Append(sequence);
+                var newItems = op.Items.Select(x => x.ToAsyncEnumerable()).Append(sequence);
                 var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(op.Execution, newItems);
                 
                 return new FlattenOperator<T>(this.Execution, newParent);
             }
             else {
-                return new FlattenOperator<T>(this.Execution, new[] { this, sequence }.AsAsyncEnumerable());
+                return new FlattenOperator<T>(this.Execution, new[] { this, sequence }.ToAsyncEnumerable());
             }
         }
 

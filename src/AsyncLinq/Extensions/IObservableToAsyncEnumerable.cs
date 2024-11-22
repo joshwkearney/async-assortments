@@ -5,7 +5,8 @@ namespace AsyncLinq;
 
 public static partial class AsyncEnumerableExtensions {
     /// <summary>
-    ///     Exposes an <see cref="IObservable{T}" /> as an <see cref="IAsyncEnumerable{T}" />.
+    ///     Converts an <see cref="IObservable{T}" /> into an <see cref="IAsyncEnumerable{T}" />
+    ///     by buffering the observable's elements.
     /// </summary>
     /// <param name="maxBuffer">
     ///     The maximum number of items to buffer before new items are dropped.
@@ -21,7 +22,7 @@ public static partial class AsyncEnumerableExtensions {
     ///     may set a maximum number of items to store in this channel, after which new items
     ///     are dropped and not returned by the resulting <see cref="IAsyncEnumerable{T}" />.
     /// </remarks>
-    public static IAsyncEnumerable<TSource> AsAsyncEnumerable<TSource>(
+    public static IAsyncEnumerable<TSource> ToAsyncEnumerable<TSource>(
         this IObservable<TSource> source, 
         int maxBuffer = -1) {
 

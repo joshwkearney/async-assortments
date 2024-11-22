@@ -37,9 +37,9 @@ namespace AsyncLinq.Operators {
         }
         
         public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
-            var seqs = new[] { this.before.AsAsyncEnumerable(), this.parent, this.after.AsAsyncEnumerable(), sequence };
+            var seqs = new[] { this.before.ToAsyncEnumerable(), this.parent, this.after.ToAsyncEnumerable(), sequence };
 
-            return new FlattenOperator<T>(this.Execution, seqs.AsAsyncEnumerable());
+            return new FlattenOperator<T>(this.Execution, seqs.ToAsyncEnumerable());
         }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

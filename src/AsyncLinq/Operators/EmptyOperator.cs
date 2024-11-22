@@ -23,7 +23,7 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IA
     }
 
     public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
-        return before.Concat(after).AsAsyncEnumerable();
+        return before.Concat(after).ToAsyncEnumerable();
     }
 
     public IAsyncEnumerable<T> SkipTake(int skip, int take) {
