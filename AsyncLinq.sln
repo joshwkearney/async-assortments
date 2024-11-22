@@ -7,9 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncLinq", "src\AsyncLinq\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncLinq.Debug", "src\AsyncLinq.Debug\AsyncLinq.Debug.csproj", "{C28EC4FB-BCE6-4218-94C8-CF03A47AC3E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsyncLinq.Tests", "src\AsyncLinq.Tests\AsyncLinq.Tests.csproj", "{083C1145-D696-4291-AB65-4910D172733D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OppositionTesting", "OppositionTesting\OppositionTesting.csproj", "{8656480E-F4DD-486B-89B5-3B3DAD4487AA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsyncLinq.Tests", "src\AsyncLinq.Tests\AsyncLinq.Tests.csproj", "{083C1145-D696-4291-AB65-4910D172733D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,12 +27,11 @@ Global
 		{083C1145-D696-4291-AB65-4910D172733D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{083C1145-D696-4291-AB65-4910D172733D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{083C1145-D696-4291-AB65-4910D172733D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8656480E-F4DD-486B-89B5-3B3DAD4487AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8656480E-F4DD-486B-89B5-3B3DAD4487AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8656480E-F4DD-486B-89B5-3B3DAD4487AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8656480E-F4DD-486B-89B5-3B3DAD4487AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {98540019-BC7F-4375-ABB5-087F9712DA52}
 	EndGlobalSection
 EndGlobal
