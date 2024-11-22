@@ -12,7 +12,7 @@ public static partial class AsyncEnumerable {
     /// </param>
     /// <returns>A <see cref="ValueTask" /> representing final accumulator value.</returns>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
-    /// <exception cref="OperationCanceledException">
+    /// <exception cref="TaskCanceledException">
     ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
     /// </exception>
     public static ValueTask<TAccumulate> AggregateAsync<TSource, TAccumulate>(
@@ -47,7 +47,7 @@ public static partial class AsyncEnumerable {
     /// </param>
     /// <returns>A <see cref="ValueTask" /> representing final accumulator value.</returns>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
-    /// <exception cref="OperationCanceledException">
+    /// <exception cref="TaskCanceledException">
     ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
     /// </exception>
     public static ValueTask<TSource> AggregateAsync<TSource>(

@@ -5,6 +5,14 @@ using System.Linq;
 namespace AsyncLinq;
 
 public static partial class AsyncEnumerableExtensions {
+    /// <summary>
+    ///     Exposes an <see cref="IEnumerable" /> as an <see cref="IAsyncEnumerable{T}" />.
+    /// </summary>
+    /// <returns>
+    ///     A <see cref="IAsyncEnumerable{T}" /> containing all of the elements in the 
+    ///     original sequence.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> AsAsyncEnumerable<TSource>(this IEnumerable<TSource> source) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));

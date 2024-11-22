@@ -9,6 +9,10 @@ await Test();
 //await Test();
 //await Test();
 
+//new[] { 1, 2, 3 }
+//    .AsAsyncEnumerable()
+//    .AsyncSelectMany(async x => new int[] { x, x });
+
 async ValueTask Test() {
     var watch = new Stopwatch();
     watch.Restart();

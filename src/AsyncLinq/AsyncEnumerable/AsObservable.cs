@@ -5,7 +5,7 @@ public static partial class AsyncEnumerable {
     /// <remarks>
     ///     Subscribing to the returned observable creates an 
     ///     <see cref="IAsyncEnumerator{T}"/> on the input sequence, which yields the 
-    ///     sequence items to the subscriber.
+    ///     sequence's items to the subscriber.
     /// </remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IObservable<TSource> AsObservable<TSource>(this IAsyncEnumerable<TSource> source) {

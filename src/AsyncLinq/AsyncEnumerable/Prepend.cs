@@ -3,6 +3,9 @@
 namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
+    /// <summary>Prepends a value to the end of the sequence.</summary>
+    /// <param name="element">The value to append to the source sequence.</param>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> Prepend<TSource>(
         this IAsyncEnumerable<TSource> source, 
         TSource element) {

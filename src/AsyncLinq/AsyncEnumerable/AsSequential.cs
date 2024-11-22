@@ -4,6 +4,7 @@ namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Instructs asynchronous operators to run sequentially</summary>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     /// <remarks>
     ///     <para>
     ///         This method changes the behavior of operators that involve asynchronous operations,
@@ -14,12 +15,12 @@ public static partial class AsyncEnumerable {
     ///     
     ///     <para>
     ///         Sequential execution is the default behavior of <see cref="IAsyncEnumerable{T}" />.
-    ///         Calling this method is only required if 
-    ///         <see cref="AsConcurrent{TSource}(IAsyncEnumerable{TSource})"/> or 
-    ///         <see cref="AsParallel{TSource}(IAsyncEnumerable{TSource})" /> have previously been called.
+    ///         Calling this method is only required if <c>AsConcurrent</c> or <c>AsParallel</c> have 
+    ///         previously been called.
     ///     </para>
     /// </remarks>
-    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
+    /// <seealso cref="AsSequential{TSource}" />
+    /// <seealso cref="AsConcurrent{TSource}" />
     public static IAsyncPipeline<TSource> AsSequential<TSource>(this IAsyncEnumerable<TSource> source) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));

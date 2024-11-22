@@ -11,7 +11,7 @@ public static partial class AsyncEnumerable {
     ///     A <see cref="ValueTask"/> representing the result.
     /// </returns>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
-    /// <exception cref="OperationCanceledException">
+    /// <exception cref="TaskCanceledException">
     ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
     /// </exception>
     public static ValueTask<bool> AnyAsync<TSource>(
@@ -35,14 +35,7 @@ public static partial class AsyncEnumerable {
     ///     Asynchronously determines whether any element of a sequence satisfies a condition.
     /// </summary>
     /// <param name="predicate">The condition to search for</param>
-    /// <param name="cancellationToken">
-    ///     A cancellation token that can be used to cancel the enumeration before it finishes.
-    /// </param>
-    /// <returns>A <see cref="ValueTask"/> representing the result.</returns>
-    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
-    /// <exception cref="OperationCanceledException">
-    ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
-    /// </exception>
+    /// <inheritdoc cref="AnyAsync{TSource}(IAsyncEnumerable{TSource}, CancellationToken)" />
     public static ValueTask<bool> AnyAsync<TSource>(
        this IAsyncEnumerable<TSource> source,
        Func<TSource, bool> predicate,

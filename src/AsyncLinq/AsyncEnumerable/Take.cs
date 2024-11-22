@@ -3,11 +3,22 @@
 namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
+    /// <summary>
+    ///     Returns a specified number of contiguous elements from the 
+    ///     start of a sequence.
+    /// </summary>
+    /// <param name="numToTake">The number of elements to take.</param>
+    /// <returns>
+    ///     An <see cref="IAsyncEnumerable{T}" /> containing the specified
+    ///     number of elements from the start of the sequence.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> Take<TSource>(
         this IAsyncEnumerable<TSource> source, 
         int numToTake) {
 
         if (source == null) {
+            new[] { 0 }.Take(8);
             throw new ArgumentNullException(nameof(source));
         }
 

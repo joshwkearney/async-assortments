@@ -4,6 +4,7 @@ namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Instructs asynchronous operators to run in parallel on the thread pool.</summary>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     /// <param name="preserveOrder">
     ///     Determines if asynchronous operations should be returned in the order of the original
     ///     sequence (<c>true</c>), or the order in which they finish (<c>false</c>)
@@ -22,7 +23,6 @@ public static partial class AsyncEnumerable {
     /// </remarks>
     /// <seealso cref="AsSequential{TSource}" />
     /// <seealso cref="AsConcurrent{TSource}" />
-    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncPipeline<TSource> AsParallel<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));

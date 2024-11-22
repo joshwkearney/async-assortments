@@ -3,6 +3,18 @@
 namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
+    /// <summary>
+    ///     Filters a sequence using a predicate to select elements.
+    /// </summary>
+    /// <param name="predicate">
+    ///     A function that determines if an element should remain in
+    ///     the sequence.
+    /// </param>
+    /// <returns>
+    ///     An <see cref="IAsyncEnumerable{T}" /> containing all of the 
+    ///     elements that were allowed by the predicate.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> Where<TSource>(
         this IAsyncEnumerable<TSource> source, 
         Func<TSource, bool> predicate) {

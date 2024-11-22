@@ -4,6 +4,7 @@ namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Instructs asynchronous operators to run concurrently</summary>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     /// <param name="preserveOrder">
     ///     Determines if asynchronous operations should be returned in the order of the original
     ///     sequence (<c>true</c>), or the order in which they finish (<c>false</c>)
@@ -16,13 +17,12 @@ public static partial class AsyncEnumerable {
     ///     </para>
     ///     
     ///     <para>
-    ///         Concurrent execution is best for asynchronous operations that are IO-bound where
+    ///         Concurrent execution is best for asynchronous operations that are IO-bound, where
     ///         multithreading is not needed.
     ///     </para>
     /// </remarks>
     /// <seealso cref="AsSequential{TSource}" />
     /// <seealso cref="AsParallel{TSource}" />
-    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncPipeline<TSource> AsConcurrent<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));

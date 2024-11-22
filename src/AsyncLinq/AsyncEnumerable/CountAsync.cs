@@ -3,6 +3,17 @@
 namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
+    /// <summary>
+    ///     Counts the number of items in a sequence
+    /// </summary>
+    /// <param name="cancellationToken">
+    ///     A cancellation token that can be used to cancel the enumeration before it finishes.
+    /// </param>
+    /// <returns>The number of items in the sequence</returns>
+    /// <exception cref="ArgumentNullException">One of the provided arguments was null</exception>
+    /// <exception cref="TaskCanceledException">
+    ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
+    /// </exception>
     public static ValueTask<int> CountAsync<TSource>(
         this IAsyncEnumerable<TSource> source, 
         CancellationToken cancellationToken = default) {
@@ -32,6 +43,18 @@ public static partial class AsyncEnumerable {
         }
     }
 
+    /// <summary>
+    ///     Counts the number of items in a sequence that match a given predicate
+    /// </summary>
+    /// <param name="predicate">A predicate that defines which items should be counted</param>
+    /// <param name="cancellationToken">
+    ///     A cancellation token that can be used to cancel the enumeration before it finishes.
+    /// </param>
+    /// <returns>The number of items in the sequence that match the predicate</returns>
+    /// <exception cref="ArgumentNullException">One of the provided arguments was null</exception>
+    /// <exception cref="TaskCanceledException">
+    ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
+    /// </exception>
     public static ValueTask<int> CountAsync<TSource>(
         this IAsyncEnumerable<TSource> source,
         Func<TSource, bool> predicate,
