@@ -99,7 +99,7 @@ down to a few lines. Hmmm
 You can rewrite the code above with AsyncLinq like this:
 
 ```csharp
-var results = new[] { 1, 2, 3, 4 }
+var results = await new[] { 1, 2, 3, 4 }
     .ToAsyncEnumerable()
     .AsConcurrent(preserveOrder: false)
     .AsyncSelect(async x => await ProcessItem(x))
