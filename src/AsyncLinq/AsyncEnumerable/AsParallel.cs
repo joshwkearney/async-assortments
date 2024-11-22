@@ -23,14 +23,14 @@ public static partial class AsyncEnumerable {
     /// </remarks>
     /// <seealso cref="AsSequential{TSource}" />
     /// <seealso cref="AsConcurrent{TSource}" />
-    public static IAsyncPipeline<TSource> AsParallel<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
+    public static IScheduledAsyncEnumerable<TSource> AsParallel<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }
 
-        var pars = preserveOrder ? AsyncPipelineExecution.ParallelOrdered : AsyncPipelineExecution.ParallelUnordered;
+        var pars = preserveOrder ? AsyncEnumerableScheduleMode.ParallelOrdered : AsyncEnumerableScheduleMode.ParallelUnordered;
 
-        if (source is IAsyncOperator<TSource> op) {
+        if (source is IScheduledAsyncOperator<TSource> op) {
             return op.WithExecution(pars);
         }
         else {

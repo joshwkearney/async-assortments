@@ -33,19 +33,19 @@ public static partial class AsyncEnumerableExtensions {
         return new ObservableWrapper<TSource>(default, source, maxBuffer);
     }
 
-    private class ObservableWrapper<T> : IAsyncOperator<T> {
+    private class ObservableWrapper<T> : IScheduledAsyncOperator<T> {
         private readonly IObservable<T> source;
         private readonly int maxBuffer;
         
-        public AsyncPipelineExecution Execution { get; }
+        public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
-        public ObservableWrapper(AsyncPipelineExecution pars, IObservable<T> source, int maxBuffer) {
-            this.Execution = pars;
+        public ObservableWrapper(AsyncEnumerableScheduleMode pars, IObservable<T> source, int maxBuffer) {
+            this.ScheduleMode = pars;
             this.source = source;
             this.maxBuffer = maxBuffer;
         }
         
-        public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
+        public IScheduledAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
             return new ObservableWrapper<T>(pars, this.source, this.maxBuffer);
         }
 

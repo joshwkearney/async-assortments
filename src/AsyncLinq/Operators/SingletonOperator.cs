@@ -1,21 +1,21 @@
 namespace AsyncLinq.Operators;
 
-internal class SingletonOperator<T> : IAsyncOperator<T> {
+internal class SingletonOperator<T> : IScheduledAsyncOperator<T> {
     private readonly Func<CancellationToken, ValueTask<T>> func;
     
-    public AsyncPipelineExecution Execution { get; }
+    public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
-    public SingletonOperator(AsyncPipelineExecution pars, Func<CancellationToken, ValueTask<T>> func) {
-        this.Execution = pars;
+    public SingletonOperator(AsyncEnumerableScheduleMode pars, Func<CancellationToken, ValueTask<T>> func) {
+        this.ScheduleMode = pars;
         this.func = func;
     }
 
-    public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
+    public IScheduledAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
         return new SingletonOperator<T>(pars, this.func);
     }
     
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-        if (this.Execution.IsParallel()) {
+        if (this.ScheduleMode.IsParallel()) {
             yield return await Task.Run(() => this.func(cancellationToken).AsTask(), cancellationToken);
         }
         else {

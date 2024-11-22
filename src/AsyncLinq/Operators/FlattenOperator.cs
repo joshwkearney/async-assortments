@@ -6,53 +6,53 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace AsyncLinq.Operators {    
-    internal class FlattenOperator<T> : IAsyncOperator<T>, IConcatOperator<T>, IConcatEnumerablesOperator<T> {
+    internal class FlattenOperator<T> : IScheduledAsyncOperator<T>, IConcatOperator<T>, IConcatEnumerablesOperator<T> {
         private static readonly UnboundedChannelOptions channelOptions = new UnboundedChannelOptions() {
             AllowSynchronousContinuations = true
         };
 
         private readonly IAsyncEnumerable<IAsyncEnumerable<T>> parent;
 
-        public AsyncPipelineExecution Execution { get; }
+        public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
-        public FlattenOperator(AsyncPipelineExecution pars, IAsyncEnumerable<IAsyncEnumerable<T>> parent) {
+        public FlattenOperator(AsyncEnumerableScheduleMode pars, IAsyncEnumerable<IAsyncEnumerable<T>> parent) {
             this.parent = parent;
-            Execution = pars;
+            ScheduleMode = pars;
         }
         
-        public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
+        public IScheduledAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
             return new FlattenOperator<T>(pars, parent);
         }
         
         public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
             if (this.parent is EnumerableOperator<IAsyncEnumerable<T>> op) {
                 var newItems = op.Items.Append(sequence);
-                var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(op.Execution, newItems);
+                var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(op.ScheduleMode, newItems);
                 
-                return new FlattenOperator<T>(this.Execution, newParent);
+                return new FlattenOperator<T>(this.ScheduleMode, newParent);
             }
             else {
-                return new FlattenOperator<T>(this.Execution, new[] { this, sequence }.ToAsyncEnumerable());
+                return new FlattenOperator<T>(this.ScheduleMode, new[] { this, sequence }.ToAsyncEnumerable());
             }
         }
 
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
             if (this.parent is EnumerableOperator<IAsyncEnumerable<T>> op) {
                 var newItems = op.Items.Prepend(before.ToAsyncEnumerable()).Append(after.ToAsyncEnumerable());
-                var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(op.Execution, newItems);
+                var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(op.ScheduleMode, newItems);
                 
-                return new FlattenOperator<T>(this.Execution, newParent);
+                return new FlattenOperator<T>(this.ScheduleMode, newParent);
             }
             else {
-                return new ConcatEnumerablesOperator<T>(this.Execution, this, before, after);
+                return new ConcatEnumerablesOperator<T>(this.ScheduleMode, this, before, after);
             }
         }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.Execution == AsyncPipelineExecution.Sequential) {
+            if (this.ScheduleMode == AsyncEnumerableScheduleMode.Sequential) {
                 return this.SequentialHelper(cancellationToken);
             }
-            else if (this.Execution.IsUnordered()) {
+            else if (this.ScheduleMode.IsUnordered()) {
                 return this.UnorderedHelper(cancellationToken);
             }
             else {
@@ -133,7 +133,7 @@ namespace AsyncLinq.Operators {
                         var subChannel = Channel.CreateUnbounded<T>(channelOptions);
                         channel.Writer.TryWrite(subChannel);
 
-                        if (this.Execution.IsParallel()) {
+                        if (this.ScheduleMode.IsParallel()) {
                             Task.Run(() => IterateInner(item, subChannel));
                         }
                         else {
@@ -196,7 +196,7 @@ namespace AsyncLinq.Operators {
 
                         ValueTask task;
 
-                        if (this.Execution.IsParallel()) {
+                        if (this.ScheduleMode.IsParallel()) {
                             task = new ValueTask(Task.Run(() => IterateInner(item).AsTask()));
                         }
                         else {

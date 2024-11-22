@@ -32,7 +32,7 @@ public static partial class AsyncEnumerable {
         }
 
         // First try to compose this operation with a previous operator
-        if (source is IAsyncSelectOperator<TSource> selectOp) {
+        if (source is IScheduledAsyncSelectOperator<TSource> selectOp) {
             return selectOp.AsyncSelect(selector);
         }
 

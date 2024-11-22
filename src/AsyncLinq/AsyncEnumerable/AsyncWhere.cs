@@ -32,7 +32,7 @@ public static partial class AsyncEnumerable {
         }
 
         // First try to compose this operation with a previous operator
-        if (source is IAsyncWhereOperator<TSource> whereOp) {
+        if (source is IScheduledAsyncWhereOperator<TSource> whereOp) {
             return whereOp.AsyncWhere(predicate);
         }
 

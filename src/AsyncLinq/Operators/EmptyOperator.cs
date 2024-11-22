@@ -1,16 +1,16 @@
 namespace AsyncLinq.Operators;
 
-internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IAsyncWhereOperator<T>, 
+internal class EmptyOperator<T> : IScheduledAsyncOperator<T>, IScheduledAsyncSelectOperator<T>, IScheduledAsyncWhereOperator<T>, 
     IConcatOperator<T>, IConcatEnumerablesOperator<T>, ISelectOperator<T>, IWhereOperator<T>, 
     ISkipTakeOperator<T>, ICountOperator<T> {
 
-    public static IAsyncOperator<T> Instance { get; } = new EmptyOperator<T>();
+    public static IScheduledAsyncOperator<T> Instance { get; } = new EmptyOperator<T>();
     
-    public AsyncPipelineExecution Execution => default;
+    public AsyncEnumerableScheduleMode ScheduleMode => default;
 
     private EmptyOperator() { }
 
-    public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
+    public IScheduledAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
         return new WrapperOperator<T>(pars, this);
     }
 

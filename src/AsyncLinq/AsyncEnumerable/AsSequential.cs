@@ -21,16 +21,16 @@ public static partial class AsyncEnumerable {
     /// </remarks>
     /// <seealso cref="AsSequential{TSource}" />
     /// <seealso cref="AsConcurrent{TSource}" />
-    public static IAsyncPipeline<TSource> AsSequential<TSource>(this IAsyncEnumerable<TSource> source) {
+    public static IScheduledAsyncEnumerable<TSource> AsSequential<TSource>(this IAsyncEnumerable<TSource> source) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IAsyncOperator<TSource> op) {
-            return op.WithExecution(AsyncPipelineExecution.Sequential);
+        if (source is IScheduledAsyncOperator<TSource> op) {
+            return op.WithExecution(AsyncEnumerableScheduleMode.Sequential);
         }
         else {
-            return new WrapperOperator<TSource>(AsyncPipelineExecution.Sequential, source);
+            return new WrapperOperator<TSource>(AsyncEnumerableScheduleMode.Sequential, source);
         }
     }
 }

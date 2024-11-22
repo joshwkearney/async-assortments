@@ -5,15 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AsyncLinq.Operators {
-    internal class ConcatEnumerablesOperator<T> : IAsyncOperator<T>, IConcatEnumerablesOperator<T>, IConcatOperator<T> {
+    internal class ConcatEnumerablesOperator<T> : IScheduledAsyncOperator<T>, IConcatEnumerablesOperator<T>, IConcatOperator<T> {
         private readonly IEnumerable<T> before;
         private readonly IEnumerable<T> after;
         private readonly IAsyncEnumerable<T> parent;
 
-        public AsyncPipelineExecution Execution { get; }
+        public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
         public ConcatEnumerablesOperator(
-            AsyncPipelineExecution pars,
+            AsyncEnumerableScheduleMode pars,
             IAsyncEnumerable<T> parent,
             IEnumerable<T> before, 
             IEnumerable<T> after) {
@@ -21,16 +21,16 @@ namespace AsyncLinq.Operators {
             this.parent = parent;
             this.before = before;
             this.after = after;
-            this.Execution = pars;
+            this.ScheduleMode = pars;
         }
         
-        public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
+        public IScheduledAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
             return new ConcatEnumerablesOperator<T>(pars, this.parent, this.before, this.after);
         }
 
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
             return new ConcatEnumerablesOperator<T>(
-                this.Execution,
+                this.ScheduleMode,
                 this.parent,
                 before.Concat(this.before),
                 this.after.Concat(after));
@@ -39,11 +39,11 @@ namespace AsyncLinq.Operators {
         public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
             var seqs = new[] { this.before.ToAsyncEnumerable(), this.parent, this.after.ToAsyncEnumerable(), sequence };
 
-            return new FlattenOperator<T>(this.Execution, seqs.ToAsyncEnumerable());
+            return new FlattenOperator<T>(this.ScheduleMode, seqs.ToAsyncEnumerable());
         }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.Execution.IsUnordered()) {
+            if (this.ScheduleMode.IsUnordered()) {
                 return this.UnorderedHelper(cancellationToken);
             }
             else {
