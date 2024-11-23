@@ -12,7 +12,7 @@
 	<!-- Nuget information -->
 	<PropertyGroup>
 		<PackageId>AsyncCollections.Linq</PackageId>
-		<Version>0.1.0-alpha</Version>
+		<Version>0.2.0-alpha</Version>
 		<Authors>Joshua Kearney</Authors>
 		<PackageProjectUrl>https://github.com/joshwkearney/async-collections</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

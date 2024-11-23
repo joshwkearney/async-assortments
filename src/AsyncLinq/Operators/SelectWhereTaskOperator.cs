@@ -1,8 +1,6 @@
-﻿using System;
-using System.Threading.Channels;
-using System.Transactions;
+﻿using System.Threading.Channels;
 
-namespace AsyncLinq.Operators {
+namespace AsyncCollections.Linq.Operators {
     internal delegate ValueTask<SelectWhereResult<E>> AsyncSelectWhereFunc<T, E>(T item, CancellationToken cancellationToken);
 
     internal class SelectWhereTaskOperator<T, E> : IScheduledAsyncOperator<E>, ISelectOperator<E>, 

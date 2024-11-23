@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace AsyncLinq {
+namespace AsyncCollections.Linq {
     internal struct ErrorCollection : IReadOnlyCollection<Exception> {
         private List<Exception>? errors;
 

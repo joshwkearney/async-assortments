@@ -1,4 +1,4 @@
-namespace AsyncLinq.Operators;
+namespace AsyncCollections.Linq.Operators;
 
 internal class SingletonOperator<T> : IScheduledAsyncOperator<T> {
     private readonly Func<CancellationToken, ValueTask<T>> func;

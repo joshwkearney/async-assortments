@@ -1,7 +1,7 @@
 ﻿//using System.Runtime.CompilerServices;
 //using System.Threading.Channels;
 
-//namespace AsyncLinq;
+//namespace AsyncCollections.Linq;
 
 //public static partial class AsyncEnumerable {
 //    public static IAsyncEnumerable<TResult> GroupJoin<T, E, TKey, TResult>(

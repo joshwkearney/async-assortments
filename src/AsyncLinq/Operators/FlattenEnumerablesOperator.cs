@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AsyncLinq.Operators {
+﻿namespace AsyncCollections.Linq.Operators {
     internal class FlattenEnumerablesOperator<T> : IScheduledAsyncOperator<T>, IConcatOperator<T>, IConcatEnumerablesOperator<T> {
         private readonly IAsyncEnumerable<IEnumerable<T>> parent;
 

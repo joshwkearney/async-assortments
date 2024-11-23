@@ -1,6 +1,6 @@
-﻿using AsyncLinq.Operators;
+﻿using AsyncCollections.Linq.Operators;
 
-namespace AsyncLinq;
+namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Appends a value produced by an async function to the end of the sequence.</summary>

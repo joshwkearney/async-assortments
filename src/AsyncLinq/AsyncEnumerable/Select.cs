@@ -1,6 +1,6 @@
-﻿using AsyncLinq.Operators;
+﻿using AsyncCollections.Linq.Operators;
 
-namespace AsyncLinq;
+namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Projects each element of a sequence into a new form.</summary>

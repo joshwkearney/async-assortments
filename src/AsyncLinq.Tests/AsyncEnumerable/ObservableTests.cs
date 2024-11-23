@@ -1,6 +1,7 @@
 using System.Reactive.Linq;
+using AsyncCollections.Linq;
 
-namespace AsyncLinq.Tests;
+namespace AsyncCollections.Linq.Tests;
 
 public class ObservableTests {
     [Fact]

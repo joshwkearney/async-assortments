@@ -1,8 +1,6 @@
+using AsyncCollections.Linq;
 
-using System.Diagnostics;
-using System.Security.Cryptography.X509Certificates;
-
-namespace AsyncLinq.Tests;
+namespace AsyncCollections.Linq.Tests;
 
 public class ConcatTests {
     [Fact]

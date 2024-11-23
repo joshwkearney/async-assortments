@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AsyncCollections.Linq;
 
-namespace AsyncLinq.Tests.OperatorCombinations {
+namespace AsyncCollections.Linq.Tests.OperatorCombinations {
     public class SkipTakeTests {
         [Fact]
         public async Task TestSkipTake1() {

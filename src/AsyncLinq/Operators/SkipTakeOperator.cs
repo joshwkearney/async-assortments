@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AsyncLinq.Operators {
+﻿namespace AsyncCollections.Linq.Operators {
     internal class SkipTakeOperator<T> : IScheduledAsyncOperator<T>, ISkipTakeOperator<T> {
         private readonly IAsyncEnumerable<T> parent;
         private readonly int skip;

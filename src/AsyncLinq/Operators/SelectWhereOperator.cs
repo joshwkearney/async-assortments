@@ -1,6 +1,4 @@
-﻿using System.Threading.Channels;
-
-namespace AsyncLinq.Operators {
+﻿namespace AsyncCollections.Linq.Operators {
     internal record struct SelectWhereResult<T>(bool IsValid, T Value);
 
     internal delegate SelectWhereResult<E> SelectWhereFunc<T, E>(T item);

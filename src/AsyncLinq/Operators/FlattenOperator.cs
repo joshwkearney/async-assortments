@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
+﻿using System.Threading.Channels;
 
-namespace AsyncLinq.Operators {    
+namespace AsyncCollections.Linq.Operators {    
     internal class FlattenOperator<T> : IScheduledAsyncOperator<T>, IConcatOperator<T>, IConcatEnumerablesOperator<T> {
         private static readonly UnboundedChannelOptions channelOptions = new UnboundedChannelOptions() {
             AllowSynchronousContinuations = true

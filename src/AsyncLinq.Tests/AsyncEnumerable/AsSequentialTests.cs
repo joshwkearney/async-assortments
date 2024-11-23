@@ -1,6 +1,6 @@
-using System.Diagnostics;
+using AsyncCollections.Linq;
 
-namespace AsyncLinq.Tests;
+namespace AsyncCollections.Linq.Tests;
 
 public class AsSequentialTests {
     [Fact]

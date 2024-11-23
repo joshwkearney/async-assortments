@@ -1,4 +1,4 @@
-namespace AsyncLinq.Operators;
+namespace AsyncCollections.Linq.Operators;
 
 internal class EmptyOperator<T> : IScheduledAsyncOperator<T>, IScheduledAsyncSelectOperator<T>, IScheduledAsyncWhereOperator<T>, 
     IConcatOperator<T>, IConcatEnumerablesOperator<T>, ISelectOperator<T>, IWhereOperator<T>, 

@@ -1,6 +1,6 @@
-using AsyncLinq.Operators;
+using AsyncCollections.Linq.Operators;
 
-namespace AsyncLinq;
+namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Instructs asynchronous operators to run sequentially</summary>

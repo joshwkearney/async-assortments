@@ -1,4 +1,4 @@
-namespace AsyncLinq.Operators;
+namespace AsyncCollections.Linq.Operators;
 
 internal interface IScheduledAsyncOperator<out T> : IScheduledAsyncEnumerable<T> {
 

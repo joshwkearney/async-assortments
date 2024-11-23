@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AsyncLinq {
+﻿namespace AsyncCollections.Linq {
     public interface IScheduledAsyncEnumerable<out T> : IAsyncEnumerable<T> {
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
     }

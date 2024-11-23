@@ -1,5 +1,5 @@
 ﻿
-namespace AsyncLinq;
+namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerableExtensions {
     /// <summary>

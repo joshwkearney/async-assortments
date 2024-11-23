@@ -1,4 +1,6 @@
-namespace AsyncLinq.Tests;
+using AsyncCollections.Linq;
+
+namespace AsyncCollections.Linq.Tests;
 
 public class EmptyTests {    
     [Fact]

@@ -1,4 +1,4 @@
-namespace AsyncLinq.Operators;
+namespace AsyncCollections.Linq.Operators;
 
 internal class WrapperOperator<T> : IScheduledAsyncOperator<T> {
     public IAsyncEnumerable<T> Parent { get; }

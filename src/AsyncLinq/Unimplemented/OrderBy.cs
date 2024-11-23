@@ -1,6 +1,6 @@
 ﻿//using System.Runtime.CompilerServices;
 
-//namespace AsyncLinq;
+//namespace AsyncCollections.Linq;
 
 //public static partial class AsyncEnumerable {
 //    public static async IAsyncEnumerable<TSource> Order<TSource>(
