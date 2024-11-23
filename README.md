@@ -14,7 +14,8 @@ var result = await ids
 ```
 
 ## Download
-The latest version of `AsyncCollections.Linq` can be downloaded on NuGet [here](https://example.com).
+The latest version of `AsyncCollections.Linq` can be downloaded on NuGet 
+[here](https://www.nuget.org/packages/AsyncCollections.Linq/).
 
 ## Purpose
 Microsoft has made it clear that they have 

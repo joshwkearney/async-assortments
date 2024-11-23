@@ -14,7 +14,7 @@
 		<PackageId>AsyncCollections.Linq</PackageId>
 		<Version>0.1.0-alpha</Version>
 		<Authors>Joshua Kearney</Authors>
-		<PackageProjectUrl>https://github.com/joshwkearney/AsyncCollections</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/joshwkearney/async-collections</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>LINQ, Extensions, Async, IAsyncEnumerable</PackageTags>
 		<Description>
