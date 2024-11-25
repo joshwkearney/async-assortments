@@ -37,3 +37,7 @@ internal interface IAsyncWhereOperator<E> : IAsyncOperator<E> {
 internal interface ISkipTakeOperator<out T> : IAsyncOperator<T> {
     public IAsyncEnumerable<T> SkipTake(int skip, int take);
 }
+
+internal interface IToListOperator<T> : IAsyncOperator<T> {
+    public ValueTask<List<T>> ToListAsync(CancellationToken cancellationToken = default);
+}

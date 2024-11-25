@@ -2,7 +2,7 @@ namespace AsyncLinq.Operators;
 
 internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IAsyncWhereOperator<T>, 
     IConcatOperator<T>, IConcatEnumerablesOperator<T>, ISelectOperator<T>, IWhereOperator<T>, 
-    ISkipTakeOperator<T>, ICountOperator<T> {
+    ISkipTakeOperator<T>, ICountOperator<T>, IToListOperator<T> {
 
     public static IAsyncOperator<T> Instance { get; } = new EmptyOperator<T>();
     
@@ -39,4 +39,8 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IA
     public IAsyncEnumerable<G> AsyncSelect<G>(Func<T, CancellationToken, ValueTask<G>> nextSelector) => EmptyOperator<G>.Instance;
 
     public IAsyncEnumerable<T> AsyncWhere(Func<T, CancellationToken, ValueTask<bool>> predicate) => this;
+
+    public ValueTask<List<T>> ToListAsync(CancellationToken cancellationToken = default) {
+        return new ValueTask<List<T>>([]);
+    }
 }

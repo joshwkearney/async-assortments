@@ -1,4 +1,7 @@
-﻿namespace AsyncLinq;
+﻿using AsyncLinq.Operators;
+using System.Threading;
+
+namespace AsyncLinq;
 
 public static partial class AsyncEnumerable {
     /// <summary>
@@ -23,16 +26,23 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        return Helper();
-
-        async ValueTask<List<TSource>> Helper() {
-            var list = new List<TSource>();
-
-            await foreach (var item in source.WithCancellation(cancellationToken)) {
-                list.Add(item);
-            }
-
-            return list;
+        if (source is IToListOperator<TSource> op) {
+            return op.ToListAsync(cancellationToken);
         }
+
+        return ToListHelper(source, cancellationToken);        
+    }
+
+    private static async ValueTask<List<TSource>> ToListHelper<TSource>(
+        this IAsyncEnumerable<TSource> source,
+        CancellationToken cancellationToken) {
+
+        var list = new List<TSource>();
+
+        await foreach (var item in source.WithCancellation(cancellationToken)) {
+            list.Add(item);
+        }
+
+        return list;
     }
 }

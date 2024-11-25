@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace AsyncLinq.Operators {
-    internal class ConcatEnumerablesOperator<T> : IAsyncOperator<T>, IConcatEnumerablesOperator<T>, IConcatOperator<T> {
+    internal class ConcatEnumerablesOperator<T> : IAsyncOperator<T>, IConcatEnumerablesOperator<T>, 
+        IConcatOperator<T> {
+
         private readonly IEnumerable<T> before;
         private readonly IEnumerable<T> after;
         private readonly IAsyncEnumerable<T> parent;

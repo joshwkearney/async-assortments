@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AsyncLinq.Operators {
     internal class EnumerableOperator<T> : IAsyncOperator<T>, ISkipTakeOperator<T>, ISelectOperator<T>, 
-        IWhereOperator<T>, IConcatEnumerablesOperator<T>, ICountOperator<T> {
+        IWhereOperator<T>, IConcatEnumerablesOperator<T>, ICountOperator<T>, IToListOperator<T> {
 
         public IEnumerable<T> Items { get; }
 
@@ -46,6 +46,10 @@ namespace AsyncLinq.Operators {
             var seq = this.Items.Where(predicate);
 
             return new EnumerableOperator<T>(this.Execution, seq);
+        }
+
+        public ValueTask<List<T>> ToListAsync(CancellationToken cancellationToken = default) {
+            return new ValueTask<List<T>>(this.Items.ToList());
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
