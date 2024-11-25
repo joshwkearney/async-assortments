@@ -30,7 +30,7 @@ public static partial class AsyncEnumerableExtensions {
             throw new ArgumentNullException(nameof(source));
         }
 
-        return new ObservableWrapper<TSource>(default, source, maxBuffer);
+        return new ObservableWrapper<TSource>(AsyncPipelineExecution.ConcurrentOrdered, source, maxBuffer);
     }
 
     private class ObservableWrapper<T> : IAsyncOperator<T> {
