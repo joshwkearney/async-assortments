@@ -1,6 +1,14 @@
 # Async Sequences for .NET
 
-C# 8 Added the `IAsyncEnumerable` interface to support async sequences, but .NET is still
+1. [Overview](#overview)
+2. [Download](#download)
+3. [Project goals](#project-goals)
+4. [Why not use `System.Reactive.Linq` ?](#why-not-use-systemreactivelinq)
+5. [What is an IAsyncEnumerable anyway?](#what-is-an-iasyncenumerable-anyway)
+6. [Concurrent and parallel sequences](#concurrent-and-parallel-sequences)
+
+## Overview
+C# 8 added the `IAsyncEnumerable` interface to support async sequences, but .NET is still
 missing the infrastructure to make it useful in most situations. This library aims to 
 bridge the gap, providing support for `await`, LINQ, concurrent programming, and more to 
 `IAsyncEnumerable`. Keep reading for details!
@@ -51,7 +59,7 @@ var results = await ids
 The latest version of `AsyncCollections.Linq` can be downloaded on NuGet 
 [here](https://www.nuget.org/packages/AsyncCollections.Linq/).
 
-## Purpose
+## Project goals
 Microsoft has made it clear that they have 
 [no intentions](https://github.com/dotnet/runtime/issues/31580#issuecomment-581065904) 
 of shipping LINQ extensions for `IAsyncEnumerable` and they 
@@ -65,77 +73,115 @@ The great [RX.NET project](https://github.com/dotnet/reactive) maintains the
 `System.Linq.Async` namespace, which contains LINQ operators for `IAsyncEnumerable`. Why
 create a new project that aims to do the same thing?
 
-RX.NET always assumes an `IAsyncEnumerable` represents a linear sequence of 
-elements with a long time delay between each element. This is fine for something like a 
-database query (or a reactive stream), but this wasn't my use case. 
+RX.NET assumes an `IAsyncEnumerable` represents a linear sequence of 
+elements with a delay between each element. This is fine (but not ideal) for an IO-bound
+operation like a database query, but in C# tasks can also be used to represent 
+*concurrent* operations running at the same time. What if we wanted to use 
+`IAsyncEnumerable` to represent a collection of tasks that have already started?
 
-Instead, I was trying to find an abstraction that could represent a collection of 
-tasks all executing *simultaneously*, not just one at a time. I realized that 
-`IAsyncEnumerable` was actually the perfect interface for this, but it would require 
-LINQ operators that could compose correctly under concurrent and parallel execution. 
+The LINQ operators included in RX.NET don't compose correctly under concurrent 
+operations, so a new library was needed. See the section below for details.
 
-RX.NET does not do this, so a new library was born. Keep reading for details!
+## What is an IAsyncEnumerable anyway?
+In C#, `IEnumerable` represents a lazy sequence, which means that the next element is not
+computed until `MoveNext()` is called on the iterator. If you stop calling `MoveNext()`,
+no more elements are produced. This means it is pull-based, because `IEnumerable`
+requires the consumer to "pull" items out of it.
 
-## Async pipelines?
+By contrast, a `Task` is eager, and it starts as soon as it's created. If you call a 
+function that returns a task without awaiting, that function is running concurrently
+in the background. When the task is done, it "pushes" the result to code waiting for
+the result by calling the task's callbacks. This means it is push-based, and runs
+whether or not it is awaited by the consumer.
 
-I'm sure most people reading this have run into the following situation: you have a
-list of things and want to apply a function to each element. Normally, you would
-call `.Select()` and be on your way, but this time is tricky because your function
-return a `Task<T>`. You could write a `foreach` loop and await the function inside,
-but that's going to take much longer than if you start all the tasks 
-and then await all of them. Usually you end up with something like this:
+This puts `IAsyncEnumerable` in a very weird spot. Should it be lazy like an 
+`IEnumerable`, or eager like a `Task`? 
 
-```csharp
-var ids = new int[] { 1, 2, 3, 4 };
-var tasks = ids.Select(async x => await ProcessItem(x));
-var results = await Task.WhenAll(tasks);
-```
-
-Ok, that's not so bad. But what if you want to filter the results afterwards, but your
-filtering function also returns a `Task<bool>`:
-
-```csharp
-var ids = new int[] { 1, 2, 3, 4 };
-var tasks = ids.Select(async x => await ProcessItem(x));
-var results = await Task.WhenAll(tasks);
-var tasks2 = results.Select(async x => new { IsValid = await FilterItem(x), Item = x });
-var temp = await Task.WhenAll(tasks2);
-var results2 = temp.Where(x => x.IsValid).Select(x => x.Item).ToList();
-```
-
-Oh dear, that's getting pretty terrible. If we need more operations this will 
-turn into an absolute mess. This also isn't a very good solution, 
-because all of our first tasks have to finish before any of the next tasks start, which 
-means we're wasting time when we could be getting the results faster.
-
-Surely there's a better way to build async pipelines like this?
-
-## Async pipelines!
-
-Instead, you can use this library to write the code above as follows:
+The best answer is that `IAsyncEnumerable` should support both lazy and eager modes,
+because it has to interact with both types of systems. By default,
+an `IAsyncEnumerable` is lazy like a normal `IEnumerable`, and it only runs operators
+when `MoveNextAsync()` is called on the iterator. Consider this code:
 
 ```csharp
-var results = await new[] { 1, 2, 3, 4 }
+// Takes 600 ms
+var results = await new[] { 3, 2, 1 }
     .ToAsyncEnumerable()
-    .AsConcurrent(preserveOrder: false)
-    .AsyncSelect(async x => await ProcessItem(x))
-    .AsyncWhere(async x => await FilterItem(x))
+    .AsyncSelect(async x => { await Task.Delay(x); return x; })
     .ToListAsync();
 ```
 
-Now, that's much better! It's easier to read, easier to modify, extremely clear, and it's
-faster and will yield results sooner. 
+This does exactly what you would expect from a lazy sequence, because it calls
+the selector as it iterates the items. In effect, this will do 
+`MoveNext(), Delay(300), MoveNext(), Delay(200), MoveNext(), Delay(100)`, taking
+600 ms in total. 
 
-By calling `.AsConcurrent()` we're instructing `AsyncSelect` and `AsyncWhere` to run
-their selector functions concurrently, so all the tasks are all started before awaiting
-just like when using `await Task.WhenAll()` above. 
+But what if we want this to behave more like a list of tasks that all start at the same
+time? I don't want to go back to `Task.WhenAll(things.Select(...))`
 
-The argument `preserveOrder: false`
-also tells the pipeline that results don't have to be returned in the same order 
-as the original sequence, meaning as the tasks that finish they will immediately
-move to the next step. Without this, the tasks will still execute concurrently but
-the results will always be returned in the original order, which could decrease
-throughput.
+```csharp
+// Takes 300 ms
+var results = await new[] { 3, 2, 1 }
+    .ToAsyncEnumerable()
+    .AsConcurrent()
+    .AsyncSelect(async x => { await Task.Delay(x); return x; })
+    .ToListAsync();
+```
 
-Finally we apply our transformations using the async versions of the usual
-LINQ operators that return tasks, collect our results in a list, and we're done!
+By adding `.AsConcurrent()` we can tell the operators to process the elements at the 
+same time. This is more like a list of tasks, because first it tries to enumerate the
+sequence and start working on each item, and then it awaits the results. This is
+more like `Delay(300) + Delay(200) + Delay(100), MoveNext(), MoveNext(), MoveNext()`,
+taking only 300 ms because the delays are run at the same time.
+
+## Concurrent and parallel sequences
+Above you learned how `AsConcurrent()` told later operators to behave eagerly like a
+task, but there are actually a few different ways of doing this that each have their
+own unique behavior. 
+
+First you have `AsConcurrent()`, which runs async operators at the same time using 
+tasks, much like you would when using `Task.WhenAll()`. However, this is only 
+concurrent operation, not parallel. It still only uses one thread, and if you do
+CPU-bound work the sequence will jam up and behave like a lazy sequence again.
+
+For this situate there is also `AsParallel()`, which schedules async operators to run
+on the threadpool instead. Think of this like `Task.Run`-ing all the async operators
+like `AsyncSelect` and `AsyncWhere`:
+
+```csharp
+// Takes 600 ms
+var results = await new[] { 3, 2, 1 }
+    .ToAsyncEnumerable()
+    .AsConcurrent()
+    .AsyncSelect(async x => { Thread.Sleep(x); return x; })
+    .ToListAsync();
+
+// Takes 300 ms
+var results = await new[] { 3, 2, 1 }
+    .ToAsyncEnumerable()
+    .AsParallel()
+    .AsyncSelect(async x => { Thread.Sleep(x); return x; })
+    .ToListAsync();
+```
+
+Finally there is the matter of ordering. By default, `AsConcurrent()` and `AsParallel()`
+preserve the order of the sequence when running their operators, which is usually what
+you want. However, there are situations where you want finished operations to 
+immediately continue down the pipeline without waiting on previous items. This will improve
+the time until the first result, and it can massively improve performance if there is a lot
+of time variability at each step.
+
+```csharp
+// Takes 100 ms
+var results = await new[] { 3, 2, 1 }
+    .ToAsyncEnumerable()
+    .AsConcurrent(preserveOrder: false)
+    .AsyncSelect(async x => { await Task.Delay(x); return x; })
+    .FirstAsync();
+
+// Returns 1, 2, 3
+var results = await new[] { 3, 2, 1 }
+    .ToAsyncEnumerable()
+    .AsConcurrent(preserveOrder: false)
+    .AsyncSelect(async x => { await Task.Delay(x); return x; })
+    .ToListAsync();
+```
