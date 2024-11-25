@@ -1,16 +1,50 @@
-# Async Linq
+# Async Sequences for .NET
 
-Hey look! It's LINQ operators for `IAsyncEnumerable` !
+C# 8 Added the `IAsyncEnumerable` interface to support async sequences, but .NET is still
+missing the infrastructure to make it useful in most situations. This library aims to 
+bridge the gap, providing support for `await`, LINQ, concurrent programming, and more to 
+`IAsyncEnumerable`. Keep reading for details!
 
 ```csharp
 var ids = new int[] { 1, 2, 3 /* etc */ };
 
-var result = await ids
+// Create an IAsyncEnumerable from any IEnumerable
+var seq = ids.ToAsyncEnumerable();
+
+// Manipulate the sequence using LINQ (including async LINQ!)
+var processedSeq = ids
     .ToAsyncEnumerable()
-    .Where(x => x <= 2)
-    .Select(x => x * 2)
-    .SelectMany(x => new[] { x, x })
-    .ToListAsync();
+    .Where(x => x > 2)
+    .AsyncSelect(async x => await ProcessItemAsync(x))
+    .SelectMany(x => new[] { x, x });
+
+// Asynchronously process each item as it comes in
+await foreach (var item in processedSeq) {
+    // ...
+}
+
+// Or directly await the whole IAsyncEnumerable to get a normal IEnumerable
+var results = await processedSeq;
+
+// Or collect the IAsyncEnumerable into another collection type
+var results2 = await processedSeq.ToDictionaryAsync(x => x, x => x);
+
+// Create an async method with multiple return values using iterators
+async IAsyncEnumerable<string> TestAsyncSequence() {
+    yield return "Hello world!";
+    await Task.Delay(1000);
+    yield return "This is an async function that returns a sequence!";
+}
+
+// Process a list in parallel using async LINQ
+// Normally you would use some ghastly combination of LINQ and Task.WhenAll for this
+var results = await ids
+    .ToAsyncEnumerable()
+    .AsParallel(preserveOrder: false)
+    .AsyncSelect(async x => await Step1Async(x))
+    .Where(x => x.Something >= 100)
+    .AsyncSelect(async x => await Step2Async(x))
+    .Take(50);
 ```
 
 ## Download
