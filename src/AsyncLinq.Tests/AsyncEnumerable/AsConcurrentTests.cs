@@ -1,7 +1,6 @@
-using System.Diagnostics;
-using Xunit.Abstractions;
+using AsyncCollections.Linq;
 
-namespace AsyncLinq.Tests;
+namespace AsyncCollections.Linq.Tests;
 
 public class AsConcurrentTests {
     [Fact]

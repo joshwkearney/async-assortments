@@ -1,6 +1,6 @@
 ﻿//using System.Numerics;
 
-//namespace AsyncLinq;
+//namespace AsyncCollections.Linq;
 
 //public static partial class AsyncEnumerable {
 //    public static ValueTask<TSource> SumAsync<TSource>(

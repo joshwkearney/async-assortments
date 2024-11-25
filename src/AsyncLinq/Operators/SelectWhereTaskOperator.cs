@@ -1,8 +1,6 @@
-﻿using System;
-using System.Threading.Channels;
-using System.Transactions;
+﻿using System.Threading.Channels;
 
-namespace AsyncLinq.Operators {
+namespace AsyncCollections.Linq.Operators {
     internal delegate ValueTask<SelectWhereResult<E>> AsyncSelectWhereFunc<T, E>(T item, CancellationToken cancellationToken);
 
     internal class SelectWhereTaskOperator<T, E> : IAsyncOperator<E>, ISelectOperator<E>, 
@@ -15,24 +13,24 @@ namespace AsyncLinq.Operators {
         private readonly IAsyncEnumerable<T> parent;
         private readonly AsyncSelectWhereFunc<T, E> selector;
 
-        public AsyncPipelineExecution Execution { get; }
+        public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
         public SelectWhereTaskOperator(
-            AsyncPipelineExecution pars,
+            AsyncEnumerableScheduleMode pars,
             IAsyncEnumerable<T> collection,
             AsyncSelectWhereFunc<T, E> selector) {
 
             this.parent = collection;
             this.selector = selector;
-            this.Execution = pars;
+            this.ScheduleMode = pars;
         }
         
-        public IAsyncOperator<E> WithExecution(AsyncPipelineExecution pars) {
+        public IAsyncOperator<E> WithExecution(AsyncEnumerableScheduleMode pars) {
             return new SelectWhereTaskOperator<T, E>(pars, parent, selector);
         }
 
         public IAsyncEnumerable<G> Select<G>(Func<E, G> selector) {
-            return new SelectWhereTaskOperator<T, G>(this.Execution, this.parent, newSelector);
+            return new SelectWhereTaskOperator<T, G>(this.ScheduleMode, this.parent, newSelector);
 
             async ValueTask<SelectWhereResult<G>> newSelector(T item, CancellationToken token) {
                 var (isValid, value) = await this.selector(item, token);
@@ -46,7 +44,7 @@ namespace AsyncLinq.Operators {
         }
 
         public IAsyncEnumerable<E> Where(Func<E, bool> predicate) {
-            return new SelectWhereTaskOperator<T, E>(this.Execution, this.parent, newSelector);
+            return new SelectWhereTaskOperator<T, E>(this.ScheduleMode, this.parent, newSelector);
 
             async ValueTask<SelectWhereResult<E>> newSelector(T item, CancellationToken token) {
                 var (isValid, value) = await this.selector(item, token);
@@ -64,7 +62,7 @@ namespace AsyncLinq.Operators {
         }
 
         public IAsyncEnumerable<G> AsyncSelect<G>(Func<E, CancellationToken, ValueTask<G>> nextSelector) {
-            return new SelectWhereTaskOperator<T, G>(this.Execution, this.parent, newSelector);
+            return new SelectWhereTaskOperator<T, G>(this.ScheduleMode, this.parent, newSelector);
 
             async ValueTask<SelectWhereResult<G>> newSelector(T item, CancellationToken token) {
                 var (isValid, value) = await this.selector(item, token);
@@ -78,7 +76,7 @@ namespace AsyncLinq.Operators {
         }
 
         public IAsyncEnumerable<E> AsyncWhere(Func<E, CancellationToken, ValueTask<bool>> predicate) {
-            return new SelectWhereTaskOperator<T, E>(this.Execution, this.parent, newSelector);
+            return new SelectWhereTaskOperator<T, E>(this.ScheduleMode, this.parent, newSelector);
 
             async ValueTask<SelectWhereResult<E>> newSelector(T item, CancellationToken token) {
                 var (isValid, value) = await this.selector(item, token);
@@ -92,10 +90,10 @@ namespace AsyncLinq.Operators {
         }
 
         public IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.Execution == AsyncPipelineExecution.Sequential) {
+            if (this.ScheduleMode == AsyncEnumerableScheduleMode.Sequential) {
                 return this.SequentialHelper(cancellationToken);
             }
-            else if (this.Execution.IsUnordered()) {
+            else if (this.ScheduleMode.IsUnordered()) {
                 return this.UnorderedHelper(cancellationToken);
             }
             else {
@@ -118,7 +116,7 @@ namespace AsyncLinq.Operators {
             var selector = this.selector;
 
             // Run the tasks on the thread pool if we're supposed to be doing this in parallel
-            if (this.Execution.IsParallel()) {
+            if (this.ScheduleMode.IsParallel()) {
                 selector = (x, t) => new ValueTask<SelectWhereResult<E>>(Task.Run(() => this.selector(x, t).AsTask(), t));
             }
 
@@ -208,7 +206,7 @@ namespace AsyncLinq.Operators {
             var selector = this.selector;
 
             // Run the tasks on the thread pool if we're supposed to be doing this in parallel
-            if (this.Execution.IsParallel()) {
+            if (this.ScheduleMode.IsParallel()) {
                 selector = (x, t) => new ValueTask<SelectWhereResult<E>>(Task.Run(() => this.selector(x, t).AsTask(), t));
             }
 

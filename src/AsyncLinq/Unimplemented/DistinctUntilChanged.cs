@@ -1,6 +1,6 @@
 ﻿/*using AsyncLinq.Operators;
 
-namespace AsyncLinq;
+namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     public static IAsyncEnumerable<TSource> DistinctUntilChanged<TSource>(this IAsyncEnumerable<TSource> source) {

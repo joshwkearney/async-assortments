@@ -1,6 +1,6 @@
 using Microsoft.Win32.SafeHandles;
 
-namespace AsyncLinq.Tests;
+namespace AsyncCollections.Linq.Tests;
 
 public class GetAwaiterTests {
     [Fact]

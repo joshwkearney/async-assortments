@@ -1,4 +1,4 @@
-﻿/*namespace AsyncLinq;
+﻿/*namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Correlates the elements of two sequences based on matching keys.</summary>

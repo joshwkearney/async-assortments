@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
-using System.Linq;
-using System.Reactive.Linq;
-using AsyncLinq;
+using AsyncCollections.Linq;
 
 await Test();
 await Test();

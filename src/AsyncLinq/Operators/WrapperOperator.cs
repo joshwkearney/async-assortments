@@ -1,16 +1,16 @@
-namespace AsyncLinq.Operators;
+namespace AsyncCollections.Linq.Operators;
 
 internal class WrapperOperator<T> : IAsyncOperator<T> {
     public IAsyncEnumerable<T> Parent { get; }
 
-    public AsyncPipelineExecution Execution { get; }
+    public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
-    public WrapperOperator(AsyncPipelineExecution pars, IAsyncEnumerable<T> parent) {
+    public WrapperOperator(AsyncEnumerableScheduleMode pars, IAsyncEnumerable<T> parent) {
         this.Parent = parent;
-        this.Execution = pars;
+        this.ScheduleMode = pars;
     }
 
-    public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
+    public IAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
         return new WrapperOperator<T>(pars, this.Parent);
     }
         

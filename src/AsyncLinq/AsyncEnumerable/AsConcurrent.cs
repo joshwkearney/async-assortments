@@ -1,6 +1,6 @@
-using AsyncLinq.Operators;
+using AsyncCollections.Linq.Operators;
 
-namespace AsyncLinq;
+namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Instructs asynchronous operators to run concurrently</summary>
@@ -23,12 +23,12 @@ public static partial class AsyncEnumerable {
     /// </remarks>
     /// <seealso cref="AsSequential{TSource}" />
     /// <seealso cref="AsParallel{TSource}" />
-    public static IAsyncPipeline<TSource> AsConcurrent<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
+    public static IScheduledAsyncEnumerable<TSource> AsConcurrent<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }
 
-        var pars = preserveOrder ? AsyncPipelineExecution.ConcurrentOrdered : AsyncPipelineExecution.ConcurrentUnordered;
+        var pars = preserveOrder ? AsyncEnumerableScheduleMode.ConcurrentOrdered : AsyncEnumerableScheduleMode.ConcurrentUnordered;
 
         if (source is IAsyncOperator<TSource> op) {
             return op.WithExecution(pars);

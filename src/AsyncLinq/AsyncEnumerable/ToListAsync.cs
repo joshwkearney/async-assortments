@@ -1,7 +1,7 @@
-﻿using AsyncLinq.Operators;
+﻿using AsyncCollections.Linq.Operators;
 using System.Threading;
 
-namespace AsyncLinq;
+namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>

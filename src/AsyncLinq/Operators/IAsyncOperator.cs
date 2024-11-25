@@ -1,8 +1,8 @@
-namespace AsyncLinq.Operators;
+namespace AsyncCollections.Linq.Operators;
 
-internal interface IAsyncOperator<out T> : IAsyncPipeline<T> {
+internal interface IAsyncOperator<out T> : IScheduledAsyncEnumerable<T> {
 
-    public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars);
+    public IAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars);
 }
 
 internal interface ICountOperator<T> : IAsyncOperator<T> {

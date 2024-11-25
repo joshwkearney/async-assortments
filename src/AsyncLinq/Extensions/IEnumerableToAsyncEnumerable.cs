@@ -1,8 +1,7 @@
 ﻿using System.Collections;
-using AsyncLinq.Operators;
-using System.Linq;
+using AsyncCollections.Linq.Operators;
 
-namespace AsyncLinq;
+namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerableExtensions {
     /// <summary>

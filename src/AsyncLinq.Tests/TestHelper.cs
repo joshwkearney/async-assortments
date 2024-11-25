@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace AsyncLinq.Tests;
+namespace AsyncCollections.Linq.Tests;
 
 public static class TestHelper {
     public static List<int> CreateRandomList(int size, int seed = 1234) {

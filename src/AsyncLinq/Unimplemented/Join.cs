@@ -1,7 +1,7 @@
 ﻿/*using System.Threading.Channels;
 using AsyncLinq.Operators;
 
-namespace AsyncLinq;
+namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     public static IAsyncEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>(

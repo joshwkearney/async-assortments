@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace AsyncLinq;
+﻿namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>

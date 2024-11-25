@@ -1,4 +1,4 @@
-﻿namespace AsyncLinq;
+﻿namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Exposes a sequence as an <see cref="IObservable{T}"/>.</summary>

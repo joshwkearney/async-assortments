@@ -1,7 +1,7 @@
 ﻿using System.Threading.Channels;
-using AsyncLinq.Operators;
+using AsyncCollections.Linq.Operators;
 
-namespace AsyncLinq;
+namespace AsyncCollections.Linq;
 
 public static partial class AsyncEnumerableExtensions {
     /// <summary>
@@ -30,22 +30,22 @@ public static partial class AsyncEnumerableExtensions {
             throw new ArgumentNullException(nameof(source));
         }
 
-        return new ObservableWrapper<TSource>(AsyncPipelineExecution.ConcurrentOrdered, source, maxBuffer);
+        return new ObservableWrapper<TSource>(AsyncEnumerableScheduleMode.ConcurrentOrdered, source, maxBuffer);
     }
 
     private class ObservableWrapper<T> : IAsyncOperator<T> {
         private readonly IObservable<T> source;
         private readonly int maxBuffer;
         
-        public AsyncPipelineExecution Execution { get; }
+        public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
-        public ObservableWrapper(AsyncPipelineExecution pars, IObservable<T> source, int maxBuffer) {
-            this.Execution = pars;
+        public ObservableWrapper(AsyncEnumerableScheduleMode pars, IObservable<T> source, int maxBuffer) {
+            this.ScheduleMode = pars;
             this.source = source;
             this.maxBuffer = maxBuffer;
         }
         
-        public IAsyncOperator<T> WithExecution(AsyncPipelineExecution pars) {
+        public IAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
             return new ObservableWrapper<T>(pars, this.source, this.maxBuffer);
         }
 
