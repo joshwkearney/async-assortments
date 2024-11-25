@@ -1,9 +1,34 @@
 ﻿using System.Diagnostics;
+using System.Reactive.Subjects;
 using AsyncCollections.Linq;
+using Axe.Linq;
 
-await Test();
-await Test();
-await Test();
+var subject = new Subject<int>();
+var task = Enumerate();
+
+subject.OnNext(10);
+subject.OnNext(20);
+subject.OnNext(30);
+subject.OnCompleted();
+
+await task;
+Console.WriteLine("Done!");
+
+async Task Enumerate() {
+    await foreach (var item in subject.ToAsyncEnumerable()) {
+        Console.WriteLine(item);
+    }
+}
+// ResponsiveEx.Linq
+// AsyncSequenceEx.Linq
+// SequenceEx.Linq
+// 
+
+// AsyncSequences.Linq
+
+//await Test();
+//await Test();
+//await Test();
 //await Test();
 //await Test();
 

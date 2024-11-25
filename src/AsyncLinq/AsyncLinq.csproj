@@ -16,11 +16,10 @@
 		<Authors>Joshua Kearney</Authors>
 		<PackageProjectUrl>https://github.com/joshwkearney/async-collections</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>LINQ, Extensions, Async, IAsyncEnumerable</PackageTags>
+		<PackageTags>LINQ, Extensions, Async, IAsyncEnumerable, Reactive</PackageTags>
 		<Description>
-			Adds standard LINQ operators to IAsyncEnumerable, as well as
-			asynchronous operators that can be executed sequentially,
-			concurrently, or in parallel
+			Adds infrastructure to support IAsyncEnumerable, including LINQ,
+			async LINQ, awaitability, concurrency, and more.
 		</Description>
 	</PropertyGroup>
 
