@@ -22,6 +22,6 @@ public static partial class AsyncEnumerableExtensions {
             return EmptyOperator<TSource>.Instance;
         }
 
-        return new EnumerableOperator<TSource>(default, source);
+        return new WrapEnumerableOperator<TSource>(default, source);
     }    
 }

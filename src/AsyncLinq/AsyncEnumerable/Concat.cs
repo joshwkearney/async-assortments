@@ -48,7 +48,7 @@ public static partial class AsyncEnumerable {
             return source;
         }
 
-        if (second is EnumerableOperator<TSource> listOp) {
+        if (second is WrapEnumerableOperator<TSource> listOp) {
             return source.Concat(listOp.Items);
         }
 

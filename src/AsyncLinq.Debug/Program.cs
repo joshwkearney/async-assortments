@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Reactive.Subjects;
 using AsyncCollections.Linq;
-using Axe.Linq;
 
 var subject = new Subject<int>();
 var task = Enumerate();

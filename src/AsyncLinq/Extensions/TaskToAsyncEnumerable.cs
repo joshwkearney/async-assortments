@@ -17,6 +17,6 @@ public static partial class AsyncEnumerableExtensions {
             throw new ArgumentNullException(nameof(source));
         }
 
-        return new SingletonOperator<TSource>(default, _ => new ValueTask<TSource>(source));
+        return new WrapAsyncFuncOperator<TSource>(default, _ => new ValueTask<TSource>(source));
     }
 }

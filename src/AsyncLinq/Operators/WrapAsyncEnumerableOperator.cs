@@ -1,17 +1,17 @@
 namespace AsyncCollections.Linq.Operators;
 
-internal class WrapperOperator<T> : IAsyncOperator<T> {
+internal class WrapAsyncEnumerableOperator<T> : IAsyncOperator<T> {
     public IAsyncEnumerable<T> Parent { get; }
 
     public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
-    public WrapperOperator(AsyncEnumerableScheduleMode pars, IAsyncEnumerable<T> parent) {
+    public WrapAsyncEnumerableOperator(AsyncEnumerableScheduleMode pars, IAsyncEnumerable<T> parent) {
         this.Parent = parent;
         this.ScheduleMode = pars;
     }
 
     public IAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
-        return new WrapperOperator<T>(pars, this.Parent);
+        return new WrapAsyncEnumerableOperator<T>(pars, this.Parent);
     }
         
     public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

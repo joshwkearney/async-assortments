@@ -32,7 +32,7 @@ public static partial class AsyncEnumerable {
 
         var pars = source.GetPipelineExecution();
         
-        return new SingletonOperator<TSource>(pars, elementProducer).Concat(source);
+        return new WrapAsyncFuncOperator<TSource>(pars, elementProducer).Concat(source);
     }
 
     /// <inheritdoc cref="AsyncPrepend{TSource}(IAsyncEnumerable{TSource}, Func{CancellationToken, ValueTask{TSource}})" />
@@ -50,6 +50,6 @@ public static partial class AsyncEnumerable {
 
         var pars = source.GetPipelineExecution();
         
-        return new SingletonOperator<TSource>(pars, _ => elementProducer()).Concat(source);
+        return new WrapAsyncFuncOperator<TSource>(pars, _ => elementProducer()).Concat(source);
     }
 }

@@ -11,7 +11,7 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IA
     private EmptyOperator() { }
 
     public IAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
-        return new WrapperOperator<T>(pars, this);
+        return new WrapAsyncEnumerableOperator<T>(pars, this);
     }
 
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken()) {

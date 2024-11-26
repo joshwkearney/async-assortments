@@ -20,9 +20,9 @@ namespace AsyncCollections.Linq.Operators {
         }
         
         public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
-            if (this.parent is EnumerableOperator<IAsyncEnumerable<T>> op) {
+            if (this.parent is WrapEnumerableOperator<IAsyncEnumerable<T>> op) {
                 var newItems = op.Items.Append(sequence);
-                var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(op.ScheduleMode, newItems);
+                var newParent = new WrapEnumerableOperator<IAsyncEnumerable<T>>(op.ScheduleMode, newItems);
                 
                 return new FlattenOperator<T>(this.ScheduleMode, newParent);
             }
@@ -32,9 +32,9 @@ namespace AsyncCollections.Linq.Operators {
         }
 
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
-            if (this.parent is EnumerableOperator<IAsyncEnumerable<T>> op) {
+            if (this.parent is WrapEnumerableOperator<IAsyncEnumerable<T>> op) {
                 var newItems = op.Items.Prepend(before.ToAsyncEnumerable()).Append(after.ToAsyncEnumerable());
-                var newParent = new EnumerableOperator<IAsyncEnumerable<T>>(op.ScheduleMode, newItems);
+                var newParent = new WrapEnumerableOperator<IAsyncEnumerable<T>>(op.ScheduleMode, newItems);
                 
                 return new FlattenOperator<T>(this.ScheduleMode, newParent);
             }

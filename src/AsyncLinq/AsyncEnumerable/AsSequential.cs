@@ -26,14 +26,11 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IScheduledAsyncEnumerable<TSource> s && s.ScheduleMode == AsyncEnumerableScheduleMode.Sequential) {
-            return s;
-        }
-        else if (source is IAsyncOperator<TSource> op) {
+        if (source is IAsyncOperator<TSource> op) {
             return op.WithExecution(AsyncEnumerableScheduleMode.Sequential);
         }
         else {
-            return new WrapperOperator<TSource>(AsyncEnumerableScheduleMode.Sequential, source);
+            return new WrapAsyncEnumerableOperator<TSource>(AsyncEnumerableScheduleMode.Sequential, source);
         }
     }
 }
