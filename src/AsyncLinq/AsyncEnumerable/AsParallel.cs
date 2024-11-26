@@ -30,7 +30,10 @@ public static partial class AsyncEnumerable {
 
         var pars = preserveOrder ? AsyncEnumerableScheduleMode.ParallelOrdered : AsyncEnumerableScheduleMode.ParallelUnordered;
 
-        if (source is IAsyncOperator<TSource> op) {
+        if (source is IScheduledAsyncEnumerable<TSource> s && s.ScheduleMode == pars) {
+            return s;
+        }
+        else if (source is IAsyncOperator<TSource> op) {
             return op.WithExecution(pars);
         }
         else {
