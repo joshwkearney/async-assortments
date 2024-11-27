@@ -36,7 +36,7 @@ public static partial class AsyncEnumerable {
             return whereOp.AsyncWhere(predicate);
         }
 
-        var pars = source.GetPipelineExecution();
+        var pars = source.GetScheduleMode();
 
         return new SelectWhereTaskOperator<TSource, TSource>(pars, source, async (x, c) => new(await predicate(x, c), x));
     }

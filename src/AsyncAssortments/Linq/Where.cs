@@ -33,7 +33,7 @@ public static partial class AsyncEnumerable {
             return whereOp.Where(predicate);
         }
 
-        var pars = source.GetPipelineExecution();
+        var pars = source.GetScheduleMode();
 
         return new SelectWhereOperator<TSource, TSource>(pars, source, x => new(predicate(x), x));
     }

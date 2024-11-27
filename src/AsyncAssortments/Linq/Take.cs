@@ -31,7 +31,7 @@ public static partial class AsyncEnumerable {
             return skipTakeOp.SkipTake(0, numToTake);
         }
 
-        var pars = source.GetPipelineExecution();
+        var pars = source.GetScheduleMode();
 
         return new SkipTakeOperator<TSource>(pars, source, 0, numToTake);
     }

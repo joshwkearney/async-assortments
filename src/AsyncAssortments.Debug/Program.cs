@@ -3,22 +3,7 @@ using System.Reactive.Subjects;
 using AsyncAssortments;
 using AsyncAssortments.Linq;
 
-var subject = new Subject<int>();
-var task = Enumerate();
 
-subject.OnNext(10);
-subject.OnNext(20);
-subject.OnNext(30);
-subject.OnCompleted();
-
-await task;
-Console.WriteLine("Done!");
-
-async Task Enumerate() {
-    await foreach (var item in subject.ToAsyncEnumerable()) {
-        Console.WriteLine(item);
-    }
-}
 // ResponsiveEx.Linq
 // AsyncSequenceEx.Linq
 // SequenceEx.Linq

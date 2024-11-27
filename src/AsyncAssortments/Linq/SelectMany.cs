@@ -28,7 +28,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(selector));
         }
 
-        var pars = source.GetPipelineExecution();
+        var pars = source.GetScheduleMode();
 
         return new FlattenOperator<TResult>(pars, source.Select(selector));
     }
@@ -83,7 +83,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(selector));
         }
 
-        var pars = source.GetPipelineExecution();
+        var pars = source.GetScheduleMode();
 
         return new FlattenEnumerablesOperator<TResult>(pars, source.Select(selector));
     }

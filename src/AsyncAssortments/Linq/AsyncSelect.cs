@@ -36,7 +36,7 @@ public static partial class AsyncEnumerable {
             return selectOp.AsyncSelect(selector);
         }
 
-        var pars = source.GetPipelineExecution();
+        var pars = source.GetScheduleMode();
 
         return new SelectWhereTaskOperator<TSource, TResult>(
             pars, 

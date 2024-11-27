@@ -30,7 +30,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(elementProducer));
         }
 
-        var pars = source.GetPipelineExecution();
+        var pars = source.GetScheduleMode();
         
         return new WrapAsyncFuncOperator<TSource>(pars, elementProducer).Concat(source);
     }
@@ -48,7 +48,7 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(elementProducer));
         }
 
-        var pars = source.GetPipelineExecution();
+        var pars = source.GetScheduleMode();
         
         return new WrapAsyncFuncOperator<TSource>(pars, _ => elementProducer()).Concat(source);
     }

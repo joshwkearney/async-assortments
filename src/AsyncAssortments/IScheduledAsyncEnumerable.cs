@@ -12,7 +12,7 @@
     }
 
     internal static class AsyncPipelineExecutionExtensions {
-        internal static AsyncEnumerableScheduleMode GetPipelineExecution<T>(this IAsyncEnumerable<T> source) {
+        internal static AsyncEnumerableScheduleMode GetScheduleMode<T>(this IAsyncEnumerable<T> source) {
             var execution = AsyncEnumerableScheduleMode.Sequential;
 
             if (source is IScheduledAsyncEnumerable<T> pipeline) {
@@ -53,6 +53,18 @@
             }
             else {
                 return AsyncEnumerableScheduleMode.ParallelOrdered;
+            }
+        }
+
+        internal static AsyncEnumerableScheduleMode MakeOrdered(this AsyncEnumerableScheduleMode pars) {
+            if (pars == AsyncEnumerableScheduleMode.ConcurrentUnordered) {
+                return AsyncEnumerableScheduleMode.ConcurrentOrdered;
+            }
+            else if (pars == AsyncEnumerableScheduleMode.ParallelUnordered) {
+                return AsyncEnumerableScheduleMode.ParallelOrdered;
+            }
+            else {
+                return pars;
             }
         }
     }

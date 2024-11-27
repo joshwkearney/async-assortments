@@ -18,7 +18,7 @@ public static partial class AsyncEnumerable {
             return concatOp.ConcatEnumerables([], [element]);
         }
 
-        var pars = source.GetPipelineExecution();
+        var pars = source.GetScheduleMode();
 
         return new ConcatEnumerablesOperator<TSource>(pars, source, [], [element]);
     }
