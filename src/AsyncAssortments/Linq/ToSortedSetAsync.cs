@@ -29,8 +29,8 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IToHashSetOperator<TSource> op) {
-            return op.ToHashSetAsync(cancellationToken);
+        if (source is IToSortedSetOperator<TSource> op) {
+            return op.ToSortedSetAsync(cancellationToken);
         }
 
         return ToSortedSetHelper(source, comparer, cancellationToken);
@@ -45,8 +45,8 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        if (source is IToHashSetOperator<TSource> op) {
-            return op.ToHashSetAsync(cancellationToken);
+        if (source is IToSortedSetOperator<TSource> op) {
+            return op.ToSortedSetAsync(cancellationToken);
         }
 
         return ToSortedSetHelper(source, Comparer<TSource>.Default, cancellationToken);
@@ -57,7 +57,7 @@ public static partial class AsyncEnumerable {
         IComparer<TSource> comparer,
         CancellationToken cancellationToken) {
 
-        var list = new SortedSet<TSource>();
+        var list = new SortedSet<TSource>(comparer);
 
         await foreach (var item in source.WithCancellation(cancellationToken)) {
             list.Add(item);

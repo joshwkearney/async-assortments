@@ -57,16 +57,16 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(comparer));
         }
 
-        comparer = Comparer<TSource>.Create((x, y) => comparer.Compare(y, x));
+        var totalComparer = Comparer<TSource>.Create((x, y) => comparer.Compare(y, x));
 
         if (source is IOrderByOperator<TSource> op) {
-            return op.OrderBy(comparer);
+            return op.OrderBy(totalComparer);
         }
 
         return new SortingOperator<TSource>(
             source.GetScheduleMode().MakeOrdered(),
             source,
-            comparer);
+            totalComparer);
     }
 
     public static IOrderedAsyncEnumerable<TSource> OrderDescending<TSource>(

@@ -36,7 +36,7 @@ namespace AsyncAssortments.Operators {
             return this.Source.ToSortedSetAsync(this.Comparer, cancellationToken);
         }
 
-        public IAsyncEnumerable<T> OrderBy(IComparer<T> comparer) {
+        public IOrderedAsyncEnumerable<T> OrderBy(IComparer<T> comparer) {
             return new SortingOperator<T>(this.ScheduleMode, this.Source, comparer);
         }
 

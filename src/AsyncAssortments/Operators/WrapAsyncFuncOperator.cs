@@ -5,11 +5,15 @@ namespace AsyncAssortments.Operators;
 
 internal class WrapAsyncFuncOperator<T> : IAsyncOperator<T>, ISelectOperator<T>, IAsyncSelectOperator<T>,
     ISkipTakeOperator<T>, ICountOperator<T>, IToListOperator<T>, IToSortedSetOperator<T>, IToHashSetOperator<T>,
-    IOrderByOperator<T> {
+    IOrderByOperator<T>, IOrderedAsyncEnumerable<T> {
 
     private readonly Func<CancellationToken, ValueTask<T>> func;
     
     public AsyncEnumerableScheduleMode ScheduleMode { get; }
+    
+    public IAsyncEnumerable<T> Source => this;
+    
+    public IComparer<T> Comparer => Comparer<T>.Default;
 
     public WrapAsyncFuncOperator(AsyncEnumerableScheduleMode pars, Func<CancellationToken, ValueTask<T>> func) {
         this.ScheduleMode = pars;
@@ -62,12 +66,12 @@ internal class WrapAsyncFuncOperator<T> : IAsyncOperator<T>, ISelectOperator<T>,
     }
 
     public int Count() => 1;
+    
+    public IOrderedAsyncEnumerable<T> OrderBy(IComparer<T> comparer) {
+        return this;
+    }
 
     public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
         yield return await this.func(cancellationToken);
-    }
-
-    public IAsyncEnumerable<T> OrderBy(IComparer<T> comparer) {
-        return this;
     }
 }
