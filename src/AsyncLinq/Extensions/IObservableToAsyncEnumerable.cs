@@ -30,6 +30,9 @@ public static partial class AsyncEnumerableExtensions {
             throw new ArgumentNullException(nameof(source));
         }
 
-        return new WrapObservableOperator<TSource>(AsyncEnumerableScheduleMode.ConcurrentOrdered, source, maxBuffer);
+        return new WrapObservableOperator<TSource>(
+            AsyncEnumerableScheduleMode.ConcurrentUnordered,
+            source, 
+            maxBuffer);
     }
 }
