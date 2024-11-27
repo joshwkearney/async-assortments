@@ -1,4 +1,4 @@
-# Async Extensions for Enumerables (Axe.NET)
+# Async Assortments
 
 1. [Overview](#overview)
 2. [Download](#download)
@@ -58,8 +58,8 @@ var results = await ids
 ```
 
 ## Download
-The latest version of `AsyncCollections.Linq` can be downloaded on NuGet 
-[here](https://www.nuget.org/packages/AsyncCollections.Linq/).
+The latest version of AsyncAssortments can be downloaded on NuGet 
+[here](https://www.nuget.org/packages/AsyncAssortments/).
 
 ## Project goals
 Microsoft has made it clear that they have 

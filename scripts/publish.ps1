@@ -1,4 +1,4 @@
-$linqProject = "${PSScriptRoot}\..\src\AsyncLinq\AsyncLinq.csproj"
+$linqProject = "${PSScriptRoot}\..\src\AsyncAssortments\AsyncAssortments.csproj"
 $outputPath = "${PSScriptRoot}\..\publish"
 
 if (Test-Path -Path $outputPath) {
