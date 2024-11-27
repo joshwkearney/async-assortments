@@ -91,10 +91,25 @@ public static class AsyncAssortmentsExtensions {
             throw new ArgumentNullException(nameof(source));
         }
 
-        return GetAwaiterHelper(source).GetAwaiter();
+        return source
+            .ToListAsync()
+            .Select(x => (IEnumerable<T>)x)
+            .GetAwaiter();
     }
 
-    private static async ValueTask<IEnumerable<T>> GetAwaiterHelper<T>(this IAsyncEnumerable<T> source) {
-        return await source.ToListAsync();
+    internal static async Task<E> Select<T, E>(this Task<T> task, Func<T, E> selector) {
+        return selector(await task);
+    }
+    
+    internal static async Task<E> AsyncSelect<T, E>(this Task<T> task, Func<T, Task<E>> selector) {
+        return await selector(await task);
+    }
+    
+    internal static async ValueTask<E> Select<T, E>(this ValueTask<T> task, Func<T, E> selector) {
+        return selector(await task);
+    }
+    
+    internal static async ValueTask<E> AsyncSelect<T, E>(this ValueTask<T> task, Func<T, ValueTask<E>> selector) {
+        return await selector(await task);
     }
 }

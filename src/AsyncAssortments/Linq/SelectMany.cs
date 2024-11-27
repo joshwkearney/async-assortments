@@ -39,7 +39,7 @@ public static partial class AsyncEnumerable {
     /// </summary>
     /// <param name="selector">
     ///     A function that projects each element into an 
-    ///     <see cref="IObservable{T}{T}" />.
+    ///     <see cref="IObservable{T}" />.
     /// </param>
     /// <inheritdoc cref="SelectMany{TSource, TResult}(IAsyncEnumerable{TSource}, Func{TSource, IAsyncEnumerable{TResult}})" />
     public static IAsyncEnumerable<TResult> SelectMany<TSource, TResult>(

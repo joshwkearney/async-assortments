@@ -14,7 +14,7 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IA
         return new WrapAsyncEnumerableOperator<T>(pars, this);
     }
 
-    public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken()) {
+    public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
         yield break;
     }
 
