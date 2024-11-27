@@ -10,7 +10,7 @@ internal class WrapAsyncEnumerableOperator<T> : IAsyncOperator<T> {
         this.ScheduleMode = pars;
     }
 
-    public IAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
+    public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
         return new WrapAsyncEnumerableOperator<T>(pars, this.Parent);
     }
         

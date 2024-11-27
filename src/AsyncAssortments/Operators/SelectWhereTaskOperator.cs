@@ -25,7 +25,7 @@ namespace AsyncAssortments.Operators {
             this.ScheduleMode = pars;
         }
         
-        public IAsyncOperator<E> WithExecution(AsyncEnumerableScheduleMode pars) {
+        public IAsyncOperator<E> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
             return new SelectWhereTaskOperator<T, E>(pars, parent, selector);
         }
 

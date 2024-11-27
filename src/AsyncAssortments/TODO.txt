@@ -1,0 +1,17 @@
+Distinct
+Union
+Except
+Intersect
+
+union(a, b) = distinct(concat(a, b))
+except: Enumerable b into a set. 
+
+Reverse
+
+Join
+GroupJoin
+
+Min
+Max
+Sum
+Average

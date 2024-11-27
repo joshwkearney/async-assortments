@@ -15,7 +15,7 @@ namespace AsyncAssortments.Operators {
             ScheduleMode = pars;
         }
         
-        public IAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
+        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
             return new FlattenOperator<T>(pars, parent);
         }
         

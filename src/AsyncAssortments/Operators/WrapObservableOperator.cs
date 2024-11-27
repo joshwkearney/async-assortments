@@ -18,7 +18,7 @@ namespace AsyncAssortments.Operators {
             this.maxBuffer = maxBuffer;
         }
 
-        public IAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
+        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
             return new WrapObservableOperator<T>(pars, this.source, this.maxBuffer);
         }
 

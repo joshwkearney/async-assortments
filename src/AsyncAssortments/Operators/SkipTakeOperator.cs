@@ -13,7 +13,7 @@
             this.ScheduleMode = pars;
         }
         
-        public IAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars) {
+        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
             return new SkipTakeOperator<T>(pars, parent, skip, take);
         }
 

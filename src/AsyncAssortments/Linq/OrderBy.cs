@@ -1,4 +1,5 @@
 ﻿using AsyncAssortments.Operators;
+using System.Collections;
 
 namespace AsyncAssortments.Linq;
 
@@ -15,10 +16,12 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(comparer));
         }
 
-        var mode = source.GetScheduleMode().MakeOrdered();
+        if (source is IOrderByOperator<TSource> op) {
+            return op.OrderBy(comparer);
+        }
 
         return new SortingOperator<TSource>(
-            mode,
+            source.GetScheduleMode().MakeOrdered(),
             source,
             comparer);
     }
@@ -28,6 +31,10 @@ public static partial class AsyncEnumerable {
 
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
+        }
+
+        if (source is IOrderByOperator<TSource> op) {
+            return op.OrderBy(Comparer<TSource>.Default);
         }
 
         var mode = source.GetScheduleMode().MakeOrdered();
@@ -51,10 +58,13 @@ public static partial class AsyncEnumerable {
         }
 
         comparer = Comparer<TSource>.Create((x, y) => comparer.Compare(y, x));
-        var mode = source.GetScheduleMode().MakeOrdered();
+
+        if (source is IOrderByOperator<TSource> op) {
+            return op.OrderBy(comparer);
+        }
 
         return new SortingOperator<TSource>(
-            mode,
+            source.GetScheduleMode().MakeOrdered(),
             source,
             comparer);
     }
@@ -66,12 +76,16 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(source));
         }
 
-        var mode = source.GetScheduleMode().MakeOrdered();
+        var comparer = Comparer<TSource>.Create((x, y) => Comparer<TSource>.Default.Compare(y, x));
+
+        if (source is IOrderByOperator<TSource> op) {
+            return op.OrderBy(comparer);
+        }
 
         return new SortingOperator<TSource>(
-            mode,
+            source.GetScheduleMode().MakeOrdered(),
             source,
-            Comparer<TSource>.Default);
+            comparer);
     }
 
     public static IOrderedAsyncEnumerable<TSource> OrderBy<TSource, TKey>(
@@ -92,10 +106,13 @@ public static partial class AsyncEnumerable {
         }
 
         var totalComparer = Comparer<TSource>.Create((x, y) => comparer.Compare(keySelector(x), keySelector(y)));
-        var mode = source.GetScheduleMode().MakeOrdered();
+
+        if (source is IOrderByOperator<TSource> op) {
+            return op.OrderBy(totalComparer);
+        }
 
         return new SortingOperator<TSource>(
-            mode,
+            source.GetScheduleMode().MakeOrdered(),
             source,
             totalComparer);
     }
@@ -114,10 +131,13 @@ public static partial class AsyncEnumerable {
 
         var comparer = Comparer<TKey>.Default;
         var totalComparer = Comparer<TSource>.Create((x, y) => comparer.Compare(keySelector(x), keySelector(y)));
-        var mode = source.GetScheduleMode().MakeOrdered();
+
+        if (source is IOrderByOperator<TSource> op) {
+            return op.OrderBy(totalComparer);
+        }
 
         return new SortingOperator<TSource>(
-            mode,
+            source.GetScheduleMode().MakeOrdered(),
             source,
             totalComparer);
     }
@@ -140,10 +160,13 @@ public static partial class AsyncEnumerable {
         }
 
         var totalComparer = Comparer<TSource>.Create((x, y) => comparer.Compare(keySelector(y), keySelector(x)));
-        var mode = source.GetScheduleMode().MakeOrdered();
+
+        if (source is IOrderByOperator<TSource> op) {
+            return op.OrderBy(totalComparer);
+        }
 
         return new SortingOperator<TSource>(
-            mode,
+            source.GetScheduleMode().MakeOrdered(),
             source,
             totalComparer);
     }
@@ -162,10 +185,13 @@ public static partial class AsyncEnumerable {
 
         var comparer = Comparer<TKey>.Default;
         var totalComparer = Comparer<TSource>.Create((x, y) => comparer.Compare(keySelector(y), keySelector(x)));
-        var mode = source.GetScheduleMode().MakeOrdered();
+
+        if (source is IOrderByOperator<TSource> op) {
+            return op.OrderBy(totalComparer);
+        }
 
         return new SortingOperator<TSource>(
-            mode,
+            source.GetScheduleMode().MakeOrdered(),
             source,
             totalComparer);
     }

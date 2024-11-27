@@ -21,7 +21,7 @@
             this.ScheduleMode = pars;
         }
         
-        public IAsyncOperator<E> WithExecution(AsyncEnumerableScheduleMode pars) {
+        public IAsyncOperator<E> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
             return new SelectWhereOperator<T, E>(pars, this.parent, this.selector);
         }
 

@@ -2,7 +2,7 @@ namespace AsyncAssortments.Operators;
 
 internal interface IAsyncOperator<out T> : IScheduledAsyncEnumerable<T> {
 
-    public IAsyncOperator<T> WithExecution(AsyncEnumerableScheduleMode pars);
+    public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars);
 }
 
 internal interface ICountOperator<T> : IAsyncOperator<T> {
@@ -40,4 +40,16 @@ internal interface ISkipTakeOperator<out T> : IAsyncOperator<T> {
 
 internal interface IToListOperator<T> : IAsyncOperator<T> {
     public ValueTask<List<T>> ToListAsync(CancellationToken cancellationToken = default);
+}
+
+internal interface IToHashSetOperator<T> : IAsyncOperator<T> {
+    public ValueTask<HashSet<T>> ToHashSetAsync(CancellationToken cancellationToken = default);
+}
+
+internal interface IToSortedSetOperator<T> : IAsyncOperator<T> {
+    public ValueTask<SortedSet<T>> ToSortedSetAsync(CancellationToken cancellationToken = default);
+}
+
+internal interface IOrderByOperator<T> : IAsyncOperator<T> {
+    public IOrderedAsyncEnumerable<T> OrderBy(IComparer<T> comparer);
 }
