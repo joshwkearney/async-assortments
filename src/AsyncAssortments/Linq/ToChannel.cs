@@ -5,41 +5,71 @@ using System.Threading.Channels;
 namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
+    /// <summary>
+    ///     Reads an <see cref="IAsyncEnumerable{T}" /> into a channel, and returns
+    ///     the channel's reader that can access the sequences elements as they are
+    ///     produced. 
+    /// </summary>
+    /// <param name="source">The source sequence</param>
+    /// <param name="maxBuffer">
+    ///     The maximum size of the channel, If a negative number is supplied, the
+    ///     channel is unbounded in size.
+    /// </param>
+    /// <param name="cancellationToken">
+    ///     A cancellation token that can be used to cancel the enumeration before it finishes.
+    /// </param>
+    /// <returns>
+    ///     A channel reader that can be used to access the sequence's elements
+    /// </returns>
+    /// <remarks>
+    ///     The caller must make sure to read the channel to completion, otherwise
+    ///     any exceptions produced by the original sequence will not be handled
+    ///     correctly.
+    /// </remarks>
 
-    internal static ChannelReader<TSource> ToChannel<TSource>(
+    public static ChannelReader<TSource> ToChannel<TSource>(
         this IAsyncEnumerable<TSource> source,
         int maxBuffer = -1,
         CancellationToken cancellationToken = default) {
-        
+
+        if (source == null) {
+            throw new ArgumentNullException(nameof(source));
+        }
+
         Channel<TSource> channel;
 
         if (maxBuffer <= 0) {
             channel = Channel.CreateUnbounded<TSource>(new UnboundedChannelOptions() {
-                AllowSynchronousContinuations = true
+                AllowSynchronousContinuations = false
             });
         }
         else {
             channel = Channel.CreateBounded<TSource>(new BoundedChannelOptions(maxBuffer) {
-                AllowSynchronousContinuations = true,
-                FullMode = BoundedChannelFullMode.DropWrite
+                AllowSynchronousContinuations = false,
+                FullMode = BoundedChannelFullMode.Wait
             });
         }
-        
-        Iterate();
+
+        // Fire and forget, exceptions will be handled through the channel
+        ToChannelHelper(source, channel, cancellationToken);
 
         return channel.Reader;
+    }
 
-        async void Iterate() {
-            try {
-                await foreach (var item in source.WithCancellation(cancellationToken)) {
-                    await channel.Writer.WriteAsync(item);
-                }
+    private static async void ToChannelHelper<T>(
+        IAsyncEnumerable<T> source, 
+        Channel<T> channel,
+        CancellationToken cancellationToken) {
 
-                channel.Writer.Complete();
+        try {
+            await foreach (var item in source.WithCancellation(cancellationToken)) {
+                await channel.Writer.WriteAsync(item);
             }
-            catch (Exception ex) {
-                channel.Writer.Complete(ex);
-            }
+
+            channel.Writer.Complete();
+        }
+        catch (Exception ex) {
+            channel.Writer.Complete(ex);
         }
     }
 }
