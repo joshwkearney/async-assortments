@@ -43,13 +43,13 @@ internal interface IToListOperator<T> : IAsyncOperator<T> {
 }
 
 internal interface IToHashSetOperator<T> : IAsyncOperator<T> {
-    public ValueTask<HashSet<T>> ToHashSetAsync(CancellationToken cancellationToken = default);
+    public ValueTask<HashSet<T>> ToHashSetAsync(IEqualityComparer<T> comparer, CancellationToken cancellationToken = default);
 }
 
-internal interface IToSortedSetOperator<T> : IAsyncOperator<T> {
-    public ValueTask<SortedSet<T>> ToSortedSetAsync(CancellationToken cancellationToken = default);
+internal interface IOrderOperator<T> : IAsyncOperator<T> {
+    public IOrderedAsyncEnumerable<T> Order(IComparer<T> comparer);
 }
 
-internal interface IOrderByOperator<T> : IAsyncOperator<T> {
-    public IOrderedAsyncEnumerable<T> OrderBy(IComparer<T> comparer);
+internal interface IDistinctOperator<T> : IAsyncOperator<T> {
+    public IAsyncEnumerable<T> Distinct(IEqualityComparer<T> comparer);
 }

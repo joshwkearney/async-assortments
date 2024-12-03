@@ -3,7 +3,7 @@ namespace AsyncAssortments.Operators;
 internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IAsyncWhereOperator<T>, 
     IConcatOperator<T>, IConcatEnumerablesOperator<T>, ISelectOperator<T>, IWhereOperator<T>, 
     ISkipTakeOperator<T>, ICountOperator<T>, IToListOperator<T>, IToHashSetOperator<T>,
-    IToSortedSetOperator<T>, IOrderByOperator<T>, IOrderedAsyncEnumerable<T> {
+    IOrderOperator<T>, IOrderedAsyncEnumerable<T> {
 
     public static IAsyncOperator<T> Instance { get; } = new EmptyOperator<T>();
     
@@ -49,15 +49,11 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IA
         return new ValueTask<List<T>>([]);
     }
 
-    public ValueTask<HashSet<T>> ToHashSetAsync(CancellationToken cancellationToken = default) {
-        return new ValueTask<HashSet<T>>([]);
+    public ValueTask<HashSet<T>> ToHashSetAsync(IEqualityComparer<T> comparer, CancellationToken cancellationToken = default) {
+        return new ValueTask<HashSet<T>>(new HashSet<T>(comparer));
     }
 
-    public ValueTask<SortedSet<T>> ToSortedSetAsync(CancellationToken cancellationToken = default) {
-        return new ValueTask<SortedSet<T>>([]);
-    }
-
-    public IOrderedAsyncEnumerable<T> OrderBy(IComparer<T> comparer) {
+    public IOrderedAsyncEnumerable<T> Order(IComparer<T> comparer) {
         return this;
     }
 }

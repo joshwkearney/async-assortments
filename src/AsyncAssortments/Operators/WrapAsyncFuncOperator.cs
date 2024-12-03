@@ -4,8 +4,8 @@ using AsyncAssortments.Linq;
 namespace AsyncAssortments.Operators;
 
 internal class WrapAsyncFuncOperator<T> : IAsyncOperator<T>, ISelectOperator<T>, IAsyncSelectOperator<T>,
-    ISkipTakeOperator<T>, ICountOperator<T>, IToListOperator<T>, IToSortedSetOperator<T>, IToHashSetOperator<T>,
-    IOrderByOperator<T>, IOrderedAsyncEnumerable<T> {
+    ISkipTakeOperator<T>, ICountOperator<T>, IToListOperator<T>, IToHashSetOperator<T>,
+    IOrderOperator<T>, IOrderedAsyncEnumerable<T> {
 
     private readonly Func<CancellationToken, ValueTask<T>> func;
     
@@ -36,16 +36,10 @@ internal class WrapAsyncFuncOperator<T> : IAsyncOperator<T>, ISelectOperator<T>,
         return [item];
     }
 
-    public async ValueTask<SortedSet<T>> ToSortedSetAsync(CancellationToken cancellationToken = default) {
+    public async ValueTask<HashSet<T>> ToHashSetAsync(IEqualityComparer<T> comparer, CancellationToken cancellationToken = default) {
         var item = await this.func(cancellationToken);
 
-        return [item];
-    }
-
-    public async ValueTask<HashSet<T>> ToHashSetAsync(CancellationToken cancellationToken = default) {
-        var item = await this.func(cancellationToken);
-
-        return [item];
+        return new HashSet<T>(comparer) { item };
     }
 
     public IAsyncEnumerable<E> Select<E>(Func<T, E> selector) {
@@ -67,7 +61,7 @@ internal class WrapAsyncFuncOperator<T> : IAsyncOperator<T>, ISelectOperator<T>,
 
     public int Count() => 1;
     
-    public IOrderedAsyncEnumerable<T> OrderBy(IComparer<T> comparer) {
+    public IOrderedAsyncEnumerable<T> Order(IComparer<T> comparer) {
         return this;
     }
 

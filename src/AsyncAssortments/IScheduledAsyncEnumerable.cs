@@ -67,5 +67,17 @@
                 return pars;
             }
         }
+
+        internal static AsyncEnumerableScheduleMode MakeUnordered(this AsyncEnumerableScheduleMode pars) {
+            if (pars == AsyncEnumerableScheduleMode.ConcurrentOrdered) {
+                return AsyncEnumerableScheduleMode.ConcurrentUnordered;
+            }
+            else if (pars == AsyncEnumerableScheduleMode.ParallelOrdered) {
+                return AsyncEnumerableScheduleMode.ParallelUnordered;
+            }
+            else {
+                return pars;
+            }
+        }
     }
 }

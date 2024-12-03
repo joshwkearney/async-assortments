@@ -8,7 +8,7 @@ namespace AsyncAssortments.Operators {
     // TODO: This should implement IOrderByOperator but there's not .Order() method on enumerables in this version of .net
     internal class WrapEnumerableOperator<T> : IAsyncOperator<T>, ISkipTakeOperator<T>, ISelectOperator<T>, 
         IWhereOperator<T>, IConcatEnumerablesOperator<T>, ICountOperator<T>, IToListOperator<T>,
-        IToHashSetOperator<T>, IToSortedSetOperator<T> {
+        IToHashSetOperator<T> {
 
         public IEnumerable<T> Items { get; }
 
@@ -54,12 +54,8 @@ namespace AsyncAssortments.Operators {
             return new ValueTask<List<T>>(this.Items.ToList());
         }
 
-        public ValueTask<HashSet<T>> ToHashSetAsync(CancellationToken cancellationToken = default) {
+        public ValueTask<HashSet<T>> ToHashSetAsync(IEqualityComparer<T> comparer, CancellationToken cancellationToken = default) {
             return new ValueTask<HashSet<T>>(new HashSet<T>(this.Items));
-        }
-
-        public ValueTask<SortedSet<T>> ToSortedSetAsync(CancellationToken cancellationToken = default) {
-            return new ValueTask<SortedSet<T>>(new SortedSet<T>(this.Items));
         }
 
 #pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously

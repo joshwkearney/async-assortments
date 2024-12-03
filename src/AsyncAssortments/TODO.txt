@@ -1,14 +1,14 @@
-Distinct
-Union
-Except
-Intersect
+DONE - Distinct
+DONE - Union
+DONE - Except
+DONE - Intersect
 
 union(a, b) = distinct(concat(a, b))
 except: Enumerable b into a set. 
 
 Reverse
 
-Join
+DONE - Join
 GroupJoin
 
 Min

@@ -2,7 +2,7 @@
 
 namespace AsyncAssortments.Operators {
     internal class SortingOperator<T> : IAsyncOperator<T>, IOrderedAsyncEnumerable<T>, IToListOperator<T>, 
-        IToHashSetOperator<T>, IToSortedSetOperator<T>, IOrderByOperator<T> {
+        IToHashSetOperator<T>, IOrderOperator<T> {
 
         public IAsyncEnumerable<T> Source { get; }
 
@@ -27,16 +27,12 @@ namespace AsyncAssortments.Operators {
             return list;
         }
 
-        public ValueTask<HashSet<T>> ToHashSetAsync(CancellationToken cancellationToken = default) {
+        public ValueTask<HashSet<T>> ToHashSetAsync(IEqualityComparer<T> comparer, CancellationToken cancellationToken = default) {
             // Creating a hash set destroys ordering anyway, so we don't need to sort anything
-            return this.Source.ToHashSetAsync(cancellationToken);
+            return this.Source.ToHashSetAsync(comparer, cancellationToken);
         }
 
-        public ValueTask<SortedSet<T>> ToSortedSetAsync(CancellationToken cancellationToken = default) {
-            return this.Source.ToSortedSetAsync(this.Comparer, cancellationToken);
-        }
-
-        public IOrderedAsyncEnumerable<T> OrderBy(IComparer<T> comparer) {
+        public IOrderedAsyncEnumerable<T> Order(IComparer<T> comparer) {
             return new SortingOperator<T>(this.ScheduleMode, this.Source, comparer);
         }
 

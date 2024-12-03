@@ -3,26 +3,11 @@ using System.Reactive.Subjects;
 using AsyncAssortments;
 using AsyncAssortments.Linq;
 
-// ResponsiveEx.Linq
-// AsyncSequenceEx.Linq
-// SequenceEx.Linq
-// 
-
-// AsyncSequences.Linq
-
-//await Test();
-//await Test();
-//await Test();
-//await Test();
-//await Test();
-
-//new[] { 1, 2, 3 }
-//    .AsAsyncEnumerable()
-//    .AsyncSelectMany(async x => new int[] { x, x });
+Console.WriteLine("Hello world!");
 
 async ValueTask Test() {
     var watch = new Stopwatch();
-    watch.Restart();
+    watch.Restart(); 
 
     try {
         var query = await new[] { 100 }
