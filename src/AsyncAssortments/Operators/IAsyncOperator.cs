@@ -53,3 +53,7 @@ internal interface IOrderOperator<T> : IAsyncOperator<T> {
 internal interface IDistinctOperator<T> : IAsyncOperator<T> {
     public IAsyncEnumerable<T> Distinct(IEqualityComparer<T> comparer);
 }
+
+internal interface IReverseOperator<T> : IAsyncOperator<T> {
+    public IAsyncEnumerable<T> Reverse();
+}

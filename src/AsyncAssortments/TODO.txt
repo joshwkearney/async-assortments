@@ -3,9 +3,6 @@ DONE - Union
 DONE - Except
 DONE - Intersect
 
-union(a, b) = distinct(concat(a, b))
-except: Enumerable b into a set. 
-
 Reverse
 
 DONE - Join
