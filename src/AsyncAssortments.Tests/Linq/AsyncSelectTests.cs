@@ -111,7 +111,11 @@ public class AsyncSelectTests {
     [Fact]
     public async Task TestRandomSequence5() {
         var list = TestHelper.CreateRandomList(100);
-        var expected = list.Select(x => x / 2 - 1).ToArray();
+        
+        var expected = list
+            .Select(x => x / 2 - 1)
+            .Order()
+            .ToArray();
 
         var test = await new TestEnumerable<int>(list)
             .AsParallel(false)
@@ -119,6 +123,7 @@ public class AsyncSelectTests {
                 await Task.Delay(5);
                 return x / 2 - 1;
             })
+            .Order()
             .ToListAsync();
 
         Assert.Equal(expected, test);
