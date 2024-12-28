@@ -1,6 +1,6 @@
 ﻿using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests.OperatorCombinations {
+namespace AsyncLinq.Tests.OperatorCombinations {
     public class SkipTakeTests {
         [Fact]
         public async Task TestSkipTake1() {

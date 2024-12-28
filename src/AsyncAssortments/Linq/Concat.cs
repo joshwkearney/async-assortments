@@ -6,6 +6,7 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Merges this sequence with another sequence
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="second">The other sequence to merge</param>
     /// <returns>A combined sequence that enumerates all of the elements in both input sequences</returns>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>
@@ -62,52 +63,9 @@ public static partial class AsyncEnumerable {
     }
 
     /// <summary>
-    ///     Merges this sequence with the results of a running <see cref="Task" />
-    /// </summary>
-    /// <param name="second">A task to concatenate with this sequence</param>
-    /// <inheritdoc cref="Concat{TSource}(IAsyncEnumerable{TSource}, IAsyncEnumerable{TSource})" />
-    public static IAsyncEnumerable<TSource> Concat<TSource>(
-        this IAsyncEnumerable<TSource> source,
-        Task<TSource> second) {
-
-        if (source == null) {
-            throw new ArgumentNullException(nameof(source));
-        }
-
-        if (second == null) {
-            throw new ArgumentNullException(nameof(second));
-        }
-
-        if (second.IsCompleted && !second.IsFaulted) {
-            return source.Append(second.Result);
-        }
-
-        return source.Concat(second.ToAsyncEnumerable());
-    }
-
-    /// <summary>
-    ///     Merges this sequence with the results of a running <see cref="ValueTask" />
-    /// </summary>
-    /// <param name="second">A task to concatenate with this sequence</param>
-    /// <inheritdoc cref="Concat{TSource}(IAsyncEnumerable{TSource}, IAsyncEnumerable{TSource})" />
-    public static IAsyncEnumerable<TSource> Concat<TSource>(
-        this IAsyncEnumerable<TSource> source,
-        ValueTask<TSource> second) {
-
-        if (source == null) {
-            throw new ArgumentNullException(nameof(source));
-        }
-
-        if (second.IsCompleted && !second.IsFaulted) {
-            return source.Append(second.Result);
-        }
-
-        return source.Concat(second.ToAsyncEnumerable());
-    }
-
-    /// <summary>
     ///     Merges this sequence with an <see cref="IObservable{T}" />
     /// </summary>
+    /// <param name="source">The source sequence</param>
     /// <param name="second">An observable to concatenate with this sequence</param>
     /// <inheritdoc cref="Concat{TSource}(IAsyncEnumerable{TSource}, IAsyncEnumerable{TSource})" />
     public static IAsyncEnumerable<TSource> Concat<TSource>(
@@ -124,6 +82,7 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Merges this sequence with an <see cref="IEnumerable{T}"/>
     /// </summary>
+    /// <param name="source">The source sequence</param>
     /// <param name="second">The other sequence to merge</param>
     /// <returns>A combined sequence that enumerates all of the elements in both sequences</returns>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>

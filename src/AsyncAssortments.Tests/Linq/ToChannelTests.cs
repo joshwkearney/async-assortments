@@ -1,24 +1,21 @@
-using System.Reactive.Linq;
+using AsyncAssortments;
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class ToChannelTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
-
-        Assert.Throws<ArgumentNullException>(() => nullSeq.ToChannel());
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().ToChannel());
     }
     
     [Fact]
     public async Task TestException() {
         var seq = new TestEnumerable<int>([1, 2, 3]).Select<int, int>(x => throw new TestException());
-        var count = 0;
 
         await Assert.ThrowsAsync<TestException>(async () => {
-            await foreach (var item in seq.ToChannel().ReadAllAsync()) {
-                count++;
+            await foreach (var _ in seq.ToChannel().ReadAllAsync()) {
+                await Task.Delay(1);
             }
         });
     }

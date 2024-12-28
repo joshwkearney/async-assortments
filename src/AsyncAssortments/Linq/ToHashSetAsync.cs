@@ -6,9 +6,11 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Collects a sequence into a <see cref="HashSet{T}"/>.
     /// </summary>
+    /// <param name="comparer">An equality comparer used to determine if two elements are equal.</param>
     /// <param name="cancellationToken">
     ///     A cancellation token that can be used to cancel the enumeration before it finishes.
     /// </param>
+    /// <param name="source">The original sequence</param>
     /// <returns>
     ///     A <see cref="ValueTask{TResult}" /> that completes when the sequence has been 
     ///     asynchronously enumerated and collected into a hash set.
@@ -36,8 +38,12 @@ public static partial class AsyncEnumerable {
 
         return ToHashSetHelper(source, comparer, cancellationToken);
     }
-
-    /// <inheritdoc cref="ToHashSetAsync{TSource}(IAsyncEnumerable{TSource}, IEqualityComparer{TSource}, CancellationToken)" />
+    
+    /// <param name="cancellationToken">
+    ///     A cancellation token that can be used to cancel the enumeration before it finishes.
+    /// </param>
+    /// <param name="source">The original sequence</param>
+    /// <inheritdoc cref="ToHashSetAsync{TSource}(IAsyncEnumerable{TSource},IEqualityComparer{TSource},CancellationToken)"/>
     public static ValueTask<HashSet<TSource>> ToHashSetAsync<TSource>(
         this IAsyncEnumerable<TSource> source,
         CancellationToken cancellationToken = default) {

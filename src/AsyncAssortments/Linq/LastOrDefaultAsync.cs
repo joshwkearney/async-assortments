@@ -5,6 +5,7 @@ public static partial class AsyncEnumerable {
     ///     Returns the last element in the sequence, or the type's default value.
     ///     if the sequence is empty.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="cancellationToken">
     ///     A cancellation token that can be used to cancel the enumeration before it finishes.
     /// </param>
@@ -35,13 +36,20 @@ public static partial class AsyncEnumerable {
 
         return last;
     }
-
+    
     /// <summary>
     ///     Returns the last element in the sequence, or a provided default value if
     ///     the sequence is empty.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="defaultValue">The default value to return if the sequence is empty.</param>
-    /// <inheritdoc cref="LastOrDefaultAsync{TSource}(IAsyncEnumerable{TSource}, CancellationToken)" />
+    /// <param name="cancellationToken">
+    ///     A cancellation token that can be used to cancel the enumeration before it finishes.
+    /// </param>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
+    /// <exception cref="TaskCanceledException">
+    ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
+    /// </exception>
     public static ValueTask<TSource> LastOrDefaultAsync<TSource>(
         this IAsyncEnumerable<TSource> source,
         TSource defaultValue,
@@ -67,14 +75,20 @@ public static partial class AsyncEnumerable {
 
         return last;
     }
-
-
+    
     /// <summary>
     ///     Returns the last element in the sequence that matches a given predicate,
     ///     or the type's default value if the sequence is empty.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="predicate">A function that determines which elements can be returned.</param>
-    /// <inheritdoc cref="LastOrDefaultAsync{TSource}(IAsyncEnumerable{TSource}, CancellationToken)" />
+    /// <param name="cancellationToken">
+    ///     A cancellation token that can be used to cancel the enumeration before it finishes.
+    /// </param>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
+    /// <exception cref="TaskCanceledException">
+    ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
+    /// </exception>
     public static ValueTask<TSource?> LastOrDefaultAsync<TSource>(
         this IAsyncEnumerable<TSource> source,
         Func<TSource, bool> predicate,
@@ -86,13 +100,21 @@ public static partial class AsyncEnumerable {
 
         return source.Where(predicate).LastOrDefaultAsync(cancellationToken);
     }
-
+    
     /// <summary>
     ///     Returns the last element in the sequence that matches a given predicate,
     ///     or a provided default value if the sequence is empty.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
+    /// <param name="predicate">A function that determines which elements can be returned.</param>
     /// <param name="defaultValue">The default value to return if the sequence is empty.</param>
-    /// <inheritdoc cref="LastOrDefaultAsync{TSource}(IAsyncEnumerable{TSource}, Func{TSource, bool}, CancellationToken)"/>
+    /// <param name="cancellationToken">
+    ///     A cancellation token that can be used to cancel the enumeration before it finishes.
+    /// </param>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
+    /// <exception cref="TaskCanceledException">
+    ///     The enumeration was cancelled with the provided <see cref="CancellationToken" />.
+    /// </exception>
     public static ValueTask<TSource> LastOrDefaultAsync<TSource>(
         this IAsyncEnumerable<TSource> source,
         Func<TSource, bool> predicate,

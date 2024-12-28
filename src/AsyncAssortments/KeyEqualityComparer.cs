@@ -10,12 +10,22 @@ namespace AsyncAssortments {
             this.comparer = comparer;
         }
 
-        public bool Equals(T x, T y) {
-            return this.comparer.Equals(this.keySelector(x), this.keySelector(y));
+        public bool Equals(T? x, T? y) {
+            if (x == null && y == null) {
+                return true;
+            }
+            else if (x == null || y == null) {
+                return false;
+            }
+            else {
+                return this.comparer.Equals(this.keySelector(x), this.keySelector(y));
+            }
         }
 
         public int GetHashCode(T obj) {
-            return this.comparer.GetHashCode(this.keySelector(obj));
+            var key = this.keySelector(obj);
+            
+            return key == null ? 0 : this.comparer.GetHashCode(key);
         }
     }
 }

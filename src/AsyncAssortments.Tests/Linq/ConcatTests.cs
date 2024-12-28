@@ -1,18 +1,17 @@
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class ConcatTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
         var seq = new TestEnumerable<int>([1, 2, 3]);
 
-        Assert.Throws<ArgumentNullException>(() => nullSeq.Concat([]));
-        Assert.Throws<ArgumentNullException>(() => nullSeq.Concat(new TestEnumerable<int>([])));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().Concat([]));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().Concat(new TestEnumerable<int>([])));
 
-        Assert.Throws<ArgumentNullException>(() => seq.Concat(null as IAsyncEnumerable<int>));
-        Assert.Throws<ArgumentNullException>(() => seq.Concat(null as IEnumerable<int>));
+        Assert.Throws<ArgumentNullException>(() => seq.Concat(TestHelper.GetNullAsyncEnumerable()));
+        Assert.Throws<ArgumentNullException>(() => seq.Concat(TestHelper.GetNullEnumerable()));
     }
 
     [Fact]
@@ -169,170 +168,126 @@ public class ConcatTests {
 
     [Fact]
     public async Task TestExceptions1() {
-        var seq = new TestEnumerable<int>([1, 2, 3]).Concat(GetBad());
+        var seq = new TestEnumerable<int>([1, 2, 3])
+            .Concat(TestHelper.GetFailingAsyncEnumerable());
 
         await Assert.ThrowsAnyAsync<Exception>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions2() {
-        var seq = GetBad().Concat(new TestEnumerable<int>([1, 2, 3]));
+        var seq = TestHelper.GetFailingAsyncEnumerable()
+            .Concat(new TestEnumerable<int>([1, 2, 3]));
 
         await Assert.ThrowsAnyAsync<Exception>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions3() {
-        var seq = new TestEnumerable<int>([1, 2, 3]).AsConcurrent(true).Concat(GetBad());
+        var seq = new TestEnumerable<int>([1, 2, 3])
+            .AsConcurrent(true)
+            .Concat(TestHelper.GetFailingAsyncEnumerable());
 
         await Assert.ThrowsAnyAsync<Exception>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions4() {
-        var seq = GetBad().AsConcurrent(true).Concat(new TestEnumerable<int>([1, 2, 3]));
+        var seq = TestHelper.GetFailingAsyncEnumerable()
+            .AsConcurrent(true)
+            .Concat(new TestEnumerable<int>([1, 2, 3]));
 
         await Assert.ThrowsAnyAsync<Exception>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions5() {
-        var seq = new TestEnumerable<int>([1, 2, 3]).AsConcurrent(false).Concat(GetBad());
+        var seq = new TestEnumerable<int>([1, 2, 3])
+            .AsConcurrent(false)
+            .Concat(TestHelper.GetFailingAsyncEnumerable());
 
         await Assert.ThrowsAnyAsync<Exception>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions6() {
-        var seq = GetBad().AsConcurrent(false).Concat(new TestEnumerable<int>([1, 2, 3]));
+        var seq = TestHelper.GetFailingAsyncEnumerable()
+            .AsConcurrent(false)
+            .Concat(new TestEnumerable<int>([1, 2, 3]));
 
         await Assert.ThrowsAnyAsync<Exception>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions7() {
-        var seq = new TestEnumerable<int>([1, 2, 3]).AsParallel(true).Concat(GetBad());
+        var seq = new TestEnumerable<int>([1, 2, 3])
+            .AsParallel(true)
+            .Concat(TestHelper.GetFailingAsyncEnumerable());
 
         await Assert.ThrowsAnyAsync<Exception>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions8() {
-        var seq = GetBad().AsParallel(true).Concat(new TestEnumerable<int>([1, 2, 3]));
+        var seq = TestHelper.GetFailingAsyncEnumerable()
+            .AsParallel(true)
+            .Concat(new TestEnumerable<int>([1, 2, 3]));
 
         await Assert.ThrowsAnyAsync<Exception>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions9() {
-        var seq = new TestEnumerable<int>([1, 2, 3]).AsParallel(false).Concat(GetBad());
+        var seq = new TestEnumerable<int>([1, 2, 3])
+            .AsParallel(false)
+            .Concat(TestHelper.GetFailingAsyncEnumerable());
 
         await Assert.ThrowsAnyAsync<Exception>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions10() {
-        var seq = GetBad().AsParallel(false).Concat(new TestEnumerable<int>([1, 2, 3]));
+        var seq = TestHelper.GetFailingAsyncEnumerable()
+            .AsParallel(false)
+            .Concat(new TestEnumerable<int>([1, 2, 3]));
 
         await Assert.ThrowsAnyAsync<Exception>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions11() {
-        var seq = GetSeq().AsConcurrent(true).Concat(GetSeq());
+        var seq = TestHelper.GetFailingAsyncEnumerable()
+            .AsConcurrent(true)
+            .Concat(TestHelper.GetFailingAsyncEnumerable());
 
         await Assert.ThrowsAsync<AggregateException>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetSeq() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions12() {
-        var seq = GetSeq().AsConcurrent(false).Concat(GetSeq());
+        var seq = TestHelper.GetFailingAsyncEnumerable()
+            .AsConcurrent(false)
+            .Concat(TestHelper.GetFailingAsyncEnumerable());
 
         await Assert.ThrowsAsync<AggregateException>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetSeq() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions13() {
-        var seq = GetSeq().AsParallel(true).Concat(GetSeq());
+        var seq = TestHelper.GetFailingAsyncEnumerable()
+            .AsParallel(true)
+            .Concat(TestHelper.GetFailingAsyncEnumerable());
 
         await Assert.ThrowsAsync<AggregateException>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetSeq() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
     public async Task TestExceptions14() {
-        var seq = GetSeq().AsParallel(false).Concat(GetSeq());
+        var seq = TestHelper.GetFailingAsyncEnumerable()
+            .AsParallel(false)
+            .Concat(TestHelper.GetFailingAsyncEnumerable());
 
         await Assert.ThrowsAsync<AggregateException>(async () => await seq.ToListAsync());
-
-        async IAsyncEnumerable<int> GetSeq() {
-            throw new TestException();
-            yield break;
-        }
     }
 
     [Fact]
@@ -408,16 +363,19 @@ public class ConcatTests {
         Assert.Equal([100, 200, 300], items);
 
         async IAsyncEnumerable<int> GetSeq1() {
+            await Task.CompletedTask;
             Thread.Sleep(100);
             yield return 100;
         }
 
         async IAsyncEnumerable<int> GetSeq2() {
+            await Task.CompletedTask;
             Thread.Sleep(200);
             yield return 200;
         }
 
         async IAsyncEnumerable<int> GetSeq3() {
+            await Task.CompletedTask;
             Thread.Sleep(300);
             yield return 300;
         }
@@ -468,16 +426,19 @@ public class ConcatTests {
         Assert.Equal([100, 200, 300], items);
 
         async IAsyncEnumerable<int> GetSeq1() {
+            await Task.CompletedTask;
             Thread.Sleep(100);
             yield return 100;
         }
 
         async IAsyncEnumerable<int> GetSeq2() {
+            await Task.CompletedTask;
             Thread.Sleep(200);
             yield return 200;
         }
 
         async IAsyncEnumerable<int> GetSeq3() {
+            await Task.CompletedTask;
             Thread.Sleep(300);
             yield return 300;
         }
@@ -528,16 +489,19 @@ public class ConcatTests {
         Assert.Equal([300, 200, 100], items);
 
         async IAsyncEnumerable<int> GetSeq1() {
+            await Task.CompletedTask;
             Thread.Sleep(100);
             yield return 100;
         }
 
         async IAsyncEnumerable<int> GetSeq2() {
+            await Task.CompletedTask;
             Thread.Sleep(200);
             yield return 200;
         }
 
         async IAsyncEnumerable<int> GetSeq3() {
+            await Task.CompletedTask;
             Thread.Sleep(300);
             yield return 300;
         }
@@ -588,16 +552,19 @@ public class ConcatTests {
         Assert.Equal([100, 200, 300], items);
 
         async IAsyncEnumerable<int> GetSeq1() {
+            await Task.CompletedTask;
             Thread.Sleep(100);
             yield return 100;
         }
 
         async IAsyncEnumerable<int> GetSeq2() {
+            await Task.CompletedTask;
             Thread.Sleep(200);
             yield return 200;
         }
 
         async IAsyncEnumerable<int> GetSeq3() {
+            await Task.CompletedTask;
             Thread.Sleep(300);
             yield return 300;
         }

@@ -1,27 +1,25 @@
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class AggregateTests {
     [Fact]
     public async Task TestSeedNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
         var seq = new TestEnumerable<int>([1, 2, 3]);
         
-        Assert.Throws<ArgumentNullException>(() => nullSeq.AggregateAsync(0, (x, y) => x + y));
-        Assert.Throws<ArgumentNullException>(() => seq.AggregateAsync(0, null));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().AggregateAsync(0, (x, y) => x + y));
+        Assert.Throws<ArgumentNullException>(() => seq.AggregateAsync(0, TestHelper.GetNullAggregator<int>()));
         
         // This should not throw
         await seq.Select(x => (int?)x).AggregateAsync(null as int?, (x, y) => x + y);
     }
     
     [Fact]
-    public async Task TestNoSeedNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
+    public void TestNoSeedNullInputs() {
         var seq = new TestEnumerable<int>([1, 2, 3]);
         
-        Assert.Throws<ArgumentNullException>(() => nullSeq.AggregateAsync((x, y) => x + y));
-        Assert.Throws<ArgumentNullException>(() => seq.AggregateAsync(null));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().AggregateAsync((x, y) => x + y));
+        Assert.Throws<ArgumentNullException>(() => seq.AggregateAsync(TestHelper.GetNullAggregator<int>()));
     }
     
     [Fact]

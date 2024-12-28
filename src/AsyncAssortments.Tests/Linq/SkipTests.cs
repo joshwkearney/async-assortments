@@ -1,13 +1,11 @@
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class SkipTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
-        
-        Assert.Throws<ArgumentNullException>(() => nullSeq.Skip(10));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().Skip(10));
     }
 
     [Fact]

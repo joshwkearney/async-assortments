@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 
 namespace AsyncAssortments.Operators;
 
@@ -38,7 +37,10 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
     }
 
     public async IAsyncEnumerator<(T first, E second)> SequentialIterator(CancellationToken cancellationToken) {
-        var dict = new Dictionary<TKey, List<T>>(this.comparer);
+        // We're going to make sure no nulls are put in this dictionary, so the warning can be disabled
+#pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
+        var dict = new Dictionary<NullableKeyWrapper<TKey>, List<T>>(new NullableKeyWrapperComparer<TKey>(this.comparer));
+#pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
 
         await foreach (var item in this.source.WithCancellation(cancellationToken)) {
             var key = this.keySelector1(item);
@@ -53,11 +55,11 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
         await foreach (var item in this.other.WithCancellation(cancellationToken)) {
             var key = this.keySelector2(item);
 
-            if (!dict.ContainsKey(key)) {
+            if (!dict.TryGetValue(key, out var list)) {
                 continue;
             }
 
-            foreach (var first in dict[key]) {
+            foreach (var first in list) {
                 yield return (first, item);
             }
         }
@@ -69,8 +71,11 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
         var errors = new ErrorCollection();
         var finishedTasks = 0;
 
-        var secondLists = new Dictionary<TKey, List<E>>(this.comparer);
-        var firstLists = new Dictionary<TKey, List<T>>(this.comparer);
+        // We're going to make sure no nulls are put in this dictionary, so the warning can be disabled
+#pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
+        var secondLists = new Dictionary<NullableKeyWrapper<TKey>, List<E>>(new NullableKeyWrapperComparer<TKey>(this.comparer));
+        var firstLists = new Dictionary<NullableKeyWrapper<TKey>, List<T>>(new NullableKeyWrapperComparer<TKey>(this.comparer));
+#pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
 
         var task1 = IterateFirst();
         var task2 = IterateSecond();
@@ -161,7 +166,7 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
                 await foreach (var second in this.other.WithCancellation(tokenSource.Token)) {
                     var key = this.keySelector2(second);
                     var record = new ConcurrentJoinRecord(key, default!, second, false);
-
+                    
                     channel.Writer.TryWrite(record);
                 }
             }

@@ -7,7 +7,7 @@ public static partial class AsyncEnumerable {
     ///     Filters a sequence using an async predicate to select elements.
     /// </summary>
     /// <param name="source">The sequence to filter</param>
-    /// <param name="selector">An async predicate to filter each element</param>
+    /// <param name="predicate">An async predicate to filter each element</param>
     /// <returns>A new sequence containing only items that match the predicate.</returns>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     /// <remarks>

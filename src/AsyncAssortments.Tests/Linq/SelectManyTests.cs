@@ -1,18 +1,22 @@
+using AsyncAssortments;
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class SelectManyTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
         var seq = new TestEnumerable<int>([1, 2, 3]);
         
-        Assert.Throws<ArgumentNullException>(() => nullSeq.SelectMany(x => new[] { x, x }));
-        Assert.Throws<ArgumentNullException>(() => nullSeq.SelectMany(x => new TestEnumerable<int>([x, x])));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().SelectMany(x => new[] { x, x }));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().SelectMany(x => new TestEnumerable<int>([x, x])));
 
-        Assert.Throws<ArgumentNullException>(() => seq.SelectMany(null as Func<int, IEnumerable<int>>));
-        Assert.Throws<ArgumentNullException>(() => seq.SelectMany(null as Func<int, IAsyncEnumerable<int>>));
+        Assert.Throws<ArgumentNullException>(() => seq.SelectMany(GetNullSelector1()));
+        Assert.Throws<ArgumentNullException>(() => seq.SelectMany(GetNullSelector2()));
+        
+        static Func<int, IEnumerable<int>> GetNullSelector1() => null!;
+        
+        static Func<int, IAsyncEnumerable<int>> GetNullSelector2() => null!;
     }
 
     [Fact]
@@ -23,6 +27,7 @@ public class SelectManyTests {
 
         async IAsyncEnumerable<int> GetBad(int i) {
             yield return i;
+            await Task.Delay(10);
             yield return i;
             throw new TestException();
         }
@@ -30,12 +35,15 @@ public class SelectManyTests {
 
     [Fact]
     public async Task TestExceptions2() {
-        var seq = new TestEnumerable<int>([1, 2, 3]).AsConcurrent(true).SelectMany(GetBad);
+        var seq = new TestEnumerable<int>([1, 2, 3])
+            .AsConcurrent(true)
+            .SelectMany(GetBad);
 
         await Assert.ThrowsAnyAsync<Exception>(async () => await seq.ToListAsync());
 
         async IAsyncEnumerable<int> GetBad(int i) {
             yield return i;
+            await Task.Delay(10);
             yield return i;
             throw new TestException();
         }
@@ -49,6 +57,7 @@ public class SelectManyTests {
 
         async IAsyncEnumerable<int> GetBad(int i) {
             yield return i;
+            await Task.Delay(10);
             yield return i;
             throw new TestException();
         }
@@ -62,6 +71,7 @@ public class SelectManyTests {
 
         async IAsyncEnumerable<int> GetBad(int i) {
             yield return i;
+            await Task.Delay(10);
             yield return i;
             throw new TestException();
         }
@@ -75,6 +85,7 @@ public class SelectManyTests {
 
         async IAsyncEnumerable<int> GetBad(int i) {
             yield return i;
+            await Task.Delay(10);
             yield return i;
             throw new TestException();
         }
@@ -317,6 +328,7 @@ public class SelectManyTests {
         Assert.Equal([300, 300, 200, 200, 100, 100], items);
 
         async IAsyncEnumerable<int> Project(int i) {
+            await Task.CompletedTask;
             Thread.Sleep(i);
             yield return i;
             yield return i;
@@ -337,6 +349,7 @@ public class SelectManyTests {
         Assert.Equal([300, 300, 200, 200, 100, 100], items);
 
         async IAsyncEnumerable<int> Project(int i) {
+            await Task.CompletedTask;
             Thread.Sleep(i);
             yield return i;
             yield return i;
@@ -357,6 +370,7 @@ public class SelectManyTests {
         Assert.Equal([300, 300, 200, 200, 100, 100], items);
 
         async IAsyncEnumerable<int> Project(int i) {
+            await Task.CompletedTask;
             Thread.Sleep(i);
             yield return i;
             yield return i;
@@ -377,6 +391,7 @@ public class SelectManyTests {
         Assert.Equal([100, 100, 200, 200, 300, 300], items);
 
         async IAsyncEnumerable<int> Project(int i) {
+            await Task.CompletedTask;
             Thread.Sleep(i);
             yield return i;
             yield return i;

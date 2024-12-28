@@ -4,6 +4,7 @@ namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Projects each element of a sequence into a new form.</summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="selector">A transformation function to apply to each source element.</param>
     /// <returns>
     ///     An <see cref="IAsyncEnumerable{T}" /> whose elements are the result of invoking

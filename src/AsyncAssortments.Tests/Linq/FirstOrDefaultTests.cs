@@ -1,29 +1,22 @@
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class FirstOrDefaultTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
         var seq = new TestEnumerable<int>([1, 2, 3]);
 
-        Assert.Throws<ArgumentNullException>(() => nullSeq.FirstOrDefaultAsync());
-        Assert.Throws<ArgumentNullException>(() => nullSeq.FirstOrDefaultAsync(x => x > 5));
-
-        Assert.Throws<ArgumentNullException>(() => seq.FirstOrDefaultAsync(null));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().FirstOrDefaultAsync());
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().FirstOrDefaultAsync(x => x > 5));
+        Assert.Throws<ArgumentNullException>(() => seq.FirstOrDefaultAsync(TestHelper.GetNullPredicate<int>()));
     }
 
     [Fact]
     public async Task TestExceptions() {        
-        await Assert.ThrowsAsync<TestException>(async () => await GetBad().FirstOrDefaultAsync());
-        await Assert.ThrowsAsync<TestException>(async () => await GetBad().FirstOrDefaultAsync(x => x > 5));
-        await Assert.ThrowsAsync<TestException>(async () => await GetBad().FirstOrDefaultAsync(x => x > 78, 99));
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield return 10;
-        }
+        await Assert.ThrowsAsync<TestException>(async () => await TestHelper.GetFailingAsyncEnumerable().Where(x => x > int.MaxValue - 1).FirstOrDefaultAsync());
+        await Assert.ThrowsAsync<TestException>(async () => await TestHelper.GetFailingAsyncEnumerable().FirstOrDefaultAsync(x => x > int.MaxValue - 1));
+        await Assert.ThrowsAsync<TestException>(async () => await TestHelper.GetFailingAsyncEnumerable().FirstOrDefaultAsync(x => x > int.MaxValue - 1, 99));
     }
 
     [Fact]

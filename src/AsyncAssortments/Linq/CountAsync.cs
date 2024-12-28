@@ -6,6 +6,7 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Counts the number of items in a sequence
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="cancellationToken">
     ///     A cancellation token that can be used to cancel the enumeration before it finishes.
     /// </param>
@@ -46,6 +47,7 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Counts the number of items in a sequence that match a given predicate
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="predicate">A predicate that defines which items should be counted</param>
     /// <param name="cancellationToken">
     ///     A cancellation token that can be used to cancel the enumeration before it finishes.

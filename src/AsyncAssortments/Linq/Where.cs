@@ -7,6 +7,7 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Filters a sequence using a predicate to select elements.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="predicate">
     ///     A function that determines if an element should remain in
     ///     the sequence.

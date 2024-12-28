@@ -3,6 +3,11 @@
 namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
+    /// <summary>
+    ///     Reverses a sequence.
+    /// </summary>
+    /// <param name="source">The original sequence.</param>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> Reverse<TSource>(this IAsyncEnumerable<TSource> source) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));

@@ -1,13 +1,11 @@
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class TakeTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
-        
-        Assert.Throws<ArgumentNullException>(() => nullSeq.Take(10));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().Take(10));
     }
 
     [Fact]

@@ -1,27 +1,20 @@
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class FirstTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
         var seq = new TestEnumerable<int>([1, 2, 3]);
 
-        Assert.Throws<ArgumentNullException>(() => nullSeq.FirstAsync());
-        Assert.Throws<ArgumentNullException>(() => nullSeq.FirstAsync(x => x > 5));
-
-        Assert.Throws<ArgumentNullException>(() => seq.FirstAsync(null));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().FirstAsync());
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().FirstAsync(x => x > 5));
+        Assert.Throws<ArgumentNullException>(() => seq.FirstAsync(TestHelper.GetNullPredicate<int>()));
     }
 
     [Fact]
     public async Task TestExceptions() {        
-        await Assert.ThrowsAsync<TestException>(async () => await GetBad().FirstAsync());
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield return 10;
-        }
+        await Assert.ThrowsAsync<TestException>(async () => await TestHelper.GetFailingAsyncEnumerable().Where(x => x > int.MaxValue - 1).FirstAsync());
     }
 
     [Fact]

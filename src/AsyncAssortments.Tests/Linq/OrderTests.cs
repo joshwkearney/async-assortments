@@ -1,8 +1,9 @@
+using AsyncAssortments;
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
-public class OrderByTests {
+public class OrderTests {
     [Fact]
     public void TestNullInputs() {
         var nullSeq = (null as IAsyncEnumerable<int>)!;
@@ -41,12 +42,8 @@ public class OrderByTests {
 
     [Fact]
     public async Task TestExceptions() {        
-        await Assert.ThrowsAsync<TestException>(async () => await GetBad().Order());
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield return 10;
-        }
+        await Assert.ThrowsAsync<TestException>(async () => await TestHelper.GetFailingAsyncEnumerable().Order());
+        await Assert.ThrowsAsync<TestException>(async () => await TestHelper.GetFailingAsyncEnumerable().OrderBy(x => x));
     }
 
     [Fact]

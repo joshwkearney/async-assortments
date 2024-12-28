@@ -7,6 +7,7 @@ public static partial class AsyncEnumerable {
     ///     Projects each element into an <see cref="IAsyncEnumerable{T}" /> and 
     ///     flattens the resulting sequences into one sequence.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="selector">
     ///     A function that projects each element into an 
     ///     <see cref="IAsyncEnumerable{T}" />.
@@ -32,16 +33,21 @@ public static partial class AsyncEnumerable {
 
         return new FlattenOperator<TResult>(pars, source.Select(selector));
     }
-
+    
     /// <summary>
     ///     Projects each element into an <see cref="IObservable{T}" /> and 
     ///     flattens the resulting sequences into one sequence.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="selector">
     ///     A function that projects each element into an 
     ///     <see cref="IObservable{T}" />.
     /// </param>
-    /// <inheritdoc cref="SelectMany{TSource, TResult}(IAsyncEnumerable{TSource}, Func{TSource, IAsyncEnumerable{TResult}})" />
+    /// <returns>
+    ///     An <see cref="IAsyncEnumerable{T}" /> whose elements are the result of
+    ///     invoking the one-to-many transformation function on each element.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IAsyncEnumerable<TResult> SelectMany<TSource, TResult>(
         this IAsyncEnumerable<TSource> source,
         Func<TSource, IObservable<TResult>> selector) {
@@ -56,12 +62,12 @@ public static partial class AsyncEnumerable {
 
         return source.SelectMany(x => selector(x).ToAsyncEnumerable());
     }
-
-
+    
     /// <summary>
     ///     Projects each element into an <see cref="IEnumerable{T}" /> and 
     ///     flattens the resulting sequences into one sequence.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="selector">
     ///     A function that projects each element into an 
     ///     <see cref="IEnumerable{T}" />.

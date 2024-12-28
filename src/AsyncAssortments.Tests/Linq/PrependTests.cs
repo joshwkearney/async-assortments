@@ -1,13 +1,12 @@
+using AsyncAssortments;
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class PrependTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
-
-        Assert.Throws<ArgumentNullException>(() => nullSeq.Prepend(10));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().Prepend(10));
     }
     
     [Fact]

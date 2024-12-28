@@ -1,14 +1,12 @@
 using System.Reactive.Linq;
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class ToObservableTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
-
-        Assert.Throws<ArgumentNullException>(() => nullSeq.ToObservable());
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().ToObservable());
     }
     
     [Fact]

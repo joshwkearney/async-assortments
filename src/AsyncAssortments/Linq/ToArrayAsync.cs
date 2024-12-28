@@ -4,6 +4,7 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Collects a sequence into an array.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="cancellationToken">
     ///     A cancellation token that can be used to cancel the enumeration before it finishes.
     /// </param>

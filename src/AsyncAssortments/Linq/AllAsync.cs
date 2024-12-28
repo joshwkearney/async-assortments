@@ -4,6 +4,7 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Asynchronously determines whether all elements of a sequence satisfies a condition.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="predicate">The condition to match</param>
     /// <param name="cancellationToken">
     ///     A cancellation token that can be used to cancel the enumeration before it finishes.

@@ -4,6 +4,7 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Collects a sequence into a <see cref="Dictionary{TKey, TValue}"/>.
     /// </summary>
+    /// <param name="sequence">The original sequence.</param>
     /// <param name="keySelector">A function that selects the key for the dictionary.</param>
     /// <param name="elementSelector">A function that selects the value for the dictionary.</param>
     /// <param name="cancellationToken">

@@ -1,6 +1,6 @@
 ﻿using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests.OperatorCombinations {
+namespace AsyncLinq.Tests.OperatorCombinations {
     public class SelectWhereTests {
         [Fact]
         public async Task TestSequential() {

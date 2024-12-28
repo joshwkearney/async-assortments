@@ -3,7 +3,16 @@ using System.Collections;
 
 namespace AsyncAssortments.Linq;
 
-public static partial class AsyncEnumerable {    
+public static partial class AsyncEnumerable {
+    /// <summary>
+    ///     Sort the elements of a sequence in ascending order according to a key and using the provided comparer
+    /// </summary>
+    /// <param name="source">The source sequence</param>
+    /// <param name="keySelector">A function that extracts a key from each element</param>
+    /// <param name="comparer">A comparer that defines the sort order</param>
+    /// <typeparam name="TSource">The type of the source sequence</typeparam>
+    /// <typeparam name="TKey">The type of the key</typeparam>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> OrderBy<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
         Func<TSource, TKey> keySelector,
@@ -26,6 +35,14 @@ public static partial class AsyncEnumerable {
         return source.Order(totalComparer);
     }
 
+    /// <summary>
+    ///     Sort the elements of a sequence in ascending order according to a key
+    /// </summary>
+    /// <param name="source">The source sequence</param>
+    /// <param name="keySelector">A function that extracts a key from each element</param>
+    /// <typeparam name="TSource">The type of the source sequence</typeparam>
+    /// <typeparam name="TKey">The type of the key</typeparam>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> OrderBy<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
         Func<TSource, TKey> keySelector) {
@@ -44,6 +61,15 @@ public static partial class AsyncEnumerable {
         return source.Order(totalComparer);
     }
 
+    /// <summary>
+    ///     Sort the elements of a sequence in descending order according to a key and using the provided comparer
+    /// </summary>
+    /// <param name="source">The source sequence</param>
+    /// <param name="keySelector">A function that extracts a key from each element</param>
+    /// <param name="comparer">A comparer that defines the sort order</param>
+    /// <typeparam name="TSource">The type of the source sequence</typeparam>
+    /// <typeparam name="TKey">The type of the key</typeparam>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> OrderByDescending<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
         Func<TSource, TKey> keySelector,
@@ -66,6 +92,14 @@ public static partial class AsyncEnumerable {
         return source.Order(totalComparer);
     }
 
+    /// <summary>
+    ///     Sort the elements of a sequence in descending order according to a key
+    /// </summary>
+    /// <param name="source">The source sequence</param>
+    /// <param name="keySelector">A function that extracts a key from each element</param>
+    /// <typeparam name="TSource">The type of the source sequence</typeparam>
+    /// <typeparam name="TKey">The type of the key</typeparam>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> OrderByDescending<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
         Func<TSource, TKey> keySelector) {

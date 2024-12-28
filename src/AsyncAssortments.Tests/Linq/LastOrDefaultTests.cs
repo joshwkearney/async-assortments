@@ -1,29 +1,25 @@
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class LastOrDefaultTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
         var seq = new TestEnumerable<int>([1, 2, 3]);
 
-        Assert.Throws<ArgumentNullException>(() => nullSeq.LastOrDefaultAsync());
-        Assert.Throws<ArgumentNullException>(() => nullSeq.LastOrDefaultAsync(x => x > 5));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().LastOrDefaultAsync());
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().LastOrDefaultAsync(x => x > 5));
 
-        Assert.Throws<ArgumentNullException>(() => seq.LastOrDefaultAsync(null));
+        Assert.Throws<ArgumentNullException>(() => seq.LastOrDefaultAsync(GetNullSelector()));
+
+        static Func<int, bool> GetNullSelector() => null!;
     }
 
     [Fact]
     public async Task TestExceptions() {        
-        await Assert.ThrowsAsync<TestException>(async () => await GetBad().LastOrDefaultAsync());
-        await Assert.ThrowsAsync<TestException>(async () => await GetBad().LastOrDefaultAsync(x => x > 5));
-        await Assert.ThrowsAsync<TestException>(async () => await GetBad().LastOrDefaultAsync(x => x > 78, 99));
-
-        async IAsyncEnumerable<int> GetBad() {
-            throw new TestException();
-            yield return 10;
-        }
+        await Assert.ThrowsAsync<TestException>(async () => await TestHelper.GetFailingAsyncEnumerable().LastOrDefaultAsync());
+        await Assert.ThrowsAsync<TestException>(async () => await TestHelper.GetFailingAsyncEnumerable().LastOrDefaultAsync(x => x > 5));
+        await Assert.ThrowsAsync<TestException>(async () => await TestHelper.GetFailingAsyncEnumerable().LastOrDefaultAsync(x => x > 78, 99));
     }
 
     [Fact]

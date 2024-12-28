@@ -4,6 +4,7 @@ namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Appends a value produced by an async function to the end of the sequence.</summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="elementProducer">An async function that returns the element to append.</param>
     /// <returns>A new sequence that ends with the new element.</returns>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>

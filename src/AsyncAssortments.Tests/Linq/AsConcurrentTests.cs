@@ -1,13 +1,11 @@
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class AsConcurrentTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
-
-        Assert.Throws<ArgumentNullException>(() => nullSeq.AsConcurrent(true));
-        Assert.Throws<ArgumentNullException>(() => nullSeq.AsConcurrent(false));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().AsConcurrent(true));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().AsConcurrent(false));
     }      
 }

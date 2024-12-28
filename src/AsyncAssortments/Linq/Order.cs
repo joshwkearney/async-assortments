@@ -3,7 +3,13 @@ using System.Collections;
 
 namespace AsyncAssortments.Linq;
 
-public static partial class AsyncEnumerable {    
+public static partial class AsyncEnumerable {  
+    /// <summary>
+    ///     Sort the elements of a sequence in ascending order using a provided comparer
+    /// </summary>
+    /// <param name="source">The source sequence</param>
+    /// <param name="comparer">A comparer that defines the sort order</param>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> Order<TSource>(
         this IAsyncEnumerable<TSource> source,
         IComparer<TSource> comparer) {
@@ -26,12 +32,23 @@ public static partial class AsyncEnumerable {
             comparer);
     }
 
+    /// <summary>
+    ///     Sort the elements of a sequence in ascending order
+    /// </summary>
+    /// <param name="source">The source sequence</param>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> Order<TSource>(
         this IAsyncEnumerable<TSource> source) {
 
         return source.Order(Comparer<TSource>.Default);
     }
 
+    /// <summary>
+    ///     Sort the elements of a sequence in descending order using a provided comparer
+    /// </summary>
+    /// <param name="source">The source sequence</param>
+    /// <param name="comparer">A comparer that defines the sort order</param>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> OrderDescending<TSource>(
         this IAsyncEnumerable<TSource> source,
         IComparer<TSource> comparer) {
@@ -49,6 +66,11 @@ public static partial class AsyncEnumerable {
         return source.Order(totalComparer);
     }
 
+    /// <summary>
+    ///     Sort the elements of a sequence in descending order
+    /// </summary>
+    /// <param name="source">The source sequence</param>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> OrderDescending<TSource>(
         this IAsyncEnumerable<TSource> source) {
 

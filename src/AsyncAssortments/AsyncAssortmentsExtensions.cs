@@ -5,6 +5,9 @@ using AsyncAssortments.Operators;
 
 namespace AsyncAssortments;
 
+/// <summary>
+///     Defines extensions methods that are used to interact with <see cref="IAsyncEnumerable{T}" />
+/// </summary>
 public static class AsyncAssortmentsExtensions {
     /// <summary>
     ///     Exposes an <see cref="IEnumerable" /> as an <see cref="IAsyncEnumerable{T}" />.
@@ -34,6 +37,7 @@ public static class AsyncAssortmentsExtensions {
     ///     (like <c>.AsConcurrent(preserveOrder: false)</c> would return) in order to match 
     ///     the behavior of observables.
     /// </summary>
+    /// <param name="source">The source sequence.</param>
     /// <param name="maxBuffer">
     ///     The maximum number of items to buffer before new items are dropped.
     /// </param>
@@ -92,11 +96,18 @@ public static class AsyncAssortmentsExtensions {
         return source.AsTask().ToAsyncEnumerable();
     }
     
+    /// <summary>
+    ///     Gets an awaiter used to await this <see cref="IAsyncEnumerable{T}" />
+    /// </summary>
+    /// <param name="source">The source sequence.</param>
+    /// <typeparam name="T">The type of the source sequence.</typeparam>
+    /// <returns>An awaiter used to await the results of this sequence.</returns>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static ValueTaskAwaiter<IEnumerable<T>> GetAwaiter<T>(this IAsyncEnumerable<T> source) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }
-
+        
         return source
             .ToListAsync()
             .Select(x => (IEnumerable<T>)x)

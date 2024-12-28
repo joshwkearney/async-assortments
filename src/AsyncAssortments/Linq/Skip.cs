@@ -7,6 +7,7 @@ public static partial class AsyncEnumerable {
     ///     Bypasses a certain number of elements in the sequence and
     ///     returns the remaining elements.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="numToSkip">The number of elements to skip.</param>
     /// <returns>
     ///     An <see cref="IAsyncEnumerable{T}" /> containing the elements

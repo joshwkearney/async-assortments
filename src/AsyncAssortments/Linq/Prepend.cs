@@ -4,6 +4,7 @@ namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>Prepends a value to the end of the sequence.</summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="element">The value to append to the source sequence.</param>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> Prepend<TSource>(
@@ -20,6 +21,6 @@ public static partial class AsyncEnumerable {
 
         var pars = source.GetScheduleMode();
 
-        return new Operators.ConcatEnumerablesOperator<TSource>(pars, source, [element], []);
+        return new ConcatEnumerablesOperator<TSource>(pars, source, [element], []);
     }
 }

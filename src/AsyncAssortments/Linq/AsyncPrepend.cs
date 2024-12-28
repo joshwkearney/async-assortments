@@ -6,6 +6,7 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Prepends a value produced by an async function to the end of the sequence.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="elementProducer">An async function that returns the element to prepend.</param>
     /// <returns>A new sequence that starts with the new element.</returns>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>

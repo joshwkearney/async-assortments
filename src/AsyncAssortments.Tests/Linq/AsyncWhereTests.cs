@@ -1,19 +1,23 @@
 
+using AsyncAssortments;
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class AsyncWhereTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
         var seq = new TestEnumerable<int>([1, 2, 3]);
 
-        Assert.Throws<ArgumentNullException>(() => nullSeq.AsyncWhere(async x => true));
-        Assert.Throws<ArgumentNullException>(() => nullSeq.AsyncWhere(async (c, x) => true));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().AsyncWhere(x => ValueTask.FromResult(true)));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().AsyncWhere((x, c) => ValueTask.FromResult(true)));
 
-        Assert.Throws<ArgumentNullException>(() => seq.AsyncWhere(null as Func<int, CancellationToken, ValueTask<bool>>));
-        Assert.Throws<ArgumentNullException>(() => seq.AsyncWhere(null as Func<int, ValueTask<bool>>));
+        Assert.Throws<ArgumentNullException>(() => seq.AsyncWhere(GetAsyncPredicate1()));
+        Assert.Throws<ArgumentNullException>(() => seq.AsyncWhere(GetAsyncPredicate2()));
+
+        static Func<int, ValueTask<bool>> GetAsyncPredicate1() => null!;
+        
+        static Func<int, CancellationToken, ValueTask<bool>> GetAsyncPredicate2() => null!;
     }
 
     [Fact]
@@ -194,6 +198,7 @@ public class AsyncWhereTests {
                 .ToAsyncEnumerable()
                 .AsConcurrent(true)
                 .AsyncWhere(async x => {
+                    await Task.CompletedTask;
                     Thread.Sleep(x);
                     return x > 50;
                 })
@@ -228,6 +233,7 @@ public class AsyncWhereTests {
                 .ToAsyncEnumerable()
                 .AsParallel(true)
                 .AsyncWhere(async x => {
+                    await Task.CompletedTask;
                     Thread.Sleep(x);
                     return x > 50;
                 })
@@ -262,6 +268,7 @@ public class AsyncWhereTests {
                 .ToAsyncEnumerable()
                 .AsConcurrent(false)
                 .AsyncWhere(async x => {
+                    await Task.CompletedTask;
                     Thread.Sleep(x);
                     return x > 50;
                 })
@@ -296,6 +303,7 @@ public class AsyncWhereTests {
                 .ToAsyncEnumerable()
                 .AsParallel(false)
                 .AsyncWhere(async x => {
+                    await Task.CompletedTask;
                     Thread.Sleep(x);
                     return x > 50;
                 })

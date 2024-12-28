@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests;
 
 public static class TestHelper {
     public static List<int> CreateRandomList(int size, int seed = 1234) {
@@ -24,6 +24,21 @@ public static class TestHelper {
 
         return new TimeResult<T>(watch.ElapsedMilliseconds, result);
     }
+    
+    public static async IAsyncEnumerable<int> GetFailingAsyncEnumerable() {
+        yield return 0;
+        await Task.Delay(10);
+        yield return 1;
+        throw new TestException();
+    }
+
+    public static IAsyncEnumerable<int> GetNullAsyncEnumerable() => null!;
+
+    public static IEnumerable<int> GetNullEnumerable() => null!;
+
+    public static Func<T, bool> GetNullPredicate<T>() => null!;
+
+    public static Func<T, T, T> GetNullAggregator<T>() => null!;
 }
 
 public readonly record struct TimeResult<T>(long ElapsedMilliseconds, T Value) {

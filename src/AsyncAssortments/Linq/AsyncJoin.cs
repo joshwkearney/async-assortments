@@ -4,6 +4,17 @@ using AsyncAssortments.Operators;
 namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
+    /// <summary>
+    ///     Correlates and asynchronously combines the elements in two sequences using matching keys. This is the equivalent of an inner join in SQL.
+    /// </summary>
+    /// <remarks>The provided equality comparer is used to compare keys.</remarks>
+    /// <param name="outer">The first sequence to join</param>
+    /// <param name="inner">The second sequence to join</param>
+    /// <param name="outerKeySelector">The key selector for the first sequence</param>
+    /// <param name="innerKeySelector">The key selector for the second sequence</param>
+    /// <param name="resultSelector">The selector used to combine elements from the two sequences</param>
+    /// <param name="comparer">The comparer used to compare keys</param>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IAsyncEnumerable<TResult> AsyncJoin<TOuter, TInner, TKey, TResult>(
         this IAsyncEnumerable<TOuter> outer,
         IAsyncEnumerable<TInner> inner,
@@ -12,41 +23,13 @@ public static partial class AsyncEnumerable {
         Func<TOuter, TInner, ValueTask<TResult>> resultSelector,
         IEqualityComparer<TKey> comparer) {
 
-        if (outer == null) {
-            throw new ArgumentNullException(nameof(outer));
-        }
-
-        if (inner == null) {
-            throw new ArgumentNullException(nameof(inner));
-        }
-
-        if (outerKeySelector == null) {
-            throw new ArgumentNullException(nameof(outerKeySelector));
-        }
-
-        if (innerKeySelector == null) {
-            throw new ArgumentNullException(nameof(innerKeySelector));
-        }
-
-        if (resultSelector == null) {
-            throw new ArgumentNullException(nameof(resultSelector));
-        }
-
-        if (outer is IAsyncOperator<TOuter> op) {
-            outer = op.WithScheduleMode(op.ScheduleMode.MakeUnordered());
-        }
-
-        var resultOp = new JoinOperator<TOuter, TInner, TKey>(
-            outer.GetScheduleMode(),
-            outer,
-            inner,
-            outerKeySelector,
-            innerKeySelector,
-            comparer);
-
-        return resultOp.AsyncSelect(pair => resultSelector(pair.first, pair.second));
+        return outer
+            .Join(inner, outerKeySelector, innerKeySelector, (x, y) => (outer: x, inner: y), comparer)
+            .AsyncSelect(pair => resultSelector(pair.outer, pair.inner));
     }
 
+    /// <remarks>The default equality comparer is used to compare keys.</remarks>
+    /// <inheritdoc cref="AsyncJoin{TOuter,TInner,TKey,TResult}(IAsyncEnumerable{TOuter},IAsyncEnumerable{TInner},Func{TOuter,TKey},Func{TInner,TKey},Func{TOuter,TInner,ValueTask{TResult}},IEqualityComparer{TKey})"/>
     public static IAsyncEnumerable<TResult> AsyncJoin<TOuter, TInner, TKey, TResult>(
         this IAsyncEnumerable<TOuter> outer,
         IAsyncEnumerable<TInner> inner,
@@ -54,11 +37,8 @@ public static partial class AsyncEnumerable {
         Func<TInner, TKey> innerKeySelector,
         Func<TOuter, TInner, ValueTask<TResult>> resultSelector) {
 
-        return outer.AsyncJoin(
-            inner,
-            outerKeySelector,
-            innerKeySelector,
-            resultSelector,
-            EqualityComparer<TKey>.Default);
+        return outer
+            .Join(inner, outerKeySelector, innerKeySelector, (x, y) => (outer: x, inner: y))
+            .AsyncSelect(pair => resultSelector(pair.outer, pair.inner));
     }
 }

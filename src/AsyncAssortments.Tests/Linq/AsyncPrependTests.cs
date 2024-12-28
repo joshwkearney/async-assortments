@@ -1,15 +1,13 @@
 
+using AsyncAssortments;
 using AsyncAssortments.Linq;
-
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class AsyncPrependTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
-
-        Assert.Throws<ArgumentNullException>(() => nullSeq.AsyncPrepend(async () => 45));
-        Assert.Throws<ArgumentNullException>(() => nullSeq.AsyncPrepend(async c => 45));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().AsyncPrepend(() => ValueTask.FromResult(45)));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().AsyncPrepend(c => ValueTask.FromResult(45)));
     }
     
     [Fact]
@@ -89,14 +87,10 @@ public class AsyncPrependTests {
         Assert.Equal(expected, elements2);
         Assert.Equal(expected, elements3);
         Assert.Equal(expected, elements4);
-        
-        async ValueTask<int> CreateItemFast1() {
-            return -99;
-        }
-        
-        async ValueTask<int> CreateItemFast2(CancellationToken token) {
-            return -99;
-        }
+
+        ValueTask<int> CreateItemFast1() => ValueTask.FromResult(-99);
+
+        ValueTask<int> CreateItemFast2(CancellationToken token) => ValueTask.FromResult(-99);
         
         async ValueTask<int> CreateItemSlow1() {
             await Task.Delay(100);
@@ -253,9 +247,9 @@ public class AsyncPrependTests {
         var (time, items) = await TestHelper.TimeAsync(async () => { 
             return await AsyncEnumerable.Empty<int>()
                 .AsConcurrent(true)
-                .AsyncPrepend(async () => { Thread.Sleep(100); return 100; })
-                .AsyncPrepend(async () => { Thread.Sleep(200); return 200; })
-                .AsyncPrepend(async () => { Thread.Sleep(300); return 300; })
+                .AsyncPrepend(() => { Thread.Sleep(100); return ValueTask.FromResult(100); })
+                .AsyncPrepend(() => { Thread.Sleep(200); return ValueTask.FromResult(200); })
+                .AsyncPrepend(() => { Thread.Sleep(300); return ValueTask.FromResult(300); })
                 .ToListAsync();
         });
 
@@ -268,9 +262,9 @@ public class AsyncPrependTests {
         var (time, items) = await TestHelper.TimeAsync(async () => { 
             return await AsyncEnumerable.Empty<int>()
                 .AsConcurrent(false)
-                .AsyncPrepend(async () => { Thread.Sleep(100); return 100; })
-                .AsyncPrepend(async () => { Thread.Sleep(200); return 200; })
-                .AsyncPrepend(async () => { Thread.Sleep(300); return 300; })
+                .AsyncPrepend(() => { Thread.Sleep(100); return ValueTask.FromResult(100); })
+                .AsyncPrepend(() => { Thread.Sleep(200); return ValueTask.FromResult(200); })
+                .AsyncPrepend(() => { Thread.Sleep(300); return ValueTask.FromResult(300); })
                 .ToListAsync();
         });
 
@@ -313,9 +307,9 @@ public class AsyncPrependTests {
         var (time, items) = await TestHelper.TimeAsync(async () => { 
             return await AsyncEnumerable.Empty<int>()
                 .AsParallel(true)
-                .AsyncPrepend(async () => { Thread.Sleep(100); return 100; })
-                .AsyncPrepend(async () => { Thread.Sleep(200); return 200; })
-                .AsyncPrepend(async () => { Thread.Sleep(300); return 300; })
+                .AsyncPrepend(() => { Thread.Sleep(100); return ValueTask.FromResult(100); })
+                .AsyncPrepend(() => { Thread.Sleep(200); return ValueTask.FromResult(200); })
+                .AsyncPrepend(() => { Thread.Sleep(300); return ValueTask.FromResult(300); })
                 .ToListAsync();
         });
 
@@ -328,9 +322,9 @@ public class AsyncPrependTests {
         var (time, items) = await TestHelper.TimeAsync(async () => { 
             return await AsyncEnumerable.Empty<int>()
                 .AsParallel(false)
-                .AsyncPrepend(async () => { Thread.Sleep(100); return 100; })
-                .AsyncPrepend(async () => { Thread.Sleep(200); return 200; })
-                .AsyncPrepend(async () => { Thread.Sleep(300); return 300; })
+                .AsyncPrepend(() => { Thread.Sleep(100); return ValueTask.FromResult(100); })
+                .AsyncPrepend(() => { Thread.Sleep(200); return ValueTask.FromResult(200); })
+                .AsyncPrepend(() => { Thread.Sleep(300); return ValueTask.FromResult(300); })
                 .ToListAsync();
         });
 

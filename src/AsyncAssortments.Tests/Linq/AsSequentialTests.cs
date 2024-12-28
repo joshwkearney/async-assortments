@@ -1,12 +1,10 @@
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class AsSequentialTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
-
-        Assert.Throws<ArgumentNullException>(() => nullSeq.AsSequential());
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().AsSequential());
     }
 }

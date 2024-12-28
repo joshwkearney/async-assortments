@@ -1,15 +1,14 @@
 using AsyncAssortments.Linq;
 
-namespace AsyncAssortments.Linq.Tests;
+namespace AsyncLinq.Tests.Linq;
 
 public class AllTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
         var seq = new TestEnumerable<int>([1, 2, 3]);
 
-        Assert.Throws<ArgumentNullException>(() => nullSeq.AllAsync(x => x > 2));
-        Assert.Throws<ArgumentNullException>(() => seq.AnyAsync(null));
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().AllAsync(x => x > 2));
+        Assert.Throws<ArgumentNullException>(() => seq.AnyAsync(TestHelper.GetNullPredicate<int>()));
     }
 
     [Fact]

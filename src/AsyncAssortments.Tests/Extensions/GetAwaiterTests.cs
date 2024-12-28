@@ -1,6 +1,5 @@
 using AsyncAssortments;
 using AsyncAssortments.Linq;
-using AsyncAssortments.Linq.Tests;
 using Microsoft.Win32.SafeHandles;
 
 namespace AsyncLinq.Tests.Extensions;
@@ -8,9 +7,7 @@ namespace AsyncLinq.Tests.Extensions;
 public class GetAwaiterTests {
     [Fact]
     public void TestNullInputs() {
-        var nullSeq = null as IAsyncEnumerable<int>;
-
-        Assert.Throws<ArgumentNullException>(() => nullSeq.GetAwaiter());
+        Assert.Throws<ArgumentNullException>(() => TestHelper.GetNullAsyncEnumerable().GetAwaiter());
     }
 
     [Fact]

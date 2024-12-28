@@ -7,6 +7,8 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IA
 
     public static IAsyncOperator<T> Instance { get; } = new EmptyOperator<T>();
     
+    private static IAsyncEnumerator<T> EnumeratorInstance { get; } = new EmptyEnumerator();
+    
     public AsyncEnumerableScheduleMode ScheduleMode => default;
 
     public IAsyncEnumerable<T> Source => this;
@@ -19,8 +21,8 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IA
         return new WrapAsyncEnumerableOperator<T>(pars, this);
     }
 
-    public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-        yield break;
+    public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+        return EnumeratorInstance;
     }
 
     public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
@@ -55,5 +57,13 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IA
 
     public IOrderedAsyncEnumerable<T> Order(IComparer<T> comparer) {
         return this;
+    }
+
+    private class EmptyEnumerator : IAsyncEnumerator<T> {
+        public ValueTask DisposeAsync() => new ValueTask();
+
+        public ValueTask<bool> MoveNextAsync() => new ValueTask<bool>(false);
+
+        public T Current => default!;
     }
 }

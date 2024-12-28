@@ -5,6 +5,7 @@ namespace AsyncAssortments.Linq;
 public static partial class AsyncEnumerable {
     /// <summary>Instructs asynchronous operators to run in parallel on the thread pool.</summary>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
+    /// <param name="source">The original sequence.</param>
     /// <param name="preserveOrder">
     ///     Determines if asynchronous operations should be returned in the order of the original
     ///     sequence (<c>true</c>), or the order in which they finish (<c>false</c>)

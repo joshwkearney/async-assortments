@@ -7,6 +7,7 @@ public static partial class AsyncEnumerable {
     ///     Returns a specified number of contiguous elements from the 
     ///     start of a sequence.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="numToTake">The number of elements to take.</param>
     /// <returns>
     ///     An <see cref="IAsyncEnumerable{T}" /> containing the specified

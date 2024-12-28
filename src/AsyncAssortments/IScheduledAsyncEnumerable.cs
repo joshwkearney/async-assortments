@@ -1,13 +1,47 @@
 ﻿namespace AsyncAssortments {
+    /// <summary>
+    ///     Represents an <see cref="IAsyncEnumerable{T}" /> that will schedule async operators in a particular way.
+    ///     See <see cref="AsyncEnumerableScheduleMode" /> for available schedule modes.
+    /// </summary>
+    /// <inheritdoc cref="IAsyncEnumerable{T}" />
     public interface IScheduledAsyncEnumerable<out T> : IAsyncEnumerable<T> {
+        /// <summary>
+        ///     The scheduling used to run operators on this <see cref="IAsyncEnumerable{T}" />
+        /// </summary>
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
     }
 
+    /// <summary>
+    ///     Represents different ways of running async operators that are applied to an
+    ///     <see cref="IScheduledAsyncEnumerable{T}" />.
+    /// </summary>
     public enum AsyncEnumerableScheduleMode {
+        /// <summary>Async operators will run sequentially as needed.</summary>
         Sequential,
+        
+        /// <summary>
+        ///     Async operators will run concurrently, but the results will maintain the order of the original
+        ///     sequence. All operations run on only one thread.
+        /// </summary>
         ConcurrentOrdered,
+        
+        /// <summary>
+        ///     Async operators will run concurrently, and the results will be yielded in the order in which they
+        ///     finish; the ordering of the original sequence is not maintained. All operations run on only one thread.
+        /// </summary>
         ConcurrentUnordered,
+        
+        /// <summary>
+        ///     Async operators will run concurrently, but the results will maintain the order of the original
+        ///     sequence. Operations will be run on the thread pool.
+        /// </summary>
         ParallelOrdered,
+        
+        /// <summary>
+        ///     Async operators will run concurrently, and the results will be yielded in the order in which they
+        ///     finish; the ordering of the original sequence is not maintained. Operations will be run on the thread
+        ///     pool.
+        /// </summary>
         ParallelUnordered
     }
 

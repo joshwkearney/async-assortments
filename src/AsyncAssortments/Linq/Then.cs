@@ -3,6 +3,13 @@
 namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
+    /// <summary>
+    ///     Performs a subsequent ordering of the elements of a sequence in ascending order using the provided comparer
+    /// </summary>
+    /// <param name="source">The source sequence</param>
+    /// <param name="comparer">The comparer that defines the ordering</param>
+    /// <typeparam name="TSource">The type of the source sequence</typeparam>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> Then<TSource>(
         this IOrderedAsyncEnumerable<TSource> source,
         IComparer<TSource> comparer) {
@@ -26,6 +33,13 @@ public static partial class AsyncEnumerable {
         return source.Source.Order(totalComparer);
     }
 
+    /// <summary>
+    ///     Performs a subsequent ordering of the elements of a sequence in descending order using the provided comparer
+    /// </summary>
+    /// <param name="source">The source sequence</param>
+    /// <param name="comparer">The comparer that defines the ordering</param>
+    /// <typeparam name="TSource">The type of the source sequence</typeparam>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> ThenDescending<TSource>(
         this IOrderedAsyncEnumerable<TSource> source,
         IComparer<TSource> comparer) {
@@ -41,67 +55,5 @@ public static partial class AsyncEnumerable {
         var thenComparer = Comparer<TSource>.Create((x, y) => comparer.Compare(y, x));
 
         return source.Then(thenComparer);
-    }
-
-    public static IOrderedAsyncEnumerable<TSource> ThenBy<TSource, TKey>(
-        this IOrderedAsyncEnumerable<TSource> source,
-        Func<TSource, TKey> keySelector,
-        IComparer<TKey> comparer) {
-
-        if (source == null) {
-            throw new ArgumentNullException(nameof(source));
-        }
-
-        if (keySelector == null) {
-            throw new ArgumentNullException(nameof(keySelector));
-        }
-
-        if (comparer == null) {
-            throw new ArgumentNullException(nameof(comparer));
-        }
-
-        var thenComparer = Comparer<TSource>.Create((x, y) => {
-            return comparer.Compare(keySelector(x), keySelector(y));
-        });
-
-        return source.Then(thenComparer);
-    }
-
-    public static IOrderedAsyncEnumerable<TSource> ThenBy<TSource, TKey>(
-        this IOrderedAsyncEnumerable<TSource> source,
-        Func<TSource, TKey> keySelector) {
-
-        return source.ThenBy(keySelector, Comparer<TKey>.Default);
-    }
-
-    public static IOrderedAsyncEnumerable<TSource> ThenByDescending<TSource, TKey>(
-        this IOrderedAsyncEnumerable<TSource> source,
-        Func<TSource, TKey> keySelector,
-        IComparer<TKey> comparer) {
-
-        if (source == null) {
-            throw new ArgumentNullException(nameof(source));
-        }
-
-        if (keySelector == null) {
-            throw new ArgumentNullException(nameof(keySelector));
-        }
-
-        if (comparer == null) {
-            throw new ArgumentNullException(nameof(comparer));
-        }
-
-        var thenComparer = Comparer<TSource>.Create((x, y) => {
-            return comparer.Compare(keySelector(y), keySelector(x));
-        });
-
-        return source.Then(thenComparer);
-    }
-
-    public static IOrderedAsyncEnumerable<TSource> ThenByDescending<TSource, TKey>(
-        this IOrderedAsyncEnumerable<TSource> source,
-        Func<TSource, TKey> keySelector) {
-
-        return source.ThenByDescending(keySelector, Comparer<TKey>.Default);
     }
 }

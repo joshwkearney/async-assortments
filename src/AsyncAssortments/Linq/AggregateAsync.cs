@@ -5,6 +5,7 @@ public static partial class AsyncEnumerable {
     ///     Asynchronously applies an accumulator function over a sequence. The specified 
     ///     seed value is used as the initial accumulator value.
     /// </summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="seed">The initial accumulator value.</param>
     /// <param name="accumulator">An accumulator function to be invoked on each element.</param>
     /// <param name="cancellationToken">
@@ -41,6 +42,7 @@ public static partial class AsyncEnumerable {
     }
 
     /// <summary>Asynchronously applies an accumulator function over a sequence.</summary>
+    /// <param name="source">The original sequence.</param>
     /// <param name="reducer">An accumulator function to be invoked on each element.</param>
     /// <param name="cancellationToken">
     ///     A cancellation token that can be used to cancel the enumeration before it finishes.
