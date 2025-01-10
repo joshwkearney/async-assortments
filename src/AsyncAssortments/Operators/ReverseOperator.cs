@@ -44,9 +44,7 @@ namespace AsyncAssortments.Operators {
             return this.source.ToHashSetAsync(comparer, cancellationToken);
         }
 
-        public IAsyncEnumerable<T> Reverse() {
-            return this.source;
-        }
+        public IAsyncEnumerable<T> Reverse() => this.source;
     }
 }
 

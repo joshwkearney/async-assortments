@@ -29,12 +29,8 @@ public static partial class AsyncEnumerable {
         this IAsyncEnumerable<TSource> source,
         CancellationToken cancellationToken) {
 
-        using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         await using var enumerator = source.GetAsyncEnumerator(cancellationToken);
         var worked = await enumerator.MoveNextAsync();
-
-        // We got the first element (or not), so cancel the rest of it
-        tokenSource.Cancel();
 
         if (!worked) {
             throw new InvalidOperationException("Sequence contains no elements");

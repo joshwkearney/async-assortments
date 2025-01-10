@@ -93,11 +93,14 @@ namespace AsyncAssortments.Operators {
             if (this.ScheduleMode == AsyncEnumerableScheduleMode.Sequential) {
                 return this.SequentialHelper(cancellationToken);
             }
-            else if (this.ScheduleMode.IsUnordered()) {
-                return this.UnorderedHelper(cancellationToken);
+            
+            var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            
+            if (this.ScheduleMode.IsUnordered()) {
+                return new CancellableAsyncEnumerator<E>(cancelSource, this.UnorderedHelper(cancelSource));
             }
             else {
-                return this.OrderedHelper(cancellationToken);
+                return new CancellableAsyncEnumerator<E>(cancelSource, this.OrderedHelper(cancelSource));
             }
         }
 
@@ -111,8 +114,7 @@ namespace AsyncAssortments.Operators {
             }
         }
 
-        private async IAsyncEnumerator<E> UnorderedHelper(CancellationToken parentToken) {
-            using var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(parentToken);
+        private async IAsyncEnumerator<E> UnorderedHelper(CancellationTokenSource cancelSource) {
             var selector = this.selector;
 
             // Run the tasks on the thread pool if we're supposed to be doing this in parallel
@@ -201,8 +203,7 @@ namespace AsyncAssortments.Operators {
             }
         }        
 
-        private async IAsyncEnumerator<E> OrderedHelper(CancellationToken parentToken) {
-            using var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(parentToken);
+        private async IAsyncEnumerator<E> OrderedHelper(CancellationTokenSource cancelSource) {
             var selector = this.selector;
 
             // Run the tasks on the thread pool if we're supposed to be doing this in parallel

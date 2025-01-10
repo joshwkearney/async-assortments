@@ -31,12 +31,13 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
         if (this.ScheduleMode == AsyncEnumerableScheduleMode.Sequential) {
             return this.SequentialIterator(cancellationToken);
         }
-        else {
-            return this.ConcurrentIterator(cancellationToken);
-        }
+            
+        var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        
+        return new CancellableAsyncEnumerator<(T first, E second)>(cancelSource, this.ConcurrentIterator(cancelSource));
     }
 
-    public async IAsyncEnumerator<(T first, E second)> SequentialIterator(CancellationToken cancellationToken) {
+    private async IAsyncEnumerator<(T first, E second)> SequentialIterator(CancellationToken cancellationToken) {
         // We're going to make sure no nulls are put in this dictionary, so the warning can be disabled
 #pragma warning disable CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
         var dict = new Dictionary<NullableKeyWrapper<TKey>, List<T>>(new NullableKeyWrapperComparer<TKey>(this.comparer));
@@ -65,8 +66,7 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
         }
     }
 
-    public async IAsyncEnumerator<(T first, E second)> ConcurrentIterator(CancellationToken cancellationToken) {
-        var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+    private async IAsyncEnumerator<(T first, E second)> ConcurrentIterator(CancellationTokenSource cancelSource) {
         var channel = Channel.CreateUnbounded<ConcurrentJoinRecord>();
         var errors = new ErrorCollection();
         var finishedTasks = 0;
@@ -143,7 +143,7 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
 
         async ValueTask IterateFirst() {
             try {
-                await foreach (var first in this.source.WithCancellation(tokenSource.Token)) {
+                await foreach (var first in this.source.WithCancellation(cancelSource.Token)) {
                     var key = this.keySelector1(first);
                     var record = new ConcurrentJoinRecord(key, first, default!, true);
 
@@ -151,7 +151,7 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
                 }
             }
             catch {
-                tokenSource.Cancel();
+                cancelSource.Cancel();
                 throw;
             }
             finally {
@@ -163,7 +163,7 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
 
         async ValueTask IterateSecond() {
             try {
-                await foreach (var second in this.other.WithCancellation(tokenSource.Token)) {
+                await foreach (var second in this.other.WithCancellation(cancelSource.Token)) {
                     var key = this.keySelector2(second);
                     var record = new ConcurrentJoinRecord(key, default!, second, false);
                     
@@ -171,7 +171,7 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
                 }
             }
             catch {
-                tokenSource.Cancel();
+                cancelSource.Cancel();
                 throw;
             }
             finally {

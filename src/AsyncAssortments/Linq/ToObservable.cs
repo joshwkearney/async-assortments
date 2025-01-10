@@ -43,6 +43,7 @@ public static partial class AsyncEnumerable {
 
             try {
                 this.cancellation.Cancel();
+                this.cancellation.Dispose();
             }
             finally {
                 this.isDisposed = true;

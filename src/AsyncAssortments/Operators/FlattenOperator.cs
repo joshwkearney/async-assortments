@@ -48,11 +48,14 @@ namespace AsyncAssortments.Operators {
             if (this.ScheduleMode == AsyncEnumerableScheduleMode.Sequential) {
                 return this.SequentialHelper(cancellationToken);
             }
-            else if (this.ScheduleMode.IsUnordered()) {
-                return this.UnorderedHelper(cancellationToken);
+            
+            var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            
+            if (this.ScheduleMode.IsUnordered()) {
+                return new CancellableAsyncEnumerator<T>(cancelSource, this.UnorderedHelper(cancelSource));
             }
             else {
-                return this.OrderedHelper(cancellationToken);
+                return new CancellableAsyncEnumerator<T>(cancelSource, this.OrderedHelper(cancelSource));
             }
         }        
 
@@ -64,8 +67,7 @@ namespace AsyncAssortments.Operators {
             }
         }
 
-        private async IAsyncEnumerator<T> OrderedHelper(CancellationToken parentToken) {
-            using var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(parentToken);
+        private async IAsyncEnumerator<T> OrderedHelper(CancellationTokenSource cancelSource) {
             var channel = Channel.CreateUnbounded<Channel<T>>(channelOptions);
             var errors = new ErrorCollection();
             
@@ -158,8 +160,7 @@ namespace AsyncAssortments.Operators {
             }
         }
 
-        private async IAsyncEnumerator<T> UnorderedHelper(CancellationToken parentToken) {
-            using var cancelSource = CancellationTokenSource.CreateLinkedTokenSource(parentToken);
+        private async IAsyncEnumerator<T> UnorderedHelper(CancellationTokenSource cancelSource) {
             var channel = Channel.CreateUnbounded<T>(channelOptions);
             
             // This is async void because exceptions will be handled through the channel
