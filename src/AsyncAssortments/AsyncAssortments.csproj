@@ -15,14 +15,13 @@
 	<!-- Nuget information -->
 	<PropertyGroup>
 		<PackageId>AsyncAssortments</PackageId>
-		<Version>0.5.0-alpha</Version>
+		<Version>0.6.0-alpha</Version>
 		<Authors>Joshua Kearney</Authors>
 		<RepositoryUrl>https://github.com/joshwkearney/async-assortments</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>LINQ, Extensions, Async, IAsyncEnumerable, Reactive</PackageTags>
 		<Description>
-			Adds infrastructure to support IAsyncEnumerable, including LINQ,
-			async LINQ, awaitability, concurrency, and more.
+			Adds infrastructure to support IAsyncEnumerable, including LINQ, async LINQ, awaitability, concurrency, and more.
 		</Description>
 	</PropertyGroup>
 
