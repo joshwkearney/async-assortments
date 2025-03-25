@@ -1,5 +1,5 @@
 namespace AsyncAssortments {
-    internal struct CancellableAsyncEnumerator<T> : IAsyncEnumerator<T> {
+    internal class CancellableAsyncEnumerator<T> : IAsyncEnumerator<T> {
         private readonly IAsyncEnumerator<T> enumerator;
         private readonly CancellationTokenSource cancellationSource;
         private bool isDisposed = false;
@@ -18,6 +18,7 @@ namespace AsyncAssortments {
 
             this.cancellationSource.Cancel();
             this.cancellationSource.Dispose();
+            this.isDisposed = true;
 
             return new ValueTask();
         }
