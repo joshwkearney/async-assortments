@@ -55,7 +55,7 @@
             var nextTask = iterator.MoveNextAsync();
 
             // Yield as many from the parent synchronously as we can
-            while (nextTask.IsCompletedSuccessfully) {
+            while (nextTask.IsCompletedSuccessfully && nextTask.Result) {
                 yield return iterator.Current;
                 nextTask = iterator.MoveNextAsync();
             }
@@ -77,7 +77,7 @@
                 yield return item;
             }
 
-            await foreach (var item in this.parent) {
+            await foreach (var item in this.parent.WithCancellation(cancellationToken)) {
                 yield return item;
             }
 

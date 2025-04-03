@@ -40,12 +40,7 @@ namespace AsyncAssortments {
                 return null;
             }
 
-            if (this.errors.Count == 1) {
-                return this.errors[0];
-            }
-            else {
-                return new AggregateException(this.errors);
-            }
+            return new AggregateException(this.errors);
         }
 
         public IEnumerator<Exception> GetEnumerator() { 
