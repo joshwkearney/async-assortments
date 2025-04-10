@@ -54,50 +54,41 @@ public class AsyncPrependTests {
     
     [Fact]
     public async Task TestUnordered() {
-        // Here we're expecting the appended elements first because they can be yielded immediately, before
-        // we're done waiting on the 1, 2, 3, 4
-        var expected = new[] { -99, 1, 2, 3, 4, 99 };
+        var expected = new[] { 99, 1, 2, 3, 4 };
 
-        var seq1 = new TestEnumerable<int>([1, 2, 3, 4])
-            .AsConcurrent(false)
-            .AsyncPrepend(CreateItemSlow1)
-            .AsyncPrepend(CreateItemFast1);
-        
-        var seq2 = new TestEnumerable<int>([1, 2, 3, 4])
-            .AsConcurrent(false)
-            .AsyncPrepend(CreateItemSlow2)
-            .AsyncPrepend(CreateItemFast2);
-        
-        var seq3 = new TestEnumerable<int>([1, 2, 3, 4])
-            .AsParallel(false)
-            .AsyncAppend(CreateItemSlow1)
-            .AsyncAppend(CreateItemFast1);
-        
-        var seq4 = new TestEnumerable<int>([1, 2, 3, 4])
-            .AsParallel(false)
-            .AsyncAppend(CreateItemSlow2)
-            .AsyncAppend(CreateItemFast2);
+        var seq1 = new[] { 1, 2, 3, 4 }.ToAsyncEnumerable().AsyncPrepend(CreateItem1);
+        var seq2 = new[] { 1, 2, 3, 4 }.ToAsyncEnumerable().AsyncPrepend(CreateItem2);
+        var seq3 = new TestEnumerable<int>([1, 2, 3, 4]).AsyncPrepend(CreateItem1);
+        var seq4 = new TestEnumerable<int>([1, 2, 3, 4]).AsyncPrepend(CreateItem2);
+        var seq5 = new TestEnumerable<int>([1, 2, 3, 4]).AsConcurrent(false).AsyncPrepend(CreateItem1);
+        var seq6 = new TestEnumerable<int>([1, 2, 3, 4]).AsConcurrent(false).AsyncPrepend(CreateItem2);
+        var seq7 = new TestEnumerable<int>([1, 2, 3, 4]).AsParallel(false).AsyncPrepend(CreateItem1);
+        var seq8 = new TestEnumerable<int>([1, 2, 3, 4]).AsParallel(false).AsyncPrepend(CreateItem2);
         
         var elements1 = await seq1.ToListAsync();
         var elements2 = await seq2.ToListAsync();
         var elements3 = await seq3.ToListAsync();
         var elements4 = await seq4.ToListAsync();
+        var elements5 = await seq5.ToListAsync();
+        var elements6 = await seq6.ToListAsync();
+        var elements7 = await seq7.ToListAsync();
+        var elements8 = await seq8.ToListAsync();
 
         Assert.Equal(expected, elements1);
         Assert.Equal(expected, elements2);
         Assert.Equal(expected, elements3);
         Assert.Equal(expected, elements4);
+        Assert.Equal(expected, elements5);
+        Assert.Equal(expected, elements6);
+        Assert.Equal(expected, elements7);
+        Assert.Equal(expected, elements8);
 
-        ValueTask<int> CreateItemFast1() => ValueTask.FromResult(-99);
-
-        ValueTask<int> CreateItemFast2(CancellationToken token) => ValueTask.FromResult(-99);
-        
-        async ValueTask<int> CreateItemSlow1() {
+        async ValueTask<int> CreateItem1() {
             await Task.Delay(100);
             return 99;
         }
         
-        async ValueTask<int> CreateItemSlow2(CancellationToken token) {
+        async ValueTask<int> CreateItem2(CancellationToken token) {
             await Task.Delay(100, token);
             return 99;
         }
@@ -239,7 +230,7 @@ public class AsyncPrependTests {
         });
 
         Assert.InRange(time, 250, 350);
-        Assert.Equal([100, 200, 300], items);
+        Assert.Equal([300, 200, 100], items);
     }
     
     [Fact]
@@ -299,7 +290,7 @@ public class AsyncPrependTests {
         });
 
         Assert.InRange(time, 250, 350);
-        Assert.Equal([100, 200, 300], items);
+        Assert.Equal([300, 200, 100], items);
     }
     
     [Fact]
@@ -329,6 +320,6 @@ public class AsyncPrependTests {
         });
 
         Assert.InRange(time, 250, 350);
-        Assert.Equal([100, 200, 300], items);
+        Assert.Equal([300, 200, 100], items);
     }
 }

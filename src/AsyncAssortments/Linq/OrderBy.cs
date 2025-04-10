@@ -12,6 +12,7 @@ public static partial class AsyncEnumerable {
     /// <param name="comparer">A comparer that defines the sort order</param>
     /// <typeparam name="TSource">The type of the source sequence</typeparam>
     /// <typeparam name="TKey">The type of the key</typeparam>
+    /// <remarks>The resulting sequence will preserve the order of its elements.</remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> OrderBy<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
@@ -42,6 +43,7 @@ public static partial class AsyncEnumerable {
     /// <param name="keySelector">A function that extracts a key from each element</param>
     /// <typeparam name="TSource">The type of the source sequence</typeparam>
     /// <typeparam name="TKey">The type of the key</typeparam>
+    /// <remarks>The resulting sequence will preserve the order of its elements.</remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> OrderBy<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
@@ -69,6 +71,7 @@ public static partial class AsyncEnumerable {
     /// <param name="comparer">A comparer that defines the sort order</param>
     /// <typeparam name="TSource">The type of the source sequence</typeparam>
     /// <typeparam name="TKey">The type of the key</typeparam>
+    /// <remarks>The resulting sequence will preserve the order of its elements.</remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> OrderByDescending<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
@@ -99,6 +102,7 @@ public static partial class AsyncEnumerable {
     /// <param name="keySelector">A function that extracts a key from each element</param>
     /// <typeparam name="TSource">The type of the source sequence</typeparam>
     /// <typeparam name="TKey">The type of the key</typeparam>
+    /// <remarks>The resulting sequence will preserve the order of its elements.</remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> OrderByDescending<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,

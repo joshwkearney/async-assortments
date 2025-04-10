@@ -4,16 +4,19 @@ namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>
-    ///     Produces a set intersection between two sequences using the provided key selector to compare elements
+    ///     Produces a set intersection between two sequences using the provided key selector to compare elements.
     /// </summary>
-    /// <remarks>Uses the provided equality comparer to compare keys</remarks>
-    /// <param name="source">The source sequence</param>
-    /// <param name="second">The second sequence</param>
-    /// <param name="selector">A selector function used to extract keys from elements</param>
-    /// <param name="comparer">The equality comparer used to compare keys</param>
-    /// <typeparam name="TSource">The type of the source sequence</typeparam>
-    /// <typeparam name="TKey">The type of the key</typeparam>
-    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="second">The second sequence.</param>
+    /// <param name="selector">A selector function used to extract keys from elements.</param>
+    /// <param name="comparer">The equality comparer used to compare keys.</param>
+    /// <typeparam name="TSource">The type of the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
+    /// <remarks>
+    ///     <para>Uses the provided equality comparer to compare keys.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> IntersectBy<TSource, TKey>(
         this IAsyncEnumerable<TSource> source, 
         IAsyncEnumerable<TKey> second,
@@ -37,7 +40,7 @@ public static partial class AsyncEnumerable {
         }
         
         var resultOp = new JoinOperator<TSource, TKey, TKey>(
-            source.GetScheduleMode(),
+            source.GetScheduleMode().MakeUnordered(),
             source,
             second,
             selector,
@@ -50,15 +53,18 @@ public static partial class AsyncEnumerable {
     }
 
     /// <summary>
-    ///     Produces a set intersection between two sequences using the provided key selector to compare elements
+    ///     Produces a set intersection between two sequences using the provided key selector to compare elements.
     /// </summary>
-    /// <remarks>Uses the default equality comparer to compare keys</remarks>
-    /// <param name="source">The source sequence</param>
-    /// <param name="second">The second sequence</param>
-    /// <param name="selector">A selector function used to extract keys from elements</param>
-    /// <typeparam name="TSource">The type of the source sequence</typeparam>
-    /// <typeparam name="TKey">The type of the key</typeparam>
-    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="second">The second sequence.</param>
+    /// <param name="selector">A selector function used to extract keys from elements.</param>
+    /// <typeparam name="TSource">The type of the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
+    /// <remarks>
+    ///     <para>Uses the default equality comparer to compare keys.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> IntersectBy<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
         IAsyncEnumerable<TKey> second,
@@ -68,16 +74,19 @@ public static partial class AsyncEnumerable {
     }
 
     /// <summary>
-    ///     Produces a set intersection between two sequences using the provided key selector to compare elements
+    ///     Produces a set intersection between two sequences using the provided key selector to compare elements.
     /// </summary>
-    /// <remarks>Uses the provided equality comparer to compare keys</remarks>
-    /// <param name="source">The source sequence</param>
-    /// <param name="second">The second sequence</param>
-    /// <param name="selector">A selector function used to extract keys from elements</param>
-    /// <param name="comparer">The equality comparer used to compare keys</param>
-    /// <typeparam name="TSource">The type of the source sequence</typeparam>
-    /// <typeparam name="TKey">The type of the key</typeparam>
-    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="second">The second sequence.</param>
+    /// <param name="selector">A selector function used to extract keys from elements.</param>
+    /// <param name="comparer">The equality comparer used to compare keys.</param>
+    /// <typeparam name="TSource">The type of the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
+    /// <remarks>
+    ///     <para>Uses the provided equality comparer to compare keys.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> IntersectBy<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
         IEnumerable<TKey> second,
@@ -88,15 +97,18 @@ public static partial class AsyncEnumerable {
     }
 
     /// <summary>
-    ///     Produces a set intersection between two sequences using the provided key selector to compare elements
+    ///     Produces a set intersection between two sequences using the provided key selector to compare elements.
     /// </summary>
-    /// <remarks>Uses the default equality comparer to compare keys</remarks>
-    /// <param name="source">The source sequence</param>
-    /// <param name="second">The second sequence</param>
-    /// <param name="selector">A selector function used to extract keys from elements</param>
-    /// <typeparam name="TSource">The type of the source sequence</typeparam>
-    /// <typeparam name="TKey">The type of the key</typeparam>
-    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="second">The second sequence.</param>
+    /// <param name="selector">A selector function used to extract keys from elements.</param>
+    /// <typeparam name="TSource">The type of the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
+    /// <remarks>
+    ///     <para>Uses the default equality comparer to compare keys.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> IntersectBy<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
         IEnumerable<TKey> second,
@@ -106,16 +118,19 @@ public static partial class AsyncEnumerable {
     }
 
     /// <summary>
-    ///     Produces a set intersection between two sequences using the provided key selector to compare elements
+    ///     Produces a set intersection between two sequences using the provided key selector to compare elements.
     /// </summary>
-    /// <remarks>Uses the provided equality comparer to compare keys</remarks>
-    /// <param name="source">The source sequence</param>
-    /// <param name="second">The second sequence</param>
-    /// <param name="selector">A selector function used to extract keys from elements</param>
-    /// <param name="comparer">The equality comparer used to compare keys</param>
-    /// <typeparam name="TSource">The type of the source sequence</typeparam>
-    /// <typeparam name="TKey">The type of the key</typeparam>
-    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="second">The second sequence.</param>
+    /// <param name="selector">A selector function used to extract keys from elements.</param>
+    /// <param name="comparer">The equality comparer used to compare keys.</param>
+    /// <typeparam name="TSource">The type of the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
+    /// <remarks>
+    ///     <para>Uses the provided equality comparer to compare keys.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> IntersectBy<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
         IObservable<TKey> second,
@@ -126,15 +141,18 @@ public static partial class AsyncEnumerable {
     }
 
     /// <summary>
-    ///     Produces a set intersection between two sequences using the provided key selector to compare elements
+    ///     Produces a set intersection between two sequences using the provided key selector to compare elements.
     /// </summary>
-    /// <remarks>Uses the default equality comparer to compare keys</remarks>
-    /// <param name="source">The source sequence</param>
-    /// <param name="second">The second sequence</param>
-    /// <param name="selector">A selector function used to extract keys from elements</param>
-    /// <typeparam name="TSource">The type of the source sequence</typeparam>
-    /// <typeparam name="TKey">The type of the key</typeparam>
-    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="second">The second sequence.</param>
+    /// <param name="selector">A selector function used to extract keys from elements.</param>
+    /// <typeparam name="TSource">The type of the source sequence.</typeparam>
+    /// <typeparam name="TKey">The type of the key.</typeparam>
+    /// <remarks>
+    ///     <para>Uses the default equality comparer to compare keys.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> IntersectBy<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
         IObservable<TKey> second,

@@ -12,9 +12,13 @@ public static partial class AsyncEnumerable {
     /// </returns>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     /// <remarks>
-    ///     The selectors will run sequentially, concurrently,
-    ///     or in parallel depending on the execution mode of the sequence passed in.
+    ///     This is an async operator and can run sequentially, concurrently, or in parallel,
+    ///     depending on the execution mode of the input sequence. See the <c>.AsSequential()</c>,
+    ///     <c>.AsConcurrent()</c>, and <c>.AsParallel()</c> operators for details.
     /// </remarks>
+    /// <seealso cref="AsSequential{TSource}" />
+    /// <seealso cref="AsConcurrent{TSource}" />
+    /// <seealso cref="AsParallel{TSource}" />
     public static ValueTask ForEachAsync<TSource>(
         this IAsyncEnumerable<TSource> source, 
         Func<TSource, ValueTask> selector) {
@@ -42,9 +46,13 @@ public static partial class AsyncEnumerable {
     /// </returns>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     /// <remarks>
-    ///     The selectors will run sequentially, concurrently,
-    ///     or in parallel depending on the execution mode of the sequence passed in.
+    ///     This is an async operator and can run sequentially, concurrently, or in parallel,
+    ///     depending on the execution mode of the input sequence. See the <c>.AsSequential()</c>,
+    ///     <c>.AsConcurrent()</c>, and <c>.AsParallel()</c> operators for details.
     /// </remarks>
+    /// <seealso cref="AsSequential{TSource}" />
+    /// <seealso cref="AsConcurrent{TSource}" />
+    /// <seealso cref="AsParallel{TSource}" />
     public static ValueTask ForEachAsync<TSource>(
         this IAsyncEnumerable<TSource> source, 
         Func<TSource, CancellationToken, ValueTask> selector,
@@ -83,6 +91,14 @@ public static partial class AsyncEnumerable {
     ///     has been enumerated.
     /// </returns>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
+    /// <remarks>
+    ///     This is an async operator and can run sequentially, concurrently, or in parallel,
+    ///     depending on the execution mode of the input sequence. See the <c>.AsSequential()</c>,
+    ///     <c>.AsConcurrent()</c>, and <c>.AsParallel()</c> operators for details.
+    /// </remarks>
+    /// <seealso cref="AsSequential{TSource}" />
+    /// <seealso cref="AsConcurrent{TSource}" />
+    /// <seealso cref="AsParallel{TSource}" />
     public static ValueTask ForEachAsync<TSource>(
         this IAsyncEnumerable<TSource> source, 
         Action<TSource> selector,

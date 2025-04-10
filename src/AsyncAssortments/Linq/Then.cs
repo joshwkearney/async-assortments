@@ -9,6 +9,7 @@ public static partial class AsyncEnumerable {
     /// <param name="source">The source sequence</param>
     /// <param name="comparer">The comparer that defines the ordering</param>
     /// <typeparam name="TSource">The type of the source sequence</typeparam>
+    /// <remarks>The resulting sequence will preserve the order of its elements.</remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> Then<TSource>(
         this IOrderedAsyncEnumerable<TSource> source,
@@ -39,6 +40,7 @@ public static partial class AsyncEnumerable {
     /// <param name="source">The source sequence</param>
     /// <param name="comparer">The comparer that defines the ordering</param>
     /// <typeparam name="TSource">The type of the source sequence</typeparam>
+    /// <remarks>The resulting sequence will preserve the order of its elements.</remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> ThenDescending<TSource>(
         this IOrderedAsyncEnumerable<TSource> source,

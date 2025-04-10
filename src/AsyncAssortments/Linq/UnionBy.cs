@@ -4,13 +4,16 @@ namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>
-    ///     Produces a set union between two sequences using the provided key selector to compare elements
+    ///     Produces a set union between two sequences using the provided key selector to compare elements.
     /// </summary>
-    /// <remarks>Uses the provided equality comparer to compare elements</remarks>
-    /// <param name="source">The source sequence</param>
-    /// <param name="second">The second sequence</param>
-    /// <param name="selector">A selector function used to extract keys from elements</param>
-    /// <param name="comparer">The equality comparer used to compare keys</param>
+    /// <remarks>
+    ///     <para>Uses the provided equality comparer to compare elements.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="second">The second sequence.</param>
+    /// <param name="selector">A selector function used to extract keys from elements.</param>
+    /// <param name="comparer">The equality comparer used to compare keys.</param>
     public static IAsyncEnumerable<TSource> UnionBy<TSource, TKey>(
         this IAsyncEnumerable<TSource> source, 
         IAsyncEnumerable<TSource> second,
@@ -23,12 +26,15 @@ public static partial class AsyncEnumerable {
     }
 
     /// <summary>
-    ///     Produces a set union between two sequences using the provided key selector to compare elements
+    ///     Produces a set union between two sequences using the provided key selector to compare elements.
     /// </summary>
-    /// <remarks>Uses the provided equality comparer to compare elements</remarks>
-    /// <param name="source">The source sequence</param>
-    /// <param name="second">The second sequence</param>
-    /// <param name="selector">A selector function used to extract keys from elements</param>
+    /// <remarks>
+    ///     <para>Uses the default equality comparer to compare elements.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="second">The second sequence.</param>
+    /// <param name="selector">A selector function used to extract keys from elements.</param>
     public static IAsyncEnumerable<TSource> UnionBy<TSource, TKey>(
         this IAsyncEnumerable<TSource> source,
         IAsyncEnumerable<TSource> second,

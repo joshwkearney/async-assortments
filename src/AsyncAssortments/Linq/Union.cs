@@ -4,12 +4,15 @@ namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>
-    ///     Produces a set union between two sequences
+    ///     Produces a set union between two sequences.
     /// </summary>
-    /// <remarks>Uses the provided equality comparer to compare elements</remarks>
-    /// <param name="source">The source sequence</param>
-    /// <param name="second">The second sequence</param>
-    /// <param name="comparer">The equality comparer used to compare elements</param>
+    /// <remarks>
+    ///     <para>Uses the provided equality comparer to compare elements.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="second">The second sequence.</param>
+    /// <param name="comparer">The equality comparer used to compare elements.</param>
     public static IAsyncEnumerable<TSource> Union<TSource>(
         this IAsyncEnumerable<TSource> source, 
         IAsyncEnumerable<TSource> second,
@@ -23,11 +26,14 @@ public static partial class AsyncEnumerable {
     }
 
     /// <summary>
-    ///     Produces a set union between two sequences
+    ///     Produces a set union between two sequences.
     /// </summary>
-    /// <remarks>Uses the provided equality comparer to compare elements</remarks>
-    /// <param name="source">The source sequence</param>
-    /// <param name="second">The second sequence</param>
+    /// <remarks>
+    ///     <para>Uses the default equality comparer to compare elements.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="second">The second sequence.</param>
     public static IAsyncEnumerable<TSource> Union<TSource>(
         this IAsyncEnumerable<TSource> source,
         IAsyncEnumerable<TSource> second) {

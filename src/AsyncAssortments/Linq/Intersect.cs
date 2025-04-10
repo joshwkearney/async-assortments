@@ -4,12 +4,16 @@ namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>
-    ///     Produces a set intersection between two sequences
+    ///     Produces a set intersection between two sequences.
     /// </summary>
-    /// <remarks>Uses the provided equality comparer to compare elements</remarks>
-    /// <param name="source">The source sequence</param>
-    /// <param name="second">The second sequence</param>
-    /// <param name="comparer">The equality comparer used to compare elements</param>
+    /// <param name="source">The source sequence.</param>
+    /// <param name="second">The second sequence.</param>
+    /// <param name="comparer">The equality comparer used to compare elements.</param>
+    /// <remarks>
+    ///     <para>Uses the provided equality comparer to compare elements.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> Intersect<TSource>(
         this IAsyncEnumerable<TSource> source, 
         IAsyncEnumerable<TSource> second,
@@ -28,7 +32,7 @@ public static partial class AsyncEnumerable {
         }
         
         var resultOp = new JoinOperator<TSource, TSource, TSource>(
-            source.GetScheduleMode(),
+            source.GetScheduleMode().MakeUnordered(),
             source,
             second,
             x => x,
@@ -43,9 +47,13 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Produces a set intersection between two sequences
     /// </summary>
-    /// <remarks>Uses the default equality comparer to compare elements</remarks>
     /// <param name="source">The source sequence</param>
     /// <param name="second">The second sequence</param>
+    /// <remarks>
+    ///     <para>Uses the default equality comparer to compare elements.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IAsyncEnumerable<TSource> Intersect<TSource>(
         this IAsyncEnumerable<TSource> source,
         IAsyncEnumerable<TSource> second) {
@@ -56,10 +64,14 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Produces a set intersection between two sequences
     /// </summary>
-    /// <remarks>Uses the provided equality comparer to compare elements</remarks>
     /// <param name="source">The source sequence</param>
     /// <param name="second">The second sequence</param>
     /// <param name="comparer">The equality comparer used to compare elements</param>
+    /// <remarks>
+    ///     <para>Uses the provided equality comparer to compare elements.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IAsyncEnumerable<TSource> Intersect<TSource>(
         this IAsyncEnumerable<TSource> source,
         IEnumerable<TSource> second,
@@ -71,9 +83,13 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Produces a set intersection between two sequences
     /// </summary>
-    /// <remarks>Uses the default equality comparer to compare elements</remarks>
     /// <param name="source">The source sequence</param>
     /// <param name="second">The second sequence</param>
+    /// <remarks>
+    ///     <para>Uses the default equality comparer to compare elements.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IAsyncEnumerable<TSource> Intersect<TSource>(
         this IAsyncEnumerable<TSource> source,
         IEnumerable<TSource> second) {
@@ -84,10 +100,14 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Produces a set intersection between two sequences
     /// </summary>
-    /// <remarks>Uses the provided equality comparer to compare elements</remarks>
     /// <param name="source">The source sequence</param>
     /// <param name="second">The second sequence</param>
     /// <param name="comparer">The equality comparer used to compare elements</param>
+    /// <remarks>
+    ///     <para>Uses the provided equality comparer to compare elements.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IAsyncEnumerable<TSource> Intersect<TSource>(
         this IAsyncEnumerable<TSource> source,
         IObservable<TSource> second,
@@ -99,9 +119,13 @@ public static partial class AsyncEnumerable {
     /// <summary>
     ///     Produces a set intersection between two sequences
     /// </summary>
-    /// <remarks>Uses the default equality comparer to compare elements</remarks>
     /// <param name="source">The source sequence</param>
     /// <param name="second">The second sequence</param>
+    /// <remarks>
+    ///     <para>Uses the default equality comparer to compare elements.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IAsyncEnumerable<TSource> Intersect<TSource>(
         this IAsyncEnumerable<TSource> source,
         IObservable<TSource> second) {

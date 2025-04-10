@@ -9,6 +9,7 @@ public static partial class AsyncEnumerable {
     /// </summary>
     /// <param name="source">The source sequence</param>
     /// <param name="comparer">A comparer that defines the sort order</param>
+    /// <remarks>The resulting sequence will preserve the order of its elements.</remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> Order<TSource>(
         this IAsyncEnumerable<TSource> source,
@@ -36,6 +37,7 @@ public static partial class AsyncEnumerable {
     ///     Sort the elements of a sequence in ascending order
     /// </summary>
     /// <param name="source">The source sequence</param>
+    /// <remarks>The resulting sequence will preserve the order of its elements.</remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> Order<TSource>(
         this IAsyncEnumerable<TSource> source) {
@@ -48,6 +50,7 @@ public static partial class AsyncEnumerable {
     /// </summary>
     /// <param name="source">The source sequence</param>
     /// <param name="comparer">A comparer that defines the sort order</param>
+    /// <remarks>The resulting sequence will preserve the order of its elements.</remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> OrderDescending<TSource>(
         this IAsyncEnumerable<TSource> source,
@@ -70,6 +73,7 @@ public static partial class AsyncEnumerable {
     ///     Sort the elements of a sequence in descending order
     /// </summary>
     /// <param name="source">The source sequence</param>
+    /// <remarks>The resulting sequence will preserve the order of its elements.</remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null</exception>
     public static IOrderedAsyncEnumerable<TSource> OrderDescending<TSource>(
         this IAsyncEnumerable<TSource> source) {

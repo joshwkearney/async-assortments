@@ -3,9 +3,12 @@
 namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
-    /// <summary>Prepends a value to the end of the sequence.</summary>
+    /// <summary>
+    ///     Prepends a value to the end of the sequence.
+    /// </summary>
     /// <param name="source">The original sequence.</param>
     /// <param name="element">The value to append to the source sequence.</param>
+    /// <remarks>The resulting sequence will preserve the order of its elements.</remarks>
     /// <exception cref="ArgumentNullException">A provided argument was null.</exception>
     public static IAsyncEnumerable<TSource> Prepend<TSource>(
         this IAsyncEnumerable<TSource> source, 
@@ -19,7 +22,7 @@ public static partial class AsyncEnumerable {
             return concatOp.ConcatEnumerables([element], []);
         }
 
-        var pars = source.GetScheduleMode();
+        var pars = source.GetScheduleMode().MakeOrdered();
 
         return new ConcatEnumerablesOperator<TSource>(pars, source, [element], []);
     }

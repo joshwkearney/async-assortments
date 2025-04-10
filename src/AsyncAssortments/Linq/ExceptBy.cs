@@ -4,10 +4,11 @@ namespace AsyncAssortments.Linq;
 
 public static partial class AsyncEnumerable {
     /// <summary>
-    ///     Produces a set difference between two sequences according to a specified key selector function
+    ///     Produces a set difference between two sequences according to a specified key selector function.
     /// </summary>
     /// <remarks>
-    ///     Elements are yielded from the source sequence if their associated keys do not appear in the second sequence
+    ///     <para>Elements are yielded from the source sequence if their associated keys do not appear in the second sequence.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
     /// </remarks>
     /// <param name="source">The source sequence</param>
     /// <param name="second">The second sequence</param>
@@ -54,7 +55,8 @@ public static partial class AsyncEnumerable {
     ///     Produces a set difference between two sequences according to a specified key selector function
     /// </summary>
     /// <remarks>
-    ///     Elements are yielded from the source sequence if their associated keys do not appear in the second sequence
+    ///     <para>Elements are yielded from the source sequence if their associated keys do not appear in the second sequence.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
     /// </remarks>
     /// <param name="source">The source sequence</param>
     /// <param name="second">The second sequence</param>
@@ -74,7 +76,8 @@ public static partial class AsyncEnumerable {
     ///     Produces a set difference between two sequences according to a specified key selector function
     /// </summary>
     /// <remarks>
-    ///     Elements are yielded from the source sequence if their associated keys do not appear in the second sequence
+    ///     <para>Elements are yielded from the source sequence if their associated keys do not appear in the second sequence.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
     /// </remarks>
     /// <param name="source">The source sequence</param>
     /// <param name="second">The second sequence</param>
@@ -96,7 +99,8 @@ public static partial class AsyncEnumerable {
     ///     Produces a set difference between two sequences according to a specified key selector function
     /// </summary>
     /// <remarks>
-    ///     Elements are yielded from the source sequence if their associated keys do not appear in the second sequence
+    ///     <para>Elements are yielded from the source sequence if their associated keys do not appear in the second sequence.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
     /// </remarks>
     /// <param name="source">The source sequence</param>
     /// <param name="second">The second sequence</param>
@@ -116,7 +120,8 @@ public static partial class AsyncEnumerable {
     ///     Produces a set difference between two sequences according to a specified key selector function
     /// </summary>
     /// <remarks>
-    ///     Elements are yielded from the source sequence if their associated keys do not appear in the second sequence
+    ///     <para>Elements are yielded from the source sequence if their associated keys do not appear in the second sequence.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
     /// </remarks>
     /// <param name="source">The source sequence</param>
     /// <param name="second">The second sequence</param>
@@ -138,7 +143,8 @@ public static partial class AsyncEnumerable {
     ///     Produces a set difference between two sequences according to a specified key selector function
     /// </summary>
     /// <remarks>
-    ///     Elements are yielded from the source sequence if their associated keys do not appear in the second sequence
+    ///     <para>Elements are yielded from the source sequence if their associated keys do not appear in the second sequence.</para>
+    ///     <para>This is a set operation. The resulting sequence will not preserve the order of its elements.</para>
     /// </remarks>
     /// <param name="source">The source sequence</param>
     /// <param name="second">The second sequence</param>

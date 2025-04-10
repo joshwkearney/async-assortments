@@ -14,7 +14,7 @@ public class ToChannelTests {
         var seq = new TestEnumerable<int>([1, 2, 3]).Select<int, int>(x => throw new TestException());
 
         await Assert.ThrowsAsync<TestException>(async () => {
-            await foreach (var _ in seq.ToChannel().ReadAllAsync()) {
+            await foreach (var _ in seq.ToChannel().Reader.ReadAllAsync()) {
                 await Task.Delay(1);
             }
         });
@@ -23,14 +23,14 @@ public class ToChannelTests {
     [Fact]
     public async Task TestSequence() {
         var seq = new TestEnumerable<int>([1, 2, 3]);
-        var elements = await seq.ToChannel().ReadAllAsync();
+        var elements = await seq.ToChannel().Reader.ReadAllAsync();
         
         Assert.Equal([1, 2, 3], elements);
     }
     
     [Fact]
     public async Task TestEmptySequence() {
-        var elements = await AsyncEnumerable.Empty<int>().ToChannel().ReadAllAsync();
+        var elements = await AsyncEnumerable.Empty<int>().ToChannel().Reader.ReadAllAsync();
         
         Assert.Equal([], elements);
     }

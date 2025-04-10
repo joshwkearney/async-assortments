@@ -22,12 +22,12 @@ public static partial class AsyncEnumerable {
     ///     A channel reader that can be used to access the sequence's elements
     /// </returns>
     /// <remarks>
-    ///     The caller must make sure to read the channel to completion, otherwise
+    ///     The caller must be sure to read the channel to completion, otherwise
     ///     any exceptions produced by the original sequence will not be handled
     ///     correctly.
     /// </remarks>
 
-    public static ChannelReader<TSource> ToChannel<TSource>(
+    public static Channel<TSource> ToChannel<TSource>(
         this IAsyncEnumerable<TSource> source,
         int maxBuffer = -1,
         CancellationToken cancellationToken = default) {
@@ -53,7 +53,7 @@ public static partial class AsyncEnumerable {
         // Fire and forget, exceptions will be handled through the channel
         ToChannelHelper(source, channel, cancellationToken);
 
-        return channel.Reader;
+        return channel;
     }
 
     private static async void ToChannelHelper<T>(
