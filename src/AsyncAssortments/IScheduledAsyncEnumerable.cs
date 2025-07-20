@@ -6,9 +6,14 @@
     /// <inheritdoc cref="IAsyncEnumerable{T}" />
     public interface IScheduledAsyncEnumerable<out T> : IAsyncEnumerable<T> {
         /// <summary>
-        ///     The scheduling used to run operators on this <see cref="IAsyncEnumerable{T}" />
+        ///     The scheduling used to run operators on this <see cref="IAsyncEnumerable{T}" />.
         /// </summary>
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
+
+        /// <summary>
+        ///     The maximum number of tasks that are allowed to execute simultaneously.
+        /// </summary>
+        public int MaxConcurrency { get; }
     }
 
     /// <summary>
@@ -46,6 +51,16 @@
     }
 
     internal static class AsyncPipelineExecutionExtensions {
+        internal static int GetMaxConcurrency<T>(this IAsyncEnumerable<T> source) {
+            var concurrency = -1;
+
+            if (source is IScheduledAsyncEnumerable<T> pipeline) {
+                concurrency = pipeline.MaxConcurrency;
+            }
+
+            return concurrency;
+        }
+
         internal static AsyncEnumerableScheduleMode GetScheduleMode<T>(this IAsyncEnumerable<T> source) {
             var execution = AsyncEnumerableScheduleMode.Sequential;
 

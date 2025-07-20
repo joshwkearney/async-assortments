@@ -1,37 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Channels;
-using System.Threading.Tasks;
+﻿using System.Threading.Channels;
 
 namespace AsyncAssortments.Operators {
     internal class WrapObservableOperator<T> : IAsyncOperator<T> {
         private readonly IObservable<T> source;
-        private readonly int maxBuffer;
 
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
-        public WrapObservableOperator(AsyncEnumerableScheduleMode pars, IObservable<T> source, int maxBuffer) {
+        public int MaxConcurrency { get; }
+
+        public WrapObservableOperator(AsyncEnumerableScheduleMode pars, int maxConcurrency, IObservable<T> source) {
             this.ScheduleMode = pars;
+            this.MaxConcurrency = maxConcurrency;
             this.source = source;
-            this.maxBuffer = maxBuffer;
         }
 
-        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-            return new WrapObservableOperator<T>(pars, this.source, this.maxBuffer);
+        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+            return new WrapObservableOperator<T>(pars, maxConcurrency, this.source);
         }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
             Channel<T> channel;
 
-            if (maxBuffer <= 0) {
+            if (this.MaxConcurrency <= 0) {
                 channel = Channel.CreateUnbounded<T>(new UnboundedChannelOptions() {
                     AllowSynchronousContinuations = true
                 });
             }
             else {
-                channel = Channel.CreateBounded<T>(new BoundedChannelOptions(maxBuffer) {
+                channel = Channel.CreateBounded<T>(new BoundedChannelOptions(this.MaxConcurrency) {
                     AllowSynchronousContinuations = true,
                     FullMode = BoundedChannelFullMode.DropWrite
                 });

@@ -27,10 +27,10 @@ public static partial class AsyncEnumerable {
         }
 
         if (source is IAsyncOperator<TSource> op) {
-            return op.WithScheduleMode(AsyncEnumerableScheduleMode.Sequential);
+            return op.WithScheduleMode(AsyncEnumerableScheduleMode.Sequential, -1);
         }
         else {
-            return new WrapAsyncEnumerableOperator<TSource>(AsyncEnumerableScheduleMode.Sequential, source);
+            return new WrapAsyncEnumerableOperator<TSource>(AsyncEnumerableScheduleMode.Sequential, -1, source);
         }
     }
 }

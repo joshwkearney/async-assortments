@@ -30,7 +30,8 @@ public static partial class AsyncEnumerable {
         }
 
         var pars = source.GetScheduleMode();
+        var maxConcurrency = source.GetMaxConcurrency();
 
-        return new SelectWhereOperator<TSource, TResult>(pars, source, x => new(true, selector(x)));
+        return new SelectWhereOperator<TSource, TResult>(pars, maxConcurrency, source, x => new(true, selector(x)));
     }
 }

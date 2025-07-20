@@ -30,8 +30,9 @@ public static partial class AsyncEnumerable {
         }
 
         var pars = source.GetScheduleMode();
+        var maxConcurrency = source.GetMaxConcurrency();
 
-        return new FlattenOperator<TResult>(pars, source.Select(selector));
+        return new FlattenOperator<TResult>(pars, maxConcurrency, source.Select(selector));
     }
     
     /// <summary>
@@ -90,7 +91,8 @@ public static partial class AsyncEnumerable {
         }
 
         var pars = source.GetScheduleMode();
+        var maxConcurrency = source.GetMaxConcurrency();
 
-        return new FlattenEnumerablesOperator<TResult>(pars, source.Select(selector));
+        return new FlattenEnumerablesOperator<TResult>(pars, maxConcurrency, source.Select(selector));
     }
 }

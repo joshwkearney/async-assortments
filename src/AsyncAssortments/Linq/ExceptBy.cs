@@ -38,13 +38,16 @@ public static partial class AsyncEnumerable {
         if (comparer == null) {
             throw new ArgumentNullException(nameof(comparer));
         }
-        
+
+        var maxConcurrency = source.GetMaxConcurrency();
+
         if (source is IAsyncOperator<TSource> op) {
-            source = op.WithScheduleMode(op.ScheduleMode.MakeUnordered());
+            source = op.WithScheduleMode(op.ScheduleMode.MakeUnordered(), maxConcurrency);
         }
 
         return new ExceptByOperator<TSource, TKey>(
             source.GetScheduleMode(),
+            maxConcurrency,
             source,
             second,
             selector,

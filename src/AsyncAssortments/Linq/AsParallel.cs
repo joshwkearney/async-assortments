@@ -10,6 +10,9 @@ public static partial class AsyncEnumerable {
     ///     Determines if asynchronous operations should be returned in the order of the original
     ///     sequence (<c>true</c>), or the order in which they finish (<c>false</c>)
     /// </param>
+    /// <param name="maxConcurrency">
+    ///    The maximum number of tasks that are allowed to execute simultaneously.
+    /// </param>
     /// <remarks>
     ///     <para>
     ///         This method changes the behavior of operators that involve asynchronous operations,
@@ -24,7 +27,7 @@ public static partial class AsyncEnumerable {
     /// </remarks>
     /// <seealso cref="AsSequential{TSource}" />
     /// <seealso cref="AsConcurrent{TSource}" />
-    public static IScheduledAsyncEnumerable<TSource> AsParallel<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true) {
+    public static IScheduledAsyncEnumerable<TSource> AsParallel<TSource>(this IAsyncEnumerable<TSource> source, bool preserveOrder = true, int maxConcurrency = -1) {
         if (source == null) {
             throw new ArgumentNullException(nameof(source));
         }
@@ -32,10 +35,10 @@ public static partial class AsyncEnumerable {
         var pars = preserveOrder ? AsyncEnumerableScheduleMode.ParallelOrdered : AsyncEnumerableScheduleMode.ParallelUnordered;
 
         if (source is IAsyncOperator<TSource> op) {
-            return op.WithScheduleMode(pars);
+            return op.WithScheduleMode(pars, maxConcurrency);
         }
         else {
-            return new WrapAsyncEnumerableOperator<TSource>(pars, source);
+            return new WrapAsyncEnumerableOperator<TSource>(pars, maxConcurrency, source);
         }
     }
 }

@@ -23,7 +23,8 @@ public static partial class AsyncEnumerable {
         }
 
         var pars = source.GetScheduleMode().MakeOrdered();
+        var maxConcurrency = source.GetMaxConcurrency();
 
-        return new ConcatEnumerablesOperator<TSource>(pars, source, [], [element]);
+        return new ConcatEnumerablesOperator<TSource>(pars, maxConcurrency, source, [], [element]);
     }
 }

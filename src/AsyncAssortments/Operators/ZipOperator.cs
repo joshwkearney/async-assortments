@@ -6,8 +6,11 @@ namespace AsyncAssortments.Operators {
 
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
+        public int MaxConcurrency { get; }
+
         public ZipOperator(
             AsyncEnumerableScheduleMode pars,
+            int maxConcurrency,
             IAsyncEnumerable<T> parent1,
             IAsyncEnumerable<E> parent2) {
 
@@ -16,8 +19,8 @@ namespace AsyncAssortments.Operators {
             this.ScheduleMode = pars;
         }
         
-        public IAsyncOperator<(T first, E second)> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-            return new ZipOperator<T, E>(pars, this.parent1, this.parent2);
+        public IAsyncOperator<(T first, E second)> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+            return new ZipOperator<T, E>(pars, maxConcurrency, this.parent1, this.parent2);
         }
 
         public async IAsyncEnumerator<(T, E)> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

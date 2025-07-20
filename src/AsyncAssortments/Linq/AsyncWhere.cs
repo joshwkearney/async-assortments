@@ -37,8 +37,9 @@ public static partial class AsyncEnumerable {
         }
 
         var pars = source.GetScheduleMode();
+        var maxConcurrency = source.GetMaxConcurrency();
 
-        return new SelectWhereTaskOperator<TSource, TSource>(pars, source, async (x, c) => new(await predicate(x, c), x));
+        return new SelectWhereTaskOperator<TSource, TSource>(pars, maxConcurrency, source, async (x, c) => new(await predicate(x, c), x));
     }
     
     /// <inheritdoc cref="AsyncWhere{TSource}(IAsyncEnumerable{TSource}, Func{TSource, CancellationToken, ValueTask{bool}})" />

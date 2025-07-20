@@ -8,14 +8,18 @@ namespace AsyncAssortments.Operators {
 
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
+        public int MaxConcurrency { get; }
+
         public DistinctOperator(
             AsyncEnumerableScheduleMode mode,
+            int maxConcurrency,
             IAsyncEnumerable<T> source,
             IEqualityComparer<T> comparer) {
 
             this.source = source;
             this.comparer = comparer;
             this.ScheduleMode = mode;
+            this.MaxConcurrency = maxConcurrency;
         }
 
 
@@ -29,8 +33,8 @@ namespace AsyncAssortments.Operators {
             }
         }
 
-        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-            return new DistinctOperator<T>(pars, this.source, this.comparer);
+        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+            return new DistinctOperator<T>(pars, maxConcurrency, this.source, this.comparer);
         }
 
         public async ValueTask<HashSet<T>> ToHashSetAsync(

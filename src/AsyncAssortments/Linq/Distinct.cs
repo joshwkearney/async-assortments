@@ -30,6 +30,7 @@ public static partial class AsyncEnumerable {
 
         return new DistinctOperator<TSource>(
             source.GetScheduleMode(),
+            source.GetMaxConcurrency(),
             source,
             comparer);
     }

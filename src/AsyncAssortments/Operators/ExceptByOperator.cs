@@ -9,8 +9,11 @@ namespace AsyncAssortments.Operators {
 
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
+        public int MaxConcurrency { get; }
+
         public ExceptByOperator(
             AsyncEnumerableScheduleMode mode,
+            int maxConcurrency,
             IAsyncEnumerable<TSource> source,
             IAsyncEnumerable<TKey> other,
             Func<TSource, TKey> keySelector,
@@ -19,6 +22,7 @@ namespace AsyncAssortments.Operators {
             this.source = source;
             this.other = other;
             this.ScheduleMode = mode;
+            this.MaxConcurrency = maxConcurrency;
             this.keySelector = keySelector;
             this.comparer = comparer;
         }
@@ -62,8 +66,8 @@ namespace AsyncAssortments.Operators {
             }
         }
 
-        public IAsyncOperator<TSource> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-            return new ExceptByOperator<TSource, TKey>(pars, this.source, this.other, this.keySelector, this.comparer);
+        public IAsyncOperator<TSource> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+            return new ExceptByOperator<TSource, TKey>(pars, maxConcurrency, this.source, this.other, this.keySelector, this.comparer);
         }
     }
 }

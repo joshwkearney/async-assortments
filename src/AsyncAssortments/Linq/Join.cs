@@ -39,8 +39,10 @@ public static partial class AsyncEnumerable {
             throw new ArgumentNullException(nameof(comparer));
         }
 
+        var maxConcurrency = outer.GetMaxConcurrency();
+
         if (outer is IAsyncOperator<TOuter> op) {
-            outer = op.WithScheduleMode(op.ScheduleMode.MakeUnordered());
+            outer = op.WithScheduleMode(op.ScheduleMode.MakeUnordered(), maxConcurrency);
         }
 
         // For some unfathomable reason, Join() excludes null elements. We only need to do this on one of
@@ -49,6 +51,7 @@ public static partial class AsyncEnumerable {
         
         var resultOp = new JoinOperator<TOuter, TInner, TKey>(
             outer.GetScheduleMode(),
+            maxConcurrency,
             outer,
             inner,
             outerKeySelector,

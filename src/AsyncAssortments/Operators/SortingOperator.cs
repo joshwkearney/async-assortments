@@ -10,14 +10,18 @@ namespace AsyncAssortments.Operators {
 
         public IComparer<T> Comparer { get; }
 
+        public int MaxConcurrency { get; }
+
         public SortingOperator(
             AsyncEnumerableScheduleMode mode, 
+            int maxConcurrency,
             IAsyncEnumerable<T> parent, 
             IComparer<T> comparer) {
 
             this.Source = parent;
             this.ScheduleMode = mode;
             this.Comparer = comparer;
+            this.MaxConcurrency = maxConcurrency;
         }
 
         public async ValueTask<List<T>> ToListAsync(CancellationToken cancellationToken = default) {
@@ -33,7 +37,7 @@ namespace AsyncAssortments.Operators {
         }
 
         public IOrderedAsyncEnumerable<T> Order(IComparer<T> comparer) {
-            return new SortingOperator<T>(this.ScheduleMode, this.Source, comparer);
+            return new SortingOperator<T>(this.ScheduleMode, this.MaxConcurrency, this.Source, comparer);
         }
 
         public async IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
@@ -48,8 +52,8 @@ namespace AsyncAssortments.Operators {
             }
         }
 
-        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode mode) {
-            return new SortingOperator<T>(mode, this.Source, this.Comparer);
+        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode mode, int maxConcurrency) {
+            return new SortingOperator<T>(mode, maxConcurrency, this.Source, this.Comparer);
         }
     }
 }

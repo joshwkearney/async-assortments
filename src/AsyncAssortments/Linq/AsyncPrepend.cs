@@ -37,8 +37,9 @@ public static partial class AsyncEnumerable {
         }
 
         var pars = source.GetScheduleMode().MakeOrdered();
-        
-        return new WrapAsyncFuncOperator<TSource>(pars, elementProducer).Concat(source);
+        var maxConcurrency = source.GetMaxConcurrency();
+
+        return new WrapAsyncFuncOperator<TSource>(pars, maxConcurrency, elementProducer).Concat(source);
     }
 
     /// <inheritdoc cref="AsyncPrepend{TSource}(IAsyncEnumerable{TSource}, Func{CancellationToken, ValueTask{TSource}})" />
@@ -55,7 +56,8 @@ public static partial class AsyncEnumerable {
         }
 
         var pars = source.GetScheduleMode().MakeOrdered();
-        
-        return new WrapAsyncFuncOperator<TSource>(pars, _ => elementProducer()).Concat(source);
+        var maxConcurrency = source.GetMaxConcurrency();
+
+        return new WrapAsyncFuncOperator<TSource>(pars, maxConcurrency, _ => elementProducer()).Concat(source);
     }
 }

@@ -11,22 +11,26 @@
 
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
+        public int MaxConcurrency { get; }
+
         public SelectWhereOperator(
             AsyncEnumerableScheduleMode pars,
+            int maxConcurrency,
             IAsyncEnumerable<T> parent,
             SelectWhereFunc<T, E> selector) {
 
             this.parent = parent;
             this.selector = selector;
             this.ScheduleMode = pars;
+            this.MaxConcurrency = maxConcurrency;
         }
         
-        public IAsyncOperator<E> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-            return new SelectWhereOperator<T, E>(pars, this.parent, this.selector);
+        public IAsyncOperator<E> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+            return new SelectWhereOperator<T, E>(pars, maxConcurrency, this.parent, this.selector);
         }
 
         public IAsyncEnumerable<G> Select<G>(Func<E, G> selector) {
-            return new SelectWhereOperator<T, G>(this.ScheduleMode, this.parent, newSelector);
+            return new SelectWhereOperator<T, G>(this.ScheduleMode, this.MaxConcurrency, this.parent, newSelector);
 
             SelectWhereResult<G> newSelector(T item) {
                 var (isValid, value) = this.selector(item);
@@ -40,7 +44,7 @@
         }
 
         public IAsyncEnumerable<E> Where(Func<E, bool> predicate) {
-            return new SelectWhereOperator<T, E>(this.ScheduleMode, this.parent, newSelector);
+            return new SelectWhereOperator<T, E>(this.ScheduleMode, this.MaxConcurrency, this.parent, newSelector);
 
             SelectWhereResult<E> newSelector(T item) {
                 var (isValid, value) = this.selector(item);
@@ -58,7 +62,7 @@
         }
 
         public IAsyncEnumerable<G> AsyncSelect<G>(Func<E, CancellationToken, ValueTask<G>> nextSelector) {
-            return new SelectWhereTaskOperator<T, G>(this.ScheduleMode, this.parent, newSelector);
+            return new SelectWhereTaskOperator<T, G>(this.ScheduleMode, this.MaxConcurrency, this.parent, newSelector);
 
             async ValueTask<SelectWhereResult<G>> newSelector(T item, CancellationToken token) {
                 var (isValid, value) = this.selector(item);
@@ -72,7 +76,7 @@
         }
 
         public IAsyncEnumerable<E> AsyncWhere(Func<E, CancellationToken, ValueTask<bool>> predicate) {
-            return new SelectWhereTaskOperator<T, E>(this.ScheduleMode, this.parent, newSelector);
+            return new SelectWhereTaskOperator<T, E>(this.ScheduleMode, this.MaxConcurrency, this.parent, newSelector);
 
             async ValueTask<SelectWhereResult<E>> newSelector(T item, CancellationToken token) {
                 var (isValid, value) = this.selector(item);

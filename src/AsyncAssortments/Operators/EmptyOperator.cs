@@ -15,10 +15,12 @@ internal class EmptyOperator<T> : IAsyncOperator<T>, IAsyncSelectOperator<T>, IA
 
     public IComparer<T> Comparer => Comparer<T>.Default;
 
+    public int MaxConcurrency => -1;
+
     private EmptyOperator() { }
 
-    public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-        return new WrapAsyncEnumerableOperator<T>(pars, this);
+    public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+        return new WrapAsyncEnumerableOperator<T>(pars, maxConcurrency, this);
     }
 
     public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

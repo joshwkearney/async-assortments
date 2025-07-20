@@ -4,36 +4,39 @@
 
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
-        public FlattenEnumerablesOperator(AsyncEnumerableScheduleMode pars, IAsyncEnumerable<IEnumerable<T>> parent) {
+        public int MaxConcurrency { get; }
+
+        public FlattenEnumerablesOperator(AsyncEnumerableScheduleMode pars, int maxConcurrency, IAsyncEnumerable<IEnumerable<T>> parent) {
             this.parent = parent;
-            ScheduleMode = pars;
+            this.ScheduleMode = pars;
+            this.MaxConcurrency = maxConcurrency;
         }
         
-        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-            return new FlattenEnumerablesOperator<T>(pars, parent);
+        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+            return new FlattenEnumerablesOperator<T>(pars, maxConcurrency, parent);
         }
 
         public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
             if (this.parent is WrapEnumerableOperator<IEnumerable<T>> op) {
                 var newItems = op.Items.Select(x => x.ToAsyncEnumerable()).Append(sequence);
-                var newParent = new WrapEnumerableOperator<IAsyncEnumerable<T>>(op.ScheduleMode, newItems);
+                var newParent = new WrapEnumerableOperator<IAsyncEnumerable<T>>(op.ScheduleMode, op.MaxConcurrency, newItems);
                 
-                return new FlattenOperator<T>(this.ScheduleMode, newParent);
+                return new FlattenOperator<T>(this.ScheduleMode, this.MaxConcurrency, newParent);
             }
             else {
-                return new FlattenOperator<T>(this.ScheduleMode, new[] { this, sequence }.ToAsyncEnumerable());
+                return new FlattenOperator<T>(this.ScheduleMode, this.MaxConcurrency, new[] { this, sequence }.ToAsyncEnumerable());
             }
         }
 
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
             if (this.parent is WrapEnumerableOperator<IEnumerable<T>> op) {
                 var newItems = op.Items.Prepend(before).Append(after);
-                var newParent = new WrapEnumerableOperator<IEnumerable<T>>(op.ScheduleMode, newItems);
+                var newParent = new WrapEnumerableOperator<IEnumerable<T>>(op.ScheduleMode, op.MaxConcurrency,newItems);
                 
-                return new FlattenEnumerablesOperator<T>(this.ScheduleMode, newParent);
+                return new FlattenEnumerablesOperator<T>(this.ScheduleMode, this.MaxConcurrency, newParent);
             }
             else {
-                return new ConcatEnumerablesOperator<T>(this.ScheduleMode, this, before, after);
+                return new ConcatEnumerablesOperator<T>(this.ScheduleMode, this.MaxConcurrency, this, before, after);
             }
         }
         

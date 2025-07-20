@@ -27,7 +27,7 @@ public static class AsyncAssortmentsExtensions {
             return EmptyOperator<TSource>.Instance;
         }
 
-        return new WrapEnumerableOperator<TSource>(default, source);
+        return new WrapEnumerableOperator<TSource>(default, -1, source);
     }
 
     /// <summary>
@@ -61,9 +61,9 @@ public static class AsyncAssortmentsExtensions {
         }
 
         return new WrapObservableOperator<TSource>(
-            AsyncEnumerableScheduleMode.ConcurrentUnordered, 
-            source,
-            maxBuffer);
+            AsyncEnumerableScheduleMode.ConcurrentUnordered,
+            maxBuffer,
+            source);
     }
     
     /// <summary>
@@ -79,7 +79,7 @@ public static class AsyncAssortmentsExtensions {
             throw new ArgumentNullException(nameof(source));
         }
 
-        return new WrapAsyncFuncOperator<TSource>(default, _ => new ValueTask<TSource>(source));
+        return new WrapAsyncFuncOperator<TSource>(default, -1, _ => new ValueTask<TSource>(source));
     }
     
     /// <summary>

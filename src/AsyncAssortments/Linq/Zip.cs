@@ -25,8 +25,9 @@ public static partial class AsyncEnumerable {
         }
 
         var pars = source.GetScheduleMode();
-        
-        return new ZipOperator<TSource, TSecond>(pars, source, second);
+        var maxConcurrency = source.GetMaxConcurrency();
+
+        return new ZipOperator<TSource, TSecond>(pars, maxConcurrency, source, second);
     }
     
     /// <summary>
@@ -57,8 +58,9 @@ public static partial class AsyncEnumerable {
         }
 
         var pars = source.GetScheduleMode();
-        
-        return new ZipOperator<TSource, TSecond>(pars, source, second).Select(pair => resultSelector(pair.first, pair.second));
+        var maxConcurrency = source.GetMaxConcurrency();
+
+        return new ZipOperator<TSource, TSecond>(pars, maxConcurrency, source, second).Select(pair => resultSelector(pair.first, pair.second));
     }
     
     /// <inheritdoc cref="Zip{TSource,TSecond}(IAsyncEnumerable{TSource},IAsyncEnumerable{TSecond})" />

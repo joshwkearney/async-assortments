@@ -2,7 +2,7 @@ namespace AsyncAssortments.Operators;
 
 internal interface IAsyncOperator<out T> : IScheduledAsyncEnumerable<T> {
 
-    public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars);
+    public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency);
 }
 
 internal interface ICountOperator<T> : IAsyncOperator<T> {

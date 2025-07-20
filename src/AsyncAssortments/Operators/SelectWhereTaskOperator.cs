@@ -15,22 +15,26 @@ namespace AsyncAssortments.Operators {
 
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
+        public int MaxConcurrency { get; }
+
         public SelectWhereTaskOperator(
             AsyncEnumerableScheduleMode pars,
+            int maxConcurrency,
             IAsyncEnumerable<T> collection,
             AsyncSelectWhereFunc<T, E> selector) {
 
             this.parent = collection;
             this.selector = selector;
             this.ScheduleMode = pars;
+            this.MaxConcurrency = maxConcurrency;
         }
         
-        public IAsyncOperator<E> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-            return new SelectWhereTaskOperator<T, E>(pars, parent, selector);
+        public IAsyncOperator<E> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+            return new SelectWhereTaskOperator<T, E>(pars, maxConcurrency, parent, selector);
         }
 
         public IAsyncEnumerable<G> Select<G>(Func<E, G> selector) {
-            return new SelectWhereTaskOperator<T, G>(this.ScheduleMode, this.parent, newSelector);
+            return new SelectWhereTaskOperator<T, G>(this.ScheduleMode, this.MaxConcurrency, this.parent, newSelector);
 
             async ValueTask<SelectWhereResult<G>> newSelector(T item, CancellationToken token) {
                 var (isValid, value) = await this.selector(item, token);
@@ -44,7 +48,7 @@ namespace AsyncAssortments.Operators {
         }
 
         public IAsyncEnumerable<E> Where(Func<E, bool> predicate) {
-            return new SelectWhereTaskOperator<T, E>(this.ScheduleMode, this.parent, newSelector);
+            return new SelectWhereTaskOperator<T, E>(this.ScheduleMode, this.MaxConcurrency, this.parent, newSelector);
 
             async ValueTask<SelectWhereResult<E>> newSelector(T item, CancellationToken token) {
                 var (isValid, value) = await this.selector(item, token);
@@ -62,7 +66,7 @@ namespace AsyncAssortments.Operators {
         }
 
         public IAsyncEnumerable<G> AsyncSelect<G>(Func<E, CancellationToken, ValueTask<G>> nextSelector) {
-            return new SelectWhereTaskOperator<T, G>(this.ScheduleMode, this.parent, newSelector);
+            return new SelectWhereTaskOperator<T, G>(this.ScheduleMode, this.MaxConcurrency, this.parent, newSelector);
 
             async ValueTask<SelectWhereResult<G>> newSelector(T item, CancellationToken token) {
                 var (isValid, value) = await this.selector(item, token);
@@ -76,7 +80,7 @@ namespace AsyncAssortments.Operators {
         }
 
         public IAsyncEnumerable<E> AsyncWhere(Func<E, CancellationToken, ValueTask<bool>> predicate) {
-            return new SelectWhereTaskOperator<T, E>(this.ScheduleMode, this.parent, newSelector);
+            return new SelectWhereTaskOperator<T, E>(this.ScheduleMode, this.MaxConcurrency, this.parent, newSelector);
 
             async ValueTask<SelectWhereResult<E>> newSelector(T item, CancellationToken token) {
                 var (isValid, value) = await this.selector(item, token);
@@ -90,7 +94,7 @@ namespace AsyncAssortments.Operators {
         }
 
         public IAsyncEnumerator<E> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.ScheduleMode == AsyncEnumerableScheduleMode.Sequential) {
+            if (this.ScheduleMode == AsyncEnumerableScheduleMode.Sequential || this.MaxConcurrency == 1) {
                 return this.SequentialHelper(cancellationToken);
             }
             
@@ -116,17 +120,24 @@ namespace AsyncAssortments.Operators {
 
         private async IAsyncEnumerator<E> UnorderedHelper(CancellationTokenSource cancelSource) {
             var selector = this.selector;
+            SemaphoreSlim sempahore = null!;
 
             // Run the tasks on the thread pool if we're supposed to be doing this in parallel
             if (this.ScheduleMode.IsParallel()) {
                 selector = (x, t) => new ValueTask<SelectWhereResult<E>>(Task.Run(() => this.selector(x, t).AsTask(), t));
             }
 
+            // If we have a max concurrency, we're going to limit the number of tasks with
+            // this
+            if (this.MaxConcurrency > 0) {
+                sempahore = new SemaphoreSlim(this.MaxConcurrency, this.MaxConcurrency);
+            }
+
             var channel = Channel.CreateUnbounded<E>(channelOptions);
 
             // This is fire and forget (never awaited) because any exceptions will be propagated 
             // through the channel 
-            Iterate();
+            IterateOuter();
 
             while (true) {
                 // This may throw an exception, but we don't need to handle it because that is done
@@ -145,21 +156,18 @@ namespace AsyncAssortments.Operators {
                 yield return item;
             }
 
-            async ValueTask AddToChannel(T item) {
-                var (isValid, value) = await selector(item, cancelSource.Token);
-
-                if (isValid) {
-                    channel.Writer.TryWrite(value);
-                }
-            }
-
-            async void Iterate() {
+            async void IterateOuter() {
                 var asyncTasks = new List<Task>();
                 var errors = new ErrorCollection();
 
                 try {
                     await foreach (var item in this.parent.WithCancellation(cancelSource.Token)) {
-                        var valueTask = AddToChannel(item);
+                        // If we have a max concurrency, sync through the channel
+                        if (this.MaxConcurrency > 0) {
+                            await sempahore.WaitAsync(cancelSource.Token);
+                        }
+
+                        var valueTask = IterateInner(item);
 
                         if (valueTask.IsCompletedSuccessfully) {
                             continue;
@@ -201,6 +209,21 @@ namespace AsyncAssortments.Operators {
                     channel.Writer.Complete();
                 }
             }
+
+            async ValueTask IterateInner(T item) {
+                try {
+                    var (isValid, value) = await selector(item, cancelSource.Token);
+
+                    if (isValid) {
+                        await channel.Writer.WriteAsync(value);
+                    }
+                }
+                finally {
+                    if (this.MaxConcurrency > 0) {
+                        sempahore.Release();
+                    }
+                }
+            }
         }        
 
         private async IAsyncEnumerator<E> OrderedHelper(CancellationTokenSource cancelSource) {
@@ -212,8 +235,24 @@ namespace AsyncAssortments.Operators {
             }
 
             var errors = new ErrorCollection();
-            var channel = Channel.CreateUnbounded<ValueTask<SelectWhereResult<E>>>(channelOptions);            
-            
+            Channel<ValueTask<SelectWhereResult<E>>> channel;
+
+            // Max concurrency of 1 will never happen here because that will use the sequential implementation
+            if (this.MaxConcurrency >= 2) {
+                // We're using maxConcurrency - 1 here for the channel bound because you can't create a task without running it.
+                // For a max concurrency of 2, you'll create a task, add it to the channel, create another task, and wait. That
+                // means the channel needs a capacity of 1 less than the total number of tasks
+                channel = Channel.CreateBounded<ValueTask<SelectWhereResult<E>>>(new BoundedChannelOptions(this.MaxConcurrency - 1) {
+                    AllowSynchronousContinuations = true,
+                    FullMode = BoundedChannelFullMode.Wait
+                });
+            }
+            else {
+                channel = Channel.CreateUnbounded<ValueTask<SelectWhereResult<E>>>(new() {
+                    AllowSynchronousContinuations = true
+                });
+            }
+
             // Fire and forget because exceptions will be handled through the channel
             Iterate();
 
@@ -272,7 +311,11 @@ namespace AsyncAssortments.Operators {
             async void Iterate() {
                 try {
                     await foreach (var item in this.parent.WithCancellation(cancelSource.Token)) {
-                        channel.Writer.TryWrite(selector(item, cancelSource.Token));
+                        // We're not passing the cancellation token to WriteAsync because we 
+                        // always want the task to write successfully. If we have a max
+                        // concurrency, the channel will be bounded and this will block when
+                        // it's full
+                        await channel.Writer.WriteAsync(selector(item, cancelSource.Token));
                     }
                     
                     channel.Writer.Complete();

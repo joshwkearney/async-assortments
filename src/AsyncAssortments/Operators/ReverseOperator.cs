@@ -9,11 +9,15 @@ namespace AsyncAssortments.Operators {
 
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
+        public int MaxConcurrency { get; }
+
         public ReverseOperator(
             AsyncEnumerableScheduleMode mode,
+            int maxConcurrency,
             IAsyncEnumerable<T> source) {
 
             this.ScheduleMode = mode;
+            this.MaxConcurrency = maxConcurrency;
             this.source = source;
         }
 
@@ -25,8 +29,8 @@ namespace AsyncAssortments.Operators {
             }
         }
 
-        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-            return new ReverseOperator<T>(pars, this.source);
+        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+            return new ReverseOperator<T>(pars, maxConcurrency, this.source);
         }
 
         public async ValueTask<List<T>> ToListAsync(CancellationToken cancellationToken = default) {

@@ -11,8 +11,11 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
 
     public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
+    public int MaxConcurrency { get; }
+
     public JoinOperator(
         AsyncEnumerableScheduleMode mode,
+        int maxConcurrency,
         IAsyncEnumerable<T> source,
         IAsyncEnumerable<E> other,
         Func<T, TKey> keySelector1,
@@ -20,6 +23,7 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
         IEqualityComparer<TKey> comparer) {
 
         this.ScheduleMode = mode;
+        this.MaxConcurrency = maxConcurrency;
         this.source = source;
         this.other = other;
         this.comparer = comparer;
@@ -28,7 +32,7 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
     }
 
     public IAsyncEnumerator<(T first, E second)> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-        if (this.ScheduleMode == AsyncEnumerableScheduleMode.Sequential) {
+        if (this.ScheduleMode == AsyncEnumerableScheduleMode.Sequential || this.MaxConcurrency == 1) {
             return this.SequentialIterator(cancellationToken);
         }
             
@@ -76,6 +80,10 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
         var secondLists = new Dictionary<NullableKeyWrapper<TKey>, List<E>>(new NullableKeyWrapperComparer<TKey>(this.comparer));
         var firstLists = new Dictionary<NullableKeyWrapper<TKey>, List<T>>(new NullableKeyWrapperComparer<TKey>(this.comparer));
 #pragma warning restore CS8714 // The type cannot be used as type parameter in the generic type or method. Nullability of type argument doesn't match 'notnull' constraint.
+
+        // We don't have to worry about max concurrency here, because effectively this method always uses
+        // maxConcurrency = 2. If maxConcurrency = 1 we'll use the sequential implementation, so we don't
+        // need any further control
 
         var task1 = IterateFirst();
         var task2 = IterateSecond();
@@ -147,7 +155,7 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
                     var key = this.keySelector1(first);
                     var record = new ConcurrentJoinRecord(key, first, default!, true);
 
-                    channel.Writer.TryWrite(record);
+                    await channel.Writer.WriteAsync(record);
                 }
             }
             catch {
@@ -167,7 +175,7 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
                     var key = this.keySelector2(second);
                     var record = new ConcurrentJoinRecord(key, default!, second, false);
                     
-                    channel.Writer.TryWrite(record);
+                    await channel.Writer.WriteAsync(record);
                 }
             }
             catch {
@@ -182,9 +190,10 @@ internal class JoinOperator<T, E, TKey> : IAsyncOperator<(T first, E second)> {
         }
     }
 
-    public IAsyncOperator<(T first, E second)> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
+    public IAsyncOperator<(T first, E second)> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
         return new JoinOperator<T, E, TKey>(
             pars,
+            maxConcurrency,
             this.source,
             this.other,
             this.keySelector1,

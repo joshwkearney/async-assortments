@@ -6,20 +6,24 @@
 
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
-        public SkipTakeOperator(AsyncEnumerableScheduleMode pars, IAsyncEnumerable<T> parent, int skip, int take) {
+        public int MaxConcurrency { get; }
+
+        public SkipTakeOperator(AsyncEnumerableScheduleMode pars, int maxConcurrency, IAsyncEnumerable<T> parent, int skip, int take) {
             this.parent = parent;
             this.skip = skip;
             this.take = take;
             this.ScheduleMode = pars;
+            this.MaxConcurrency = maxConcurrency;
         }
         
-        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-            return new SkipTakeOperator<T>(pars, parent, skip, take);
+        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+            return new SkipTakeOperator<T>(pars, maxConcurrency, parent, skip, take);
         }
 
         public IAsyncEnumerable<T> SkipTake(int skip, int take) {
             return new SkipTakeOperator<T>(
                 this.ScheduleMode,
+                this.MaxConcurrency,
                 this.parent, 
                 this.skip + skip, 
                 Math.Min(this.take - skip, take));

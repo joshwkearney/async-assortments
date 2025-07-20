@@ -37,9 +37,11 @@ public static partial class AsyncEnumerable {
         }
 
         var pars = source.GetScheduleMode();
+        var maxConcurrency = source.GetMaxConcurrency();
 
         return new SelectWhereTaskOperator<TSource, TResult>(
             pars, 
+            maxConcurrency,
             source, 
             async (x, c) => new(true, await selector(x, c)));
     }

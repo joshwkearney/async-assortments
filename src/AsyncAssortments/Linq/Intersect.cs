@@ -33,6 +33,7 @@ public static partial class AsyncEnumerable {
         
         var resultOp = new JoinOperator<TSource, TSource, TSource>(
             source.GetScheduleMode().MakeUnordered(),
+            source.GetMaxConcurrency(),
             source,
             second,
             x => x,

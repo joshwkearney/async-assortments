@@ -6,8 +6,11 @@
 
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
+        public int MaxConcurrency { get; }
+
         public ConcatEnumerablesOperator(
             AsyncEnumerableScheduleMode pars,
+            int maxConcurrency,
             IAsyncEnumerable<T> parent,
             IEnumerable<T> before, 
             IEnumerable<T> after) {
@@ -16,15 +19,17 @@
             this.before = before;
             this.after = after;
             this.ScheduleMode = pars;
+            this.MaxConcurrency = maxConcurrency;
         }
         
-        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-            return new ConcatEnumerablesOperator<T>(pars, this.parent, this.before, this.after);
+        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+            return new ConcatEnumerablesOperator<T>(pars, maxConcurrency, this.parent, this.before, this.after);
         }
 
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
             return new ConcatEnumerablesOperator<T>(
                 this.ScheduleMode,
+                this.MaxConcurrency,
                 this.parent,
                 before.Concat(this.before),
                 this.after.Concat(after));
@@ -33,7 +38,7 @@
         public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
             var seqs = new[] { this.before.ToAsyncEnumerable(), this.parent, this.after.ToAsyncEnumerable(), sequence };
 
-            return new FlattenOperator<T>(this.ScheduleMode, seqs.ToAsyncEnumerable());
+            return new FlattenOperator<T>(this.ScheduleMode, this.MaxConcurrency, seqs.ToAsyncEnumerable());
         }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {

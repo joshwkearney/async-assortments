@@ -15,9 +15,12 @@ internal class WrapAsyncFuncOperator<T> : IAsyncOperator<T>, ISelectOperator<T>,
     
     public IComparer<T> Comparer => Comparer<T>.Default;
 
-    public WrapAsyncFuncOperator(AsyncEnumerableScheduleMode pars, Func<CancellationToken, ValueTask<T>> func) {
+    public int MaxConcurrency { get; }
+
+    public WrapAsyncFuncOperator(AsyncEnumerableScheduleMode pars, int maxConcurrency, Func<CancellationToken, ValueTask<T>> func) {
         this.ScheduleMode = pars;
-        
+        this.MaxConcurrency = maxConcurrency;
+
         if (this.ScheduleMode.IsParallel()) {
             this.func = token => new ValueTask<T>(Task.Run(() => func(token).AsTask(), token));
         }
@@ -26,8 +29,8 @@ internal class WrapAsyncFuncOperator<T> : IAsyncOperator<T>, ISelectOperator<T>,
         }
     }
 
-    public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-        return new WrapAsyncFuncOperator<T>(pars, this.func);
+    public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+        return new WrapAsyncFuncOperator<T>(pars, maxConcurrency, this.func);
     }
 
     public async ValueTask<List<T>> ToListAsync(CancellationToken cancellationToken = default) {
@@ -43,11 +46,11 @@ internal class WrapAsyncFuncOperator<T> : IAsyncOperator<T>, ISelectOperator<T>,
     }
 
     public IAsyncEnumerable<E> Select<E>(Func<T, E> selector) {
-        return new WrapAsyncFuncOperator<E>(this.ScheduleMode, async c => selector(await this.func(c)));
+        return new WrapAsyncFuncOperator<E>(this.ScheduleMode, this.MaxConcurrency, async c => selector(await this.func(c)));
     }
 
     public IAsyncEnumerable<G> AsyncSelect<G>(Func<T, CancellationToken, ValueTask<G>> nextSelector) {
-        return new WrapAsyncFuncOperator<G>(this.ScheduleMode, async c => await nextSelector(await this.func(c), c));
+        return new WrapAsyncFuncOperator<G>(this.ScheduleMode, this.MaxConcurrency, async c => await nextSelector(await this.func(c), c));
     }
 
     public IAsyncEnumerable<T> SkipTake(int skip, int take) {

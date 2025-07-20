@@ -29,6 +29,7 @@ public static partial class AsyncEnumerable {
 
         return new SortingOperator<TSource>(
             source.GetScheduleMode().MakeOrdered(),
+            source.GetMaxConcurrency(),
             source,
             comparer);
     }

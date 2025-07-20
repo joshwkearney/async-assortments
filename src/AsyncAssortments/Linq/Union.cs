@@ -19,7 +19,7 @@ public static partial class AsyncEnumerable {
         IEqualityComparer<TSource> comparer) {
 
         if (source is IAsyncOperator<TSource> op) {
-            source = op.WithScheduleMode(op.ScheduleMode.MakeUnordered());
+            source = op.WithScheduleMode(op.ScheduleMode.MakeUnordered(), op.MaxConcurrency);
         }
 
         return source.Concat(second).Distinct(comparer);
@@ -48,7 +48,7 @@ public static partial class AsyncEnumerable {
         IEqualityComparer<TSource> comparer) {
 
         if (source is IAsyncOperator<TSource> op) {
-            source = op.WithScheduleMode(op.ScheduleMode.MakeUnordered());
+            source = op.WithScheduleMode(op.ScheduleMode.MakeUnordered(), op.MaxConcurrency);
         }
 
         return source.Concat(second).Distinct(comparer);
@@ -70,7 +70,7 @@ public static partial class AsyncEnumerable {
         IEqualityComparer<TSource> comparer) {
 
         if (source is IAsyncOperator<TSource> op) {
-            source = op.WithScheduleMode(op.ScheduleMode.MakeUnordered());
+            source = op.WithScheduleMode(op.ScheduleMode.MakeUnordered(), op.MaxConcurrency);
         }
 
         return source.Concat(second).Distinct(comparer);

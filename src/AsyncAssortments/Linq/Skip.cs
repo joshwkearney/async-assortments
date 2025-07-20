@@ -36,7 +36,8 @@ public static partial class AsyncEnumerable {
         }
 
         var pars = source.GetScheduleMode();
+        var maxConcurrency = source.GetMaxConcurrency();
 
-        return new SkipTakeOperator<TSource>(pars, source, numToSkip, int.MaxValue);
+        return new SkipTakeOperator<TSource>(pars, maxConcurrency, source, numToSkip, int.MaxValue);
     }
 }

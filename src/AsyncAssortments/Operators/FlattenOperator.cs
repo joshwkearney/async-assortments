@@ -3,49 +3,48 @@
 
 namespace AsyncAssortments.Operators {    
     internal class FlattenOperator<T> : IAsyncOperator<T>, IConcatOperator<T>, IConcatEnumerablesOperator<T> {
-        private static readonly UnboundedChannelOptions channelOptions = new UnboundedChannelOptions() {
-            AllowSynchronousContinuations = true
-        };
-
         private readonly IAsyncEnumerable<IAsyncEnumerable<T>> parent;
 
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
-        public FlattenOperator(AsyncEnumerableScheduleMode pars, IAsyncEnumerable<IAsyncEnumerable<T>> parent) {
+        public int MaxConcurrency { get; }
+
+        public FlattenOperator(AsyncEnumerableScheduleMode pars, int maxConcurrency, IAsyncEnumerable<IAsyncEnumerable<T>> parent) {
             this.parent = parent;
-            ScheduleMode = pars;
+            this.ScheduleMode = pars;
+            this.MaxConcurrency = maxConcurrency;
         }
         
-        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-            return new FlattenOperator<T>(pars, parent);
+        public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+            return new FlattenOperator<T>(pars, maxConcurrency, parent);
         }
         
         public IAsyncEnumerable<T> Concat(IAsyncEnumerable<T> sequence) {
             if (this.parent is WrapEnumerableOperator<IAsyncEnumerable<T>> op) {
                 var newItems = op.Items.Append(sequence);
-                var newParent = new WrapEnumerableOperator<IAsyncEnumerable<T>>(op.ScheduleMode, newItems);
+                var newParent = new WrapEnumerableOperator<IAsyncEnumerable<T>>(op.ScheduleMode, op.MaxConcurrency, newItems);
                 
-                return new FlattenOperator<T>(this.ScheduleMode, newParent);
+                return new FlattenOperator<T>(this.ScheduleMode, this.MaxConcurrency, newParent);
             }
             else {
-                return new FlattenOperator<T>(this.ScheduleMode, new[] { this, sequence }.ToAsyncEnumerable());
+                return new FlattenOperator<T>(this.ScheduleMode, this.MaxConcurrency, new[] { this, sequence }.ToAsyncEnumerable());
             }
         }
 
         public IAsyncEnumerable<T> ConcatEnumerables(IEnumerable<T> before, IEnumerable<T> after) {
             if (this.parent is WrapEnumerableOperator<IAsyncEnumerable<T>> op) {
                 var newItems = op.Items.Prepend(before.ToAsyncEnumerable()).Append(after.ToAsyncEnumerable());
-                var newParent = new WrapEnumerableOperator<IAsyncEnumerable<T>>(op.ScheduleMode, newItems);
+                var newParent = new WrapEnumerableOperator<IAsyncEnumerable<T>>(op.ScheduleMode, op.MaxConcurrency,newItems);
                 
-                return new FlattenOperator<T>(this.ScheduleMode, newParent);
+                return new FlattenOperator<T>(this.ScheduleMode, this.MaxConcurrency,newParent);
             }
             else {
-                return new ConcatEnumerablesOperator<T>(this.ScheduleMode, this, before, after);
+                return new ConcatEnumerablesOperator<T>(this.ScheduleMode, this.MaxConcurrency, this, before, after);
             }
         }
 
         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
-            if (this.ScheduleMode == AsyncEnumerableScheduleMode.Sequential) {
+            if (this.ScheduleMode == AsyncEnumerableScheduleMode.Sequential || this.MaxConcurrency == 1) {
                 return this.SequentialHelper(cancellationToken);
             }
             
@@ -68,9 +67,21 @@ namespace AsyncAssortments.Operators {
         }
 
         private async IAsyncEnumerator<T> OrderedHelper(CancellationTokenSource cancelSource) {
-            var channel = Channel.CreateUnbounded<Channel<T>>(channelOptions);
             var errors = new ErrorCollection();
-            
+            Channel<Channel<T>> channel;
+
+            if (this.MaxConcurrency <= 0) {
+                channel = Channel.CreateUnbounded<Channel<T>>(new() {
+                    AllowSynchronousContinuations = true                    
+                });
+            }
+            else {
+                channel = Channel.CreateBounded<Channel<T>>(new BoundedChannelOptions(this.MaxConcurrency) {
+                    AllowSynchronousContinuations = true,
+                    FullMode = BoundedChannelFullMode.Wait
+                });
+            }
+
             IterateOuter();
 
             while (true) {
@@ -128,8 +139,14 @@ namespace AsyncAssortments.Operators {
                             continue;
                         }
 
-                        var subChannel = Channel.CreateUnbounded<T>(channelOptions);
-                        channel.Writer.TryWrite(subChannel);
+                        var subChannel = Channel.CreateUnbounded<T>(new() {
+                            AllowSynchronousContinuations = true
+                        });
+
+                        // If we're operating with a max concurrency, our channel will have a capped 
+                        // capacity and this will block, preventing us from continuting to spawn 
+                        // more concurrent tasks
+                        await channel.Writer.WriteAsync(subChannel);
 
                         if (this.ScheduleMode.IsParallel()) {
                             Task.Run(() => IterateInner(item, subChannel));
@@ -149,7 +166,7 @@ namespace AsyncAssortments.Operators {
             async void IterateInner(IAsyncEnumerable<T> seq, Channel<T> subChannel) {
                 try {
                     await foreach (var item in seq.WithCancellation(cancelSource.Token)) {
-                        subChannel.Writer.TryWrite(item);
+                        await subChannel.Writer.WriteAsync(item);
                     }
 
                     subChannel.Writer.Complete();
@@ -161,8 +178,18 @@ namespace AsyncAssortments.Operators {
         }
 
         private async IAsyncEnumerator<T> UnorderedHelper(CancellationTokenSource cancelSource) {
-            var channel = Channel.CreateUnbounded<T>(channelOptions);
-            
+            // If we have a max concurrency, we're going to use a semaphore to gate how many concurrent tasks
+            // we can spawn at once. This is because max concurrency is about how many tasks spawn, not how
+            // many items are in the channel. We can't use a bounded channel for this control here
+            SemaphoreSlim semaphore = null!;
+            if (this.MaxConcurrency > 0) {
+                semaphore = new SemaphoreSlim(this.MaxConcurrency, this.MaxConcurrency);
+            }
+
+            var channel = Channel.CreateUnbounded<T>(new() {
+                AllowSynchronousContinuations = true
+            });
+
             // This is async void because exceptions will be handled through the channel
             IterateOuter();
 
@@ -191,8 +218,14 @@ namespace AsyncAssortments.Operators {
                             continue;
                         }
 
+                        // If we have a max concurrency, aquire a semaphore lease first
+                        if (this.MaxConcurrency > 0) {
+                            await semaphore.WaitAsync(cancelSource.Token);
+                        }
+
                         ValueTask task;
 
+                        // Run our concurrent task. This will release the semaphore when it's done
                         if (this.ScheduleMode.IsParallel()) {
                             task = new ValueTask(Task.Run(() => IterateInner(item).AsTask()));
                         }
@@ -239,9 +272,16 @@ namespace AsyncAssortments.Operators {
                 }
             }
 
-            async ValueTask IterateInner(IAsyncEnumerable<T> seq) {               
-                await foreach (var item in seq.WithCancellation(cancelSource.Token)) {
-                    channel.Writer.TryWrite(item);
+            async ValueTask IterateInner(IAsyncEnumerable<T> seq) {
+                try {
+                    await foreach (var item in seq.WithCancellation(cancelSource.Token)) {
+                        await channel.Writer.WriteAsync(item);
+                    }
+                }
+                finally {
+                    if (this.MaxConcurrency > 0) {
+                        semaphore.Release();
+                    }
                 }
             }
         }

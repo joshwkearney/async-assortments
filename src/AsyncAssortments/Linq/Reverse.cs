@@ -20,6 +20,7 @@ public static partial class AsyncEnumerable {
 
         return new ReverseOperator<TSource>(
             source.GetScheduleMode().MakeOrdered(),
+            source.GetMaxConcurrency(),
             source);
     }
 }

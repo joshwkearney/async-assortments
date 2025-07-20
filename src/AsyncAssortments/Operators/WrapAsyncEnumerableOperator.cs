@@ -5,13 +5,16 @@ internal class WrapAsyncEnumerableOperator<T> : IAsyncOperator<T> {
 
     public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
-    public WrapAsyncEnumerableOperator(AsyncEnumerableScheduleMode pars, IAsyncEnumerable<T> parent) {
+    public int MaxConcurrency { get; }
+
+    public WrapAsyncEnumerableOperator(AsyncEnumerableScheduleMode pars, int maxConcurrency, IAsyncEnumerable<T> parent) {
         this.Parent = parent;
         this.ScheduleMode = pars;
+        this.MaxConcurrency = maxConcurrency;
     }
 
-    public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars) {
-        return new WrapAsyncEnumerableOperator<T>(pars, this.Parent);
+    public IAsyncOperator<T> WithScheduleMode(AsyncEnumerableScheduleMode pars, int maxConcurrency) {
+        return new WrapAsyncEnumerableOperator<T>(pars, maxConcurrency, this.Parent);
     }
         
     public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
