@@ -70,15 +70,17 @@ namespace AsyncAssortments.Operators {
             var errors = new ErrorCollection();
             Channel<Channel<T>> channel;
 
-            if (this.MaxConcurrency <= 0) {
-                channel = Channel.CreateUnbounded<Channel<T>>(new() {
-                    AllowSynchronousContinuations = true                    
+            if (this.MaxConcurrency >= 2) {
+                // We're using maxConcurrency - 1 because we will remove a channel while it is still active
+                // to read, which means the actual number of concurrent tasks will be channel.size + 1
+                channel = Channel.CreateBounded<Channel<T>>(new BoundedChannelOptions(this.MaxConcurrency - 1) {
+                    AllowSynchronousContinuations = true,
+                    FullMode = BoundedChannelFullMode.Wait
                 });
             }
             else {
-                channel = Channel.CreateBounded<Channel<T>>(new BoundedChannelOptions(this.MaxConcurrency) {
-                    AllowSynchronousContinuations = true,
-                    FullMode = BoundedChannelFullMode.Wait
+                channel = Channel.CreateUnbounded<Channel<T>>(new() {
+                    AllowSynchronousContinuations = true
                 });
             }
 
@@ -219,7 +221,7 @@ namespace AsyncAssortments.Operators {
                         }
 
                         // If we have a max concurrency, aquire a semaphore lease first
-                        if (this.MaxConcurrency > 0) {
+                        if (semaphore != null) {
                             await semaphore.WaitAsync(cancelSource.Token);
                         }
 
@@ -279,9 +281,7 @@ namespace AsyncAssortments.Operators {
                     }
                 }
                 finally {
-                    if (this.MaxConcurrency > 0) {
-                        semaphore.Release();
-                    }
+                    semaphore?.Release();
                 }
             }
         }

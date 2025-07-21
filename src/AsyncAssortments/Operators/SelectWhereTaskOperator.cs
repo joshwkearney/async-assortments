@@ -228,29 +228,23 @@ namespace AsyncAssortments.Operators {
 
         private async IAsyncEnumerator<E> OrderedHelper(CancellationTokenSource cancelSource) {
             var selector = this.selector;
+            var errors = new ErrorCollection();
+            SemaphoreSlim semaphore = null!;
+
+            var channel = Channel.CreateUnbounded<ValueTask<SelectWhereResult<E>>>(new() {
+                AllowSynchronousContinuations = true
+            });
 
             // Run the tasks on the thread pool if we're supposed to be doing this in parallel
             if (this.ScheduleMode.IsParallel()) {
                 selector = (x, t) => new ValueTask<SelectWhereResult<E>>(Task.Run(() => this.selector(x, t).AsTask(), t));
             }
 
-            var errors = new ErrorCollection();
-            Channel<ValueTask<SelectWhereResult<E>>> channel;
-
-            // Max concurrency of 1 will never happen here because that will use the sequential implementation
+            // If we have a max concurrency, we'll use this sempahore to synchronize it. We're using
+            // maxConcurrency - 1 beacuse we have to create tasks before they can be awaited, which
+            // means that we'll have channel.size + 1 tasks created at any one time
             if (this.MaxConcurrency >= 2) {
-                // We're using maxConcurrency - 1 here for the channel bound because you can't create a task without running it.
-                // For a max concurrency of 2, you'll create a task, add it to the channel, create another task, and wait. That
-                // means the channel needs a capacity of 1 less than the total number of tasks
-                channel = Channel.CreateBounded<ValueTask<SelectWhereResult<E>>>(new BoundedChannelOptions(this.MaxConcurrency - 1) {
-                    AllowSynchronousContinuations = true,
-                    FullMode = BoundedChannelFullMode.Wait
-                });
-            }
-            else {
-                channel = Channel.CreateUnbounded<ValueTask<SelectWhereResult<E>>>(new() {
-                    AllowSynchronousContinuations = true
-                });
+                semaphore = new SemaphoreSlim(this.MaxConcurrency - 1, this.MaxConcurrency - 1);
             }
 
             // Fire and forget because exceptions will be handled through the channel
@@ -280,6 +274,10 @@ namespace AsyncAssortments.Operators {
                     if (!channel.Reader.TryRead(out var item)) {
                         break;
                     }
+
+                    // We've finished awaiting an item, so we can flag the semaphore to allow another task to be
+                    // created
+                    semaphore?.Release();
 
                     var pair = await item;
 
@@ -311,10 +309,13 @@ namespace AsyncAssortments.Operators {
             async void Iterate() {
                 try {
                     await foreach (var item in this.parent.WithCancellation(cancelSource.Token)) {
+                        // Wait for an available slot if we have a max concurrency
+                        if (semaphore != null) {
+                            await semaphore.WaitAsync(cancelSource.Token);
+                        }
+
                         // We're not passing the cancellation token to WriteAsync because we 
-                        // always want the task to write successfully. If we have a max
-                        // concurrency, the channel will be bounded and this will block when
-                        // it's full
+                        // always want the task to write successfully. 
                         await channel.Writer.WriteAsync(selector(item, cancelSource.Token));
                     }
                     

@@ -11,7 +11,7 @@
         public AsyncEnumerableScheduleMode ScheduleMode { get; }
 
         /// <summary>
-        ///     The maximum number of tasks that are allowed to execute simultaneously.
+        ///     The maximum number of simultaneous tasks spawned per LINQ operator.
         /// </summary>
         public int MaxConcurrency { get; }
     }

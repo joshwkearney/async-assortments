@@ -11,7 +11,7 @@ public static partial class AsyncEnumerable {
     ///     sequence (<c>true</c>), or the order in which they finish (<c>false</c>)
     /// </param>
     /// <param name="maxConcurrency">
-    ///    The maximum number of tasks that are allowed to execute simultaneously.
+    ///    The maximum number of simultaneous tasks spawned per LINQ operator.
     /// </param>
     /// <remarks>
     ///     <para>

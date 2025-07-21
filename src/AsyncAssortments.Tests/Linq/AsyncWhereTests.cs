@@ -1,4 +1,5 @@
 
+using System.Collections.Concurrent;
 using AsyncAssortments;
 using AsyncAssortments.Linq;
 
@@ -312,5 +313,53 @@ public class AsyncWhereTests {
 
         Assert.InRange(time, 250, 350);
         Assert.Equal([100, 200, 300], items);
+    }
+
+    [Fact]
+    public async Task TestMaxConcurrencyOrdered() {
+        int concurrent = 0;
+        var reads = new ConcurrentBag<int>();
+
+        await TestHelper.CreateRandomList(20)
+            .ToAsyncEnumerable()
+            .AsConcurrent(preserveOrder: true, maxConcurrency: 10)
+            .AsyncWhere(async x => {
+                try {
+                    reads.Add(Interlocked.Increment(ref concurrent));
+                    await Task.Delay(10);
+
+                    return true;
+                }
+                finally {
+                    Interlocked.Decrement(ref concurrent);
+                }
+            })
+            .ToListAsync();
+
+        Assert.Equal(10, reads.Max());
+    }
+
+    [Fact]
+    public async Task TestMaxConcurrencyUnordered() {
+        int concurrent = 0;
+        var reads = new ConcurrentBag<int>();
+
+        await TestHelper.CreateRandomList(20)
+            .ToAsyncEnumerable()
+            .AsConcurrent(preserveOrder: false, maxConcurrency: 10)
+            .AsyncWhere(async x => {
+                try {
+                    reads.Add(Interlocked.Increment(ref concurrent));
+                    await Task.Delay(10);
+
+                    return true;
+                }
+                finally {
+                    Interlocked.Decrement(ref concurrent);
+                }
+            })
+            .ToListAsync();
+
+        Assert.Equal(10, reads.Max());
     }
 }

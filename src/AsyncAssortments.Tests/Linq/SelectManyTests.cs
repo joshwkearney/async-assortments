@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using AsyncAssortments;
 using AsyncAssortments.Linq;
 
@@ -395,6 +396,60 @@ public class SelectManyTests {
             Thread.Sleep(i);
             yield return i;
             yield return i;
+        }
+    }
+
+    [Fact]
+    public async Task TestMaxConcurrencyOrdered() {
+        int concurrent = 0;
+        var reads = new ConcurrentBag<int>();
+
+        await Enumerable.Range(1, 20)
+            .Select(Seq)
+            .ToAsyncEnumerable()
+            .AsConcurrent(preserveOrder: true, maxConcurrency: 10)
+            .SelectMany(x => x)
+            .ToListAsync();
+
+        Assert.Equal(10, reads.Max());
+
+        async IAsyncEnumerable<int> Seq(int x) {
+            try {
+                reads.Add(Interlocked.Increment(ref concurrent));
+                await Task.Delay(10);
+
+                yield return x;
+            }
+            finally {
+                Interlocked.Decrement(ref concurrent);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task TestMaxConcurrencyUnordered() {
+        int concurrent = 0;
+        var reads = new ConcurrentBag<int>();
+
+        await Enumerable.Range(1, 20)
+            .Select(Seq)
+            .ToAsyncEnumerable()
+            .AsConcurrent(preserveOrder: false, maxConcurrency: 10)
+            .SelectMany(x => x)
+            .ToListAsync();
+
+        Assert.Equal(10, reads.Max());
+
+        async IAsyncEnumerable<int> Seq(int x) {
+            try {
+                reads.Add(Interlocked.Increment(ref concurrent));
+                await Task.Delay(10);
+
+                yield return x;
+            }
+            finally {
+                Interlocked.Decrement(ref concurrent);
+            }
         }
     }
 }
