@@ -15,7 +15,7 @@
 	<!-- Nuget information -->
 	<PropertyGroup>
 		<PackageId>AsyncAssortments</PackageId>
-		<Version>0.6.0-alpha</Version>
+		<Version>1.1.0-alpha</Version>
 		<Authors>Joshua Kearney</Authors>
 		<RepositoryUrl>https://github.com/joshwkearney/async-assortments</RepositoryUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
